@@ -29,12 +29,63 @@ services:
 # principal/object id directly. Only the external Foundry scope must be set once per env:
 #   azd env set AZURE_FOUNDRY_RESOURCE_ID "/subscriptions/.../resourceGroups/.../providers/Microsoft.CognitiveServices/accounts/<foundry>"
 # Note: uses `powershell` (5.1) shell — this machine has no pwsh; the script is 5.1-compatible.
+#
+# D6 — customer-managed key (CMK) for the two Blob Storage accounts (Invoicing PDFs, Catalog
+# images; see docs/architecture.md). Enabled here, not in the Aspire-generated Bicep, because
+# Azure Storage CMK configured at account-creation time requires a user-assigned identity,
+# while a system-assigned one (assigned by AppHost.cs's EnableSystemAssignedIdentity) only
+# works once the account already exists — exactly this hook's timing. Same rationale as the
+# Foundry grant above: this is exactly the kind of "azd/Aspire's typed model can't cleanly
+# express it" case this repo already handles with an imperative postprovision hook rather
+# than hand-rolled Bicep. Idempotent — safe to re-run on every provision.
 hooks:
   postprovision:
     posix:
       shell: sh
       run: |
         set -e
+        if [ -n "$AZURE_RESOURCE_GROUP" ]; then
+          KEYVAULT_NAME=$(az resource list --resource-group "$AZURE_RESOURCE_GROUP" \
+            --resource-type Microsoft.KeyVault/vaults \
+            --query "[?tags.\"aspire-resource-name\"=='ordersphere-kv'].name | [0]" -o tsv)
+          if [ -n "$KEYVAULT_NAME" ]; then
+            KEY_NAME="storage-cmk-key"
+            az keyvault key show --vault-name "$KEYVAULT_NAME" --name "$KEY_NAME" >/dev/null 2>&1 || \
+              az keyvault key create --vault-name "$KEYVAULT_NAME" --name "$KEY_NAME" \
+                --kty RSA --size 2048 --only-show-errors >/dev/null
+            KEYVAULT_URI=$(az keyvault show --name "$KEYVAULT_NAME" --query properties.vaultUri -o tsv)
+            KEYVAULT_ID=$(az keyvault show --name "$KEYVAULT_NAME" --query id -o tsv)
+
+            for TAG in storage invoice-storage; do
+              STORAGE_NAME=$(az resource list --resource-group "$AZURE_RESOURCE_GROUP" \
+                --resource-type Microsoft.Storage/storageAccounts \
+                --query "[?tags.\"aspire-resource-name\"=='$TAG'].name | [0]" -o tsv)
+              if [ -n "$STORAGE_NAME" ]; then
+                echo "Enabling CMK on storage account $STORAGE_NAME..."
+                PRINCIPAL_ID=$(az storage account show --name "$STORAGE_NAME" \
+                  --resource-group "$AZURE_RESOURCE_GROUP" --query identity.principalId -o tsv)
+                az role assignment create \
+                  --assignee-object-id "$PRINCIPAL_ID" \
+                  --assignee-principal-type ServicePrincipal \
+                  --role "Key Vault Crypto Service Encryption User" \
+                  --scope "$KEYVAULT_ID" \
+                  --only-show-errors || true
+                # RBAC propagation can lag a few seconds behind the role assignment call.
+                for ATTEMPT in 1 2 3 4 5; do
+                  if az storage account update --name "$STORAGE_NAME" --resource-group "$AZURE_RESOURCE_GROUP" \
+                    --encryption-key-source Microsoft.Keyvault \
+                    --encryption-key-vault "$KEYVAULT_URI" \
+                    --encryption-key-name "$KEY_NAME" \
+                    --only-show-errors >/dev/null 2>&1; then
+                    break
+                  fi
+                  sleep 10
+                done
+              fi
+            done
+          fi
+        fi
+
         if [ -z "$AZURE_FOUNDRY_RESOURCE_ID" ] || [ -z "$MANAGED_IDENTITY_CLIENT_ID" ]; then
           echo "Skipping Foundry role grant: AZURE_FOUNDRY_RESOURCE_ID or MANAGED_IDENTITY_CLIENT_ID not set."
           exit 0
@@ -50,6 +101,48 @@ hooks:
     windows:
       shell: powershell
       run: |
+        if ($env:AZURE_RESOURCE_GROUP) {
+          $keyVaultName = az resource list --resource-group $env:AZURE_RESOURCE_GROUP `
+            --resource-type Microsoft.KeyVault/vaults `
+            --query "[?tags.`"aspire-resource-name`"=='ordersphere-kv'].name | [0]" -o tsv
+          if ($keyVaultName) {
+            $keyName = "storage-cmk-key"
+            az keyvault key show --vault-name $keyVaultName --name $keyName *> $null
+            if ($LASTEXITCODE -ne 0) {
+              az keyvault key create --vault-name $keyVaultName --name $keyName --kty RSA --size 2048 --only-show-errors | Out-Null
+            }
+            $keyVaultUri = az keyvault show --name $keyVaultName --query properties.vaultUri -o tsv
+            $keyVaultId = az keyvault show --name $keyVaultName --query id -o tsv
+
+            foreach ($tag in @("storage", "invoice-storage")) {
+              $storageName = az resource list --resource-group $env:AZURE_RESOURCE_GROUP `
+                --resource-type Microsoft.Storage/storageAccounts `
+                --query "[?tags.`"aspire-resource-name`"=='$tag'].name | [0]" -o tsv
+              if ($storageName) {
+                Write-Host "Enabling CMK on storage account $storageName..."
+                $principalId = az storage account show --name $storageName `
+                  --resource-group $env:AZURE_RESOURCE_GROUP --query identity.principalId -o tsv
+                az role assignment create `
+                  --assignee-object-id $principalId `
+                  --assignee-principal-type ServicePrincipal `
+                  --role "Key Vault Crypto Service Encryption User" `
+                  --scope $keyVaultId `
+                  --only-show-errors
+                # RBAC propagation can lag a few seconds behind the role assignment call.
+                for ($attempt = 1; $attempt -le 5; $attempt++) {
+                  az storage account update --name $storageName --resource-group $env:AZURE_RESOURCE_GROUP `
+                    --encryption-key-source Microsoft.Keyvault `
+                    --encryption-key-vault $keyVaultUri `
+                    --encryption-key-name $keyName `
+                    --only-show-errors | Out-Null
+                  if ($LASTEXITCODE -eq 0) { break }
+                  Start-Sleep -Seconds 10
+                }
+              }
+            }
+          }
+        }
+
         if (-not $env:AZURE_FOUNDRY_RESOURCE_ID -or -not $env:MANAGED_IDENTITY_CLIENT_ID) {
           Write-Host "Skipping Foundry role grant: AZURE_FOUNDRY_RESOURCE_ID or MANAGED_IDENTITY_CLIENT_ID not set."
           exit 0

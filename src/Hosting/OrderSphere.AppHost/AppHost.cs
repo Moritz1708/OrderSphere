@@ -1,4 +1,7 @@
+using Azure.Provisioning.KeyVault;
+using Azure.Provisioning.Resources;
 using Azure.Provisioning.Search;
+using Azure.Provisioning.Storage;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -55,7 +58,40 @@ var foundryFallbackDeployment = builder.Configuration["Foundry:FallbackDeploymen
 
 // Provisioned by azd in non-dev environments. Parameters above are backed by
 // Key Vault secrets at deployment time; no code change required in service projects.
-builder.AddAzureKeyVault("ordersphere-kv");
+var keyVault = builder.AddAzureKeyVault("ordersphere-kv");
+
+// D6 — customer-managed key (CMK) for Azure Storage encryption (Blob Storage: Invoicing
+// PDFs, Catalog images; see docs/architecture.md). Storage-account-level only — Postgres
+// Flexible Server keeps Microsoft-managed encryption-at-rest. CMK requires purge protection
+// on top of the vault's existing soft-delete; this is a one-way setting (cannot be disabled
+// once enabled) and now applies to the whole vault, including the Oidc/Stripe secrets it
+// also holds — confirmed with the repo owner before enabling.
+keyVault.ConfigureInfrastructure(infra =>
+{
+    var vault = infra.GetProvisionableResources().OfType<KeyVaultService>().Single();
+    vault.Properties.EnablePurgeProtection = true;
+});
+
+// Gives a blob storage account a system-assigned identity, the precondition for the CMK
+// (customer-managed key) encryption enabled by the azd postprovision hook in azure.yaml.
+// Azure Storage CMK configured at account-creation time requires a user-assigned identity,
+// but a system-assigned identity is sufficient once the account already exists — which is
+// exactly the postprovision hook's timing, and avoids provisioning a dedicated identity
+// resource + a custom Bicep module for the Key Vault key (Azure.Provisioning.KeyVault 1.1.0,
+// as referenced by this solution, has no strongly-typed representation for a Key Vault
+// *key* resource — only secrets). See docs/architecture.md and azure.yaml's postprovision
+// hook for the rest of the CMK wiring (key creation, role grant, encryption enablement).
+void EnableSystemAssignedIdentity(IResourceBuilder<Aspire.Hosting.Azure.AzureStorageResource> account)
+{
+    account.ConfigureInfrastructure(infra =>
+    {
+        var storageAccount = infra.GetProvisionableResources().OfType<StorageAccount>().Single();
+        storageAccount.Identity = new ManagedServiceIdentity
+        {
+            ManagedServiceIdentityType = ManagedServiceIdentityType.SystemAssigned,
+        };
+    });
+}
 
 // Application Insights is provisioned and wired after all resources are declared (see bottom).
 
@@ -274,6 +310,7 @@ if (builder.ExecutionContext.IsPublishMode)
     // Azure Blob Storage for catalog product images (private container, SAS URLs).
     // azd auto-generates Storage Blob Data Contributor on the catalog identity via WithReference.
     var storage = builder.AddAzureStorage("storage");
+    EnableSystemAssignedIdentity(storage);
     var images = storage.AddBlobs("images");
     catalog.WithReference(images);
 }
@@ -362,6 +399,7 @@ var invoicingApi = builder.AddProject<Projects.OrderSphere_Invoicing_Api>("order
 if (builder.ExecutionContext.IsPublishMode)
 {
     var invoiceStorage = builder.AddAzureStorage("invoice-storage");
+    EnableSystemAssignedIdentity(invoiceStorage);
     var invoicesBlob = invoiceStorage.AddBlobs("invoices");
     invoicingApi.WithReference(invoicesBlob);
 }

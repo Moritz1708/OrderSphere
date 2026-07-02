@@ -329,6 +329,40 @@ Personal and sensitive data at rest, tabulated by sensitivity tier per service, 
 [docs/data-classification.md](data-classification.md) — read it before adding a new field that
 might hold PII, or before scoping encryption-at-rest work.
 
+Both Blob Storage accounts (`storage` — Catalog product images; `invoice-storage` — Invoicing
+PDFs) are encrypted with a customer-managed key (CMK) rather than Microsoft-managed keys. Scope is
+storage-account-level only — Postgres Flexible Server keeps its own (Microsoft-managed)
+encryption-at-rest; column-level encryption was evaluated and not adopted (see
+[docs/data-classification.md](data-classification.md)).
+
+The CMK wiring is split across two layers:
+
+- **`AppHost.cs`** (`EnableSystemAssignedIdentity`): gives each storage account a system-assigned
+  managed identity via `ConfigureInfrastructure`, the precondition for enabling CMK on an
+  *existing* account.
+- **`azure.yaml` postprovision hook**: after `azd provision`, an idempotent script creates an RSA
+  key (`storage-cmk-key`) in `ordersphere-kv`, grants each storage account's system-assigned
+  identity the `Key Vault Crypto Service Encryption User` role scoped to the vault, and enables
+  encryption with `az storage account update --encryption-key-source Microsoft.Keyvault`.
+
+Two things forced this split rather than a single `ConfigureInfrastructure` block, same pattern as
+the pre-existing Foundry role-grant hook:
+
+1. **Azure Storage CMK configured at account-creation time requires a user-assigned identity** — a
+   system-assigned identity only authorizes Key Vault access once the account already exists. A
+   postprovision hook runs after `azd provision` created the account, so system-assigned is
+   sufficient and avoids provisioning a dedicated user-assigned identity resource.
+2. **Azure.Provisioning.KeyVault 1.1.0** (the version this solution references) has no
+   strongly-typed C# representation for a Key Vault *key* resource — only secrets. Creating the
+   key via the Aspire-generated Bicep would require a hand-written custom Bicep module; the `az`
+   CLI in the postprovision hook is simpler and matches this repo's existing escape-hatch pattern
+   for cases the typed provisioning model doesn't cover.
+
+**Purge protection**: CMK requires purge protection on `ordersphere-kv`, in addition to its
+existing soft-delete — a one-way setting that cannot be disabled once enabled, and applies to the
+whole vault (including the `Oidc:ClientSecret` and Stripe secrets it also holds). Enabled via
+`ConfigureInfrastructure` on the vault in `AppHost.cs`.
+
 ## EF Migrations
 
 Each service owns its migrations. Pattern: `-p <Infrastructure project> -s <Api project>`.

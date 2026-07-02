@@ -94,10 +94,12 @@ erasure path is a field that persists indefinitely, raising the cost of a breach
 
 ## Relationship to encryption-at-rest scope (D6 part 2)
 
-This classification is the input to the CMK/column-encryption scoping discussion in
-[#93](https://github.com/MoritzWaldau/OrderSphere/issues/93). At minimum, T1 fields are the
-candidates for column-level encryption if storage-account/Postgres-Flexible-Server encryption-at-rest
-is judged insufficient; T3/T4 fields are candidates for blob- or storage-account-level CMK given
-their volume and the difficulty of field-level encryption on free text. That scoping decision is
-tracked separately and requires an explicit ask-before checkpoint (NuGet dependency likely) before
-implementation starts.
+Resolved: storage-account-level customer-managed key (CMK) only, covering both Blob Storage
+accounts (Catalog images, Invoicing PDFs — where T1/T3/T4 data from this inventory lands at rest
+as files rather than rows). Column-level encryption for T1 fields (email, name, address) was
+evaluated and explicitly **not** adopted, to avoid the new `Azure.Extensions.AspNetCore.DataProtection.Keys`
+NuGet dependency and `IDataProtector`/`ValueConverter` complexity for marginal benefit given Postgres
+Flexible Server's own encryption-at-rest already covers those columns. Postgres itself keeps
+Microsoft-managed encryption (no CMK) — see
+[docs/architecture.md § Storage encryption](architecture.md#storage-encryption-customer-managed-key)
+for the implementation.
