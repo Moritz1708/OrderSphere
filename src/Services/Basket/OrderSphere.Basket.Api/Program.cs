@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.Basket.Api.Configuration;
 using OrderSphere.Basket.Api.Endpoints;
 using OrderSphere.Basket.Application;
 using OrderSphere.Basket.Infrastructure;
 using OrderSphere.Basket.Infrastructure.Persistence;
+using OrderSphere.BuildingBlocks.Auditing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +35,7 @@ builder.AddOrderSphereExceptionHandling();
 // JWT Bearer
 builder.AddOrderSphereJwtAuth("basket-api");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
 

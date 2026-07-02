@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- ADR 0012: IntegrationEvent.TenantId defaults from the ambient tenant scope. -->
+    <ProjectReference Include="..\OrderSphere.BuildingBlocks.Domain\OrderSphere.BuildingBlocks.csproj" />
+  </ItemGroup>
+
 </Project>

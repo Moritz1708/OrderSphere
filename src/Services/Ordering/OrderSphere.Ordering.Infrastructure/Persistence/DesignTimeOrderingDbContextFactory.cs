@@ -14,6 +14,6 @@ public sealed class DesignTimeOrderingDbContextFactory : IDesignTimeDbContextFac
     {
         var optionsBuilder = new DbContextOptionsBuilder<OrderingDbContext>();
         optionsBuilder.UseNpgsql("Host=localhost;Database=ordering-db;Username=postgres;Password=postgres");
-        return new OrderingDbContext(optionsBuilder.Options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new OrderingDbContext(optionsBuilder.Options, NullPublisher.Instance, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

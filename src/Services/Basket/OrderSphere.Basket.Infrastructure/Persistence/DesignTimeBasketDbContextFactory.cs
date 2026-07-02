@@ -15,6 +15,6 @@ public sealed class DesignTimeBasketDbContextFactory : IDesignTimeDbContextFacto
         var options = new DbContextOptionsBuilder<BasketDbContext>()
             .UseNpgsql("Host=localhost;Port=5432;Database=basket-db;Username=postgres;Password=postgres")
             .Options;
-        return new BasketDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new BasketDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

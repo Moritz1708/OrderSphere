@@ -15,7 +15,7 @@ namespace OrderSphere.Payment.Tests.Helpers;
 /// </summary>
 internal static class PaymentDbContextFactory
 {
-    internal static PaymentDbContext Create()
+    internal static PaymentDbContext Create(ITenantContext? tenantContext = null)
     {
         var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
@@ -24,7 +24,8 @@ internal static class PaymentDbContextFactory
             .UseSqlite(connection)
             .Options;
 
-        var context = new PaymentDbContext(options, Substitute.For<IPublisher>(), NullCurrentUser.Instance);
+        var context = new PaymentDbContext(
+            options, Substitute.For<IPublisher>(), NullCurrentUser.Instance, tenantContext ?? NullTenantContext.Instance);
         context.Database.EnsureCreated();
         return context;
     }

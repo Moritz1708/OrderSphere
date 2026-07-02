@@ -7,7 +7,10 @@ using OrderSphere.BuildingBlocks.Security;
 
 namespace OrderSphere.Advisory.Infrastructure.Persistence;
 
-public sealed class AdvisoryDbContext(DbContextOptions<AdvisoryDbContext> options, ICurrentUser currentUser)
+public sealed class AdvisoryDbContext(
+    DbContextOptions<AdvisoryDbContext> options,
+    ICurrentUser currentUser,
+    ITenantContext tenantContext)
     : DbContext(options), IAdvisoryDbContext
 {
     public DbSet<Conversation> Conversations => Set<Conversation>();
@@ -16,7 +19,7 @@ public sealed class AdvisoryDbContext(DbContextOptions<AdvisoryDbContext> option
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
         return base.SaveChangesAsync(cancellationToken);
     }
@@ -25,6 +28,7 @@ public sealed class AdvisoryDbContext(DbContextOptions<AdvisoryDbContext> option
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AdvisoryDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
         base.OnModelCreating(modelBuilder);
     }
 }

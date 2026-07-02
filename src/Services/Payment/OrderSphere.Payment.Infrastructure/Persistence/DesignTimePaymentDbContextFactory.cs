@@ -17,6 +17,6 @@ public sealed class DesignTimePaymentDbContextFactory : IDesignTimeDbContextFact
             .UseNpgsql("Host=localhost;Port=5432;Database=payment-db;Username=postgres;Password=postgres")
             .Options;
 
-        return new PaymentDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new PaymentDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

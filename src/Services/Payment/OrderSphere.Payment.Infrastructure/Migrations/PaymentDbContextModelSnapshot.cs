@@ -167,6 +167,9 @@ namespace OrderSphere.Payment.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("TransactionId")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");

@@ -103,7 +103,8 @@ public sealed class CheckoutToPaymentFlowTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
-        return new OrderingDbContext(options, Substitute.For<IPublisher>(), NullCurrentUser.Instance);
+        return new OrderingDbContext(
+            options, Substitute.For<IPublisher>(), NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 
     private static OrderProcessor NewProcessor() =>

@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.Extensions;
-using OrderSphere.BuildingBlocks.Security;
 
 namespace OrderSphere.Invoicing.Infrastructure.Persistence;
 
-public sealed class InvoicingDbContext(DbContextOptions<InvoicingDbContext> options, ICurrentUser currentUser)
+public sealed class InvoicingDbContext(
+    DbContextOptions<InvoicingDbContext> options,
+    ICurrentUser currentUser,
+    ITenantContext tenantContext)
     : DbContext(options), IInvoicingDbContext
 {
     public DbSet<Invoice> Invoices => Set<Invoice>();
@@ -64,7 +66,7 @@ public sealed class InvoicingDbContext(DbContextOptions<InvoicingDbContext> opti
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
         return await base.SaveChangesAsync(cancellationToken);
     }
@@ -79,5 +81,6 @@ public sealed class InvoicingDbContext(DbContextOptions<InvoicingDbContext> opti
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(InvoicingDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
     }
 }

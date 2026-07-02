@@ -61,3 +61,12 @@ public sealed record AdminUserSummaryDto(
     string Email,
     bool DarkModeEnabled,
     int AddressCount);
+
+public sealed record TenantDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    string Status,
+    DateTime CreatedAt);
+
+public sealed record CreateTenantRequest(string Name, string Slug);

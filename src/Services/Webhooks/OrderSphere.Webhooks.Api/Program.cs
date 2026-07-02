@@ -22,6 +22,7 @@ builder.AddOrderSphereExceptionHandling();
 builder.Services.AddWebhooksApiVersioning();
 
 builder.AddOrderSphereJwtAuth("webhooks-api");
+builder.Services.AddTenantContext();
 
 var app = builder.Build();
 

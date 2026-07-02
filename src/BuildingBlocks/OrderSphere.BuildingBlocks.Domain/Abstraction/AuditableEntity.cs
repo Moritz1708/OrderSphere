@@ -17,6 +17,7 @@ public abstract class AuditableEntity<TId> : IAuditableEntity, IHasDomainEvents
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
+    public Guid TenantId { get; set; }
 
     /// <summary>
     /// Adds a domain event to the pending collection.

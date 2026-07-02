@@ -16,6 +16,6 @@ public sealed class DesignTimeAdvisoryDbContextFactory : IDesignTimeDbContextFac
             .UseNpgsql("Host=localhost;Database=advisory-db;Username=postgres;Password=postgres")
             .Options;
 
-        return new AdvisoryDbContext(options, NullCurrentUser.Instance);
+        return new AdvisoryDbContext(options, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

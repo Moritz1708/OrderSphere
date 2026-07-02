@@ -33,6 +33,7 @@ builder.Services.AddPaymentApplication();
 // ordersphere.dlq.depth gauge. JWT auth mirrors the API services (Oidc config is already injected).
 builder.AddOrderSphereJwtAuth("payment-worker");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
 builder.Services.AddDlqAdmin("payment-requests", "order-confirmation-failed", "refund-requested", "erasure-payment");

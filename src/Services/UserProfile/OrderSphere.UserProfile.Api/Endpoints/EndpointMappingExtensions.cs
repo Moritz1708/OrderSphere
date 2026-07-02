@@ -18,6 +18,7 @@ public static class EndpointMappingExtensions
 
         v1.MapProfileEndpoints();
         v1.MapAdminProfileEndpoints();
+        v1.MapAdminTenantEndpoints();
 
         // Internal endpoints are mounted outside the versioned group — no auth required
         // since they are only reachable from within the cluster (not exposed via the gateway).

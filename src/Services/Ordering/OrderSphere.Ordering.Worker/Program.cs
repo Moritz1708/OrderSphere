@@ -57,6 +57,7 @@ builder.Services.AddTransient(typeof(INotificationHandler<>), typeof(DomainEvent
 // ordersphere.dlq.depth gauge. JWT auth mirrors the API services (Oidc config is already injected).
 builder.AddOrderSphereJwtAuth("ordering-worker");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
 builder.Services.AddDlqAdmin("orders", "payment-results", "payment-refunds", "order-history", "erasure-ordering");

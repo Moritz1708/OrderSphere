@@ -52,7 +52,8 @@ public sealed class OrderSagaProjectionTests : IDisposable
 
     public void Dispose() => _connection.Dispose();
 
-    private OrderingDbContext NewContext() => new(_options, Substitute.For<IPublisher>(), NullCurrentUser.Instance);
+    private OrderingDbContext NewContext() =>
+        new(_options, Substitute.For<IPublisher>(), NullCurrentUser.Instance, NullTenantContext.Instance);
 
     private static PaymentResultProcessor NewPaymentProcessor()
         => new(

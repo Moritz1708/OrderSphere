@@ -16,10 +16,12 @@ namespace OrderSphere.UserProfile.Infrastructure.Persistence;
 public sealed class UserProfileDbContext(
     DbContextOptions<UserProfileDbContext> options,
     IPublisher publisher,
-    ICurrentUser currentUser) : DbContext(options), IUserProfileDbContext
+    ICurrentUser currentUser,
+    ITenantContext tenantContext) : DbContext(options), IUserProfileDbContext
 {
     public DbSet<CustomerProfile> CustomerProfiles => Set<CustomerProfile>();
     public DbSet<SavedAddress> SavedAddresses => Set<SavedAddress>();
+    public DbSet<Tenant> Tenants => Set<Tenant>();
     internal DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     internal DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
 
@@ -34,7 +36,7 @@ public sealed class UserProfileDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
 
         var events = ChangeTracker.Entries()
@@ -55,6 +57,7 @@ public sealed class UserProfileDbContext(
     {
         configurationBuilder.Properties<CustomerProfileId>().HaveConversion<CustomerProfileIdConverter>();
         configurationBuilder.Properties<SavedAddressId>().HaveConversion<SavedAddressIdConverter>();
+        configurationBuilder.Properties<TenantAggregateId>().HaveConversion<TenantAggregateIdConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -62,6 +65,7 @@ public sealed class UserProfileDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserProfileDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
 
         // xmin is a PostgreSQL system column — only configure it when the provider is Npgsql.
         // SQLite (used in tests) and other providers do not support the xid column type.

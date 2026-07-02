@@ -1,6 +1,6 @@
 # 0009 — Single-tenant deployment with per-customer scoping (not org-level multi-tenancy)
 
-**Status:** Accepted
+**Status:** Superseded by [0012](0012-org-level-multi-tenancy.md)
 
 ## Context
 
@@ -48,3 +48,9 @@ without a shared registry or foreign-key relationship between services.
   operational complexity.
 - **No ownership enforcement (all data accessible to all authenticated users)** — rejected:
   obvious data-isolation failure.
+
+## Superseded by
+
+[0012 — Org-level multi-tenancy via row-level `TenantId` scoping](0012-org-level-multi-tenancy.md)
+introduces true organisation-level tenancy once a business requirement for organisation accounts
+emerged, using the shared-schema tenant-column approach rejected above as an alternative in 2026-06.

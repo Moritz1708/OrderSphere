@@ -14,7 +14,8 @@ namespace OrderSphere.Basket.Infrastructure.Persistence;
 public sealed class BasketDbContext(
     DbContextOptions<BasketDbContext> options,
     IPublisher publisher,
-    ICurrentUser currentUser) : DbContext(options), IBasketDbContext
+    ICurrentUser currentUser,
+    ITenantContext tenantContext) : DbContext(options), IBasketDbContext
 {
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
@@ -22,7 +23,7 @@ public sealed class BasketDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
 
         var events = ChangeTracker.Entries()
@@ -52,6 +53,7 @@ public sealed class BasketDbContext(
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BasketDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
         base.OnModelCreating(modelBuilder);
     }
 }

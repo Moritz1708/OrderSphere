@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Ordering.Application.Tests.Helpers;
-using OrderSphere.Ordering.Domain.Enums;
 using OrderSphere.Ordering.Infrastructure.Persistence;
 
 namespace OrderSphere.Ordering.Application.Tests.Infrastructure;
