@@ -84,6 +84,12 @@
     <Project Path="src/Services/UserProfile/OrderSphere.UserProfile.Domain/OrderSphere.UserProfile.Domain.csproj" />
     <Project Path="src/Services/UserProfile/OrderSphere.UserProfile.Infrastructure/OrderSphere.UserProfile.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Services/Partners/">
+    <Project Path="src/Services/Partners/OrderSphere.Partners.Api/OrderSphere.Partners.Api.csproj" />
+    <Project Path="src/Services/Partners/OrderSphere.Partners.Application/OrderSphere.Partners.Application.csproj" />
+    <Project Path="src/Services/Partners/OrderSphere.Partners.Domain/OrderSphere.Partners.Domain.csproj" />
+    <Project Path="src/Services/Partners/OrderSphere.Partners.Infrastructure/OrderSphere.Partners.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Gateways/">
     <Project Path="src/Gateways/OrderSphere.ApiGateway/OrderSphere.ApiGateway.csproj" />
     <Project Path="src/Gateways/OrderSphere.Bff/OrderSphere.Bff.csproj" />
@@ -107,6 +113,7 @@
     <Project Path="tests/OrderSphere.Ordering.Application.Tests/OrderSphere.Ordering.Application.Tests.csproj" />
     <Project Path="tests/OrderSphere.Ordering.Authorization.Tests/OrderSphere.Ordering.Authorization.Tests.csproj" />
     <Project Path="tests/OrderSphere.Ordering.Checkout.Tests/OrderSphere.Ordering.Checkout.Tests.csproj" />
+    <Project Path="tests/OrderSphere.Partners.Tests/OrderSphere.Partners.Tests.csproj" />
     <Project Path="tests/OrderSphere.Payment.Tests/OrderSphere.Payment.Tests.csproj" />
     <Project Path="tests/OrderSphere.UserProfile.Tests/OrderSphere.UserProfile.Tests.csproj" />
     <Project Path="tests/OrderSphere.Webhooks.Tests/OrderSphere.Webhooks.Tests.csproj" />

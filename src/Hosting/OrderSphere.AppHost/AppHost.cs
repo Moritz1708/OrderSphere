@@ -16,6 +16,11 @@ var paymentWorkerSecret = builder.AddParameter("payment-worker-secret", secret: 
 // (client_credentials grant, audience = OidcAudience below); set the secret locally via:
 //   dotnet user-secrets set "Parameters:catalog-client-secret" "<value>" --project src/Hosting/OrderSphere.AppHost
 var catalogClientSecret = builder.AddParameter("catalog-client-secret", secret: true);
+// D4 — the ApiGateway's own M2M identity (B6), used to resolve X-API-Key headers against the
+// Partners service's internal by-key lookup endpoint. Requires a new Auth0 machine-to-machine
+// application (client_credentials grant, audience = OidcAudience below); set the secret locally via:
+//   dotnet user-secrets set "Parameters:apigateway-client-secret" "<value>" --project src/Hosting/OrderSphere.AppHost
+var apiGatewayClientSecret = builder.AddParameter("apigateway-client-secret", secret: true);
 
 // Stripe (test mode) — optional. Resolved from AppHost configuration / user-secrets so local
 // runs work without it; when unset the Payment service falls back to the simulated provider.
@@ -119,6 +124,7 @@ var webhooksDb = postgresServer.AddDatabase("webhooks-db");
 var notificationDb = postgresServer.AddDatabase("notification-db");
 var invoicingDb = postgresServer.AddDatabase("invoicing-db");
 var advisoryDb = postgresServer.AddDatabase("advisory-db");
+var partnersDb = postgresServer.AddDatabase("partners-db");
 
 var serviceBus = builder.AddAzureServiceBus("azure-service-bus")
     .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
@@ -386,6 +392,15 @@ notificationWorker
     .WithReference(userProfile)
     .WaitFor(userProfile);
 
+// B6 — dedicated service for B2B partner accounts and API-key issuance/rotation/revocation.
+// No Service Bus dependency: partners are a self-contained admin-managed resource, not part
+// of any saga.
+var partners = builder.AddProject<Projects.OrderSphere_Partners_Api>("ordersphere-partners")
+    .WithReference(partnersDb)
+    .WaitFor(partnersDb)
+    .WithEnvironment("Oidc__Authority", oidcAuthority)
+    .WithEnvironment("Oidc__Audience", OidcAudience);
+
 // Invoicing service: consumes invoice-generation, generates QuestPDF, uploads to blob,
 // publishes invoice-ready. Download endpoint requires JWT auth (invoicing-api audience).
 var invoicingApi = builder.AddProject<Projects.OrderSphere_Invoicing_Api>("ordersphere-invoicing")
@@ -434,6 +449,7 @@ var apiGateway = builder.AddProject<Projects.OrderSphere_ApiGateway>("orderspher
     .WithReference(payment)
     .WithReference(userProfile)
     .WithReference(webhooks)
+    .WithReference(partners)
     // Worker DLQ admin surfaces are routed through the gateway (/api/v1/admin/{service}/dlq).
     .WithReference(orderingWorker)
     .WithReference(paymentWorker)
@@ -446,7 +462,12 @@ var apiGateway = builder.AddProject<Projects.OrderSphere_ApiGateway>("orderspher
     .WaitFor(payment)
     .WaitFor(userProfile)
     .WaitFor(webhooks)
-    .WithEnvironment("Oidc__Authority", oidcAuthority);
+    .WaitFor(partners)
+    .WithEnvironment("Oidc__Authority", oidcAuthority)
+    // B6 — resolves X-API-Key headers via Partners' internal lookup endpoint.
+    .WithEnvironment("Oidc__Audience", OidcAudience)
+    .WithEnvironment("Oidc__ClientId", "REPLACE_WITH_APIGATEWAY_M2M_CLIENT_ID")
+    .WithEnvironment("Oidc__ClientSecret", apiGatewayClientSecret);
 
 // MCP server: exposes OrderSphere data as Model Context Protocol tools over Streamable
 // HTTP. Consumed by the internal advisory agent and by external MCP clients. Calls the
@@ -516,6 +537,7 @@ if (builder.ExecutionContext.IsPublishMode)
     userProfile.WithReference(appInsights);
     webhooks.WithReference(appInsights);
     webhooksWorker.WithReference(appInsights);
+    partners.WithReference(appInsights);
     apiGateway.WithReference(appInsights);
     mcpServer.WithReference(appInsights);
     advisory.WithReference(appInsights);

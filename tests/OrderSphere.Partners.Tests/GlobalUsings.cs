@@ -1,0 +1,9 @@
+global using FluentAssertions;
+global using MockQueryable.NSubstitute;
+global using NSubstitute;
+global using OrderSphere.Partners.Application.Abstractions;
+global using OrderSphere.Partners.Domain;
+global using OrderSphere.Partners.Domain.Entities;
+global using OrderSphere.Partners.Domain.Enums;
+global using OrderSphere.Partners.Domain.Errors;
+global using Xunit;
