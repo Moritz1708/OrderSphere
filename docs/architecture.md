@@ -329,8 +329,6 @@ Personal and sensitive data at rest, tabulated by sensitivity tier per service, 
 [docs/data-classification.md](data-classification.md) — read it before adding a new field that
 might hold PII, or before scoping encryption-at-rest work.
 
-## Storage encryption (customer-managed key)
-
 Both Blob Storage accounts (`storage` — Catalog product images; `invoice-storage` — Invoicing
 PDFs) are encrypted with a customer-managed key (CMK) rather than Microsoft-managed keys. Scope is
 storage-account-level only — Postgres Flexible Server keeps its own (Microsoft-managed)
