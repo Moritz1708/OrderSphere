@@ -10,7 +10,8 @@ namespace OrderSphere.Catalog.Infrastructure.Persistence;
 public sealed class CatalogDbContext(
     DbContextOptions<CatalogDbContext> options,
     IPublisher publisher,
-    ICurrentUser currentUser) : DbContext(options), ICatalogDbContext
+    ICurrentUser currentUser,
+    ITenantContext tenantContext) : DbContext(options), ICatalogDbContext
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Category> Categories => Set<Category>();
@@ -21,7 +22,7 @@ public sealed class CatalogDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
 
         var events = ChangeTracker.Entries()
@@ -52,5 +53,6 @@ public sealed class CatalogDbContext(
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
     }
 }

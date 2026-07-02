@@ -10,6 +10,6 @@ public sealed class DesignTimeCatalogDbContextFactory : IDesignTimeDbContextFact
         var options = new DbContextOptionsBuilder<CatalogDbContext>()
             .UseNpgsql("Host=localhost;Port=5432;Database=catalog-db;Username=postgres;Password=postgres")
             .Options;
-        return new CatalogDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new CatalogDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

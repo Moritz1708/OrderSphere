@@ -2,6 +2,7 @@ using Azure.Messaging.ServiceBus;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
+using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Ordering.Domain.Entities;
 using OrderSphere.Ordering.Infrastructure.Persistence;
 
@@ -66,6 +67,8 @@ public sealed class OrderHistoryProjector(
                     deadLetterErrorDescription: "Body was not a valid OrderStatusChangedIntegrationEvent.");
                 return;
             }
+
+            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<OrderingDbContext>();

@@ -17,6 +17,6 @@ public sealed class DesignTimeUserProfileDbContextFactory : IDesignTimeDbContext
             .UseNpgsql("Host=localhost;Database=userprofile-db;Username=postgres;Password=postgres")
             .Options;
 
-        return new UserProfileDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new UserProfileDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

@@ -4,6 +4,7 @@ using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
+using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Invoicing.Application.Features.Invoice.GenerateInvoice;
 using AppItemDto = OrderSphere.Invoicing.Application.Models.InvoiceItemDto;
 using ContractItemDto = OrderSphere.BuildingBlocks.Contracts.Events.InvoiceItemDto;
@@ -61,6 +62,8 @@ public sealed class InvoiceProcessor(
                     deadLetterErrorDescription: "Body was not a valid OrderPlacedIntegrationEvent.");
                 return;
             }
+
+            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var inboxStore = scope.ServiceProvider.GetRequiredService<IInboxStore>();

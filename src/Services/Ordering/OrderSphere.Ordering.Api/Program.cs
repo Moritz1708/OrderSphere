@@ -85,6 +85,7 @@ builder.Services.AddOrderingApiVersioning();
 // dedicated API registered in the Auth0 tenant.
 builder.AddOrderSphereJwtAuth("ordering-api");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AuthorizationPolicies.Admin,

@@ -38,6 +38,7 @@ builder.Services.AddPaymentApiVersioning();
 
 builder.AddOrderSphereJwtAuth("payment-api");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 
 var app = builder.Build();
 

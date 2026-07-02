@@ -7,6 +7,6 @@ public sealed class DesignTimeInvoicingDbContextFactory : IDesignTimeDbContextFa
         var options = new DbContextOptionsBuilder<InvoicingDbContext>()
             .UseNpgsql("Host=localhost;Port=5432;Database=invoicing-db;Username=postgres;Password=postgres")
             .Options;
-        return new InvoicingDbContext(options, NullCurrentUser.Instance);
+        return new InvoicingDbContext(options, NullCurrentUser.Instance, NullTenantContext.Instance);
     }
 }

@@ -168,6 +168,9 @@ namespace OrderSphere.Ordering.Infrastructure.Migrations
                         .HasColumnType("uuid[]")
                         .HasColumnName("scoped_category_ids");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -199,6 +202,7 @@ namespace OrderSphere.Ordering.Infrastructure.Migrations
                             IsDeleted = false,
                             RedeemedCount = 0,
                             ScopedCategoryIds = new List<Guid>(),
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000000"),
                             Value = 10m
                         },
                         new
@@ -212,6 +216,7 @@ namespace OrderSphere.Ordering.Infrastructure.Migrations
                             MinSubtotal = 100m,
                             RedeemedCount = 0,
                             ScopedCategoryIds = new List<Guid>(),
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000000"),
                             Value = 15m
                         });
                 });
@@ -284,6 +289,9 @@ namespace OrderSphere.Ordering.Infrastructure.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -389,6 +397,9 @@ namespace OrderSphere.Ordering.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -435,6 +446,9 @@ namespace OrderSphere.Ordering.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("TrackingNumber")
                         .HasMaxLength(20)

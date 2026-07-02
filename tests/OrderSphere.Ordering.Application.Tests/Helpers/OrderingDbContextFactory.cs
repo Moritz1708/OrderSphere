@@ -16,17 +16,30 @@ internal static class OrderingDbContextFactory
 {
     internal static OrderingDbContext Create() => Create(NullCurrentUser.Instance);
 
-    internal static OrderingDbContext Create(ICurrentUser currentUser)
+    internal static OrderingDbContext Create(ICurrentUser currentUser, ITenantContext? tenantContext = null)
     {
         var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
 
+        var context = Create(connection, currentUser, tenantContext);
+        context.Database.EnsureCreated();
+        return context;
+    }
+
+    /// <summary>
+    /// Opens a new context over an already-open shared connection, without calling
+    /// <c>EnsureCreated</c>. Use this to build multiple contexts (e.g. one per tenant) against the
+    /// same in-memory database, mirroring how separate requests share one Postgres database.
+    /// </summary>
+    internal static OrderingDbContext Create(
+        SqliteConnection connection, ICurrentUser? currentUser = null, ITenantContext? tenantContext = null)
+    {
         var options = new DbContextOptionsBuilder<OrderingDbContext>()
             .UseSqlite(connection)
             .Options;
 
-        var context = new OrderingDbContext(options, NullPublisher.Instance, currentUser);
-        context.Database.EnsureCreated();
-        return context;
+        return new OrderingDbContext(
+            options, NullPublisher.Instance, currentUser ?? NullCurrentUser.Instance,
+            tenantContext ?? NullTenantContext.Instance);
     }
 }

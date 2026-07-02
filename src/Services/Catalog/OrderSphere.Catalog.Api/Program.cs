@@ -41,6 +41,7 @@ builder.Services.AddCatalogRateLimiting(redisMultiplexer);
 builder.AddCatalogAuthentication();     // Auth0 JWT; audience "catalog-api"
 builder.Services.AddCatalogAuthorization();                          // CatalogAdminPolicy
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 
 // D2 — queryable audit trail: admin-protected read of AuditLogEntry rows written by CatalogDbContext.
 builder.Services.AddScoped<IAuditLogQuery, EfAuditLogQuery<CatalogDbContext>>();

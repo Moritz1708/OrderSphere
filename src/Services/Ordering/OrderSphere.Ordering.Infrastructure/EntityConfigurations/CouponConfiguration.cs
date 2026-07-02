@@ -65,6 +65,7 @@ public sealed class CouponConfiguration : IEntityTypeConfiguration<Coupon>
                 ScopedCategoryIds = EmptyCategoryIds,
                 CreatedAt = seedCreatedAt,
                 IsDeleted = false,
+                TenantId = TenantId.Default,
             },
             new
             {
@@ -81,6 +82,7 @@ public sealed class CouponConfiguration : IEntityTypeConfiguration<Coupon>
                 ScopedCategoryIds = EmptyCategoryIds,
                 CreatedAt = seedCreatedAt,
                 IsDeleted = false,
+                TenantId = TenantId.Default,
             });
     }
 }

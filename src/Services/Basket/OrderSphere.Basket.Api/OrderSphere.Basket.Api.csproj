@@ -14,6 +14,13 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
+    <!-- Infrastructure's reference is PrivateAssets="all" (dev-only tooling, not published) and does
+         not flow transitively; `dotnet ef` requires the startup project to see it directly, same as
+         every other service's Api project. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

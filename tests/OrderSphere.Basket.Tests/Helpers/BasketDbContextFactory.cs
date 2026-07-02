@@ -6,12 +6,13 @@ namespace OrderSphere.Basket.Tests.Helpers;
 /// </summary>
 internal static class BasketDbContextFactory
 {
-    internal static BasketDbContext Create()
+    internal static BasketDbContext Create(ITenantContext? tenantContext = null)
     {
         var options = new DbContextOptionsBuilder<BasketDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        return new BasketDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new BasketDbContext(
+            options, NullPublisher.Instance, NullCurrentUser.Instance, tenantContext ?? NullTenantContext.Instance);
     }
 }

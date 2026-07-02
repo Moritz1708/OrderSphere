@@ -25,6 +25,7 @@ builder.Services.AddAzureServiceBusEventBus();
 // dedicated API registered in the Auth0 tenant.
 builder.AddOrderSphereJwtAuth("userprofile-api");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 
 builder.AddOrderSphereExceptionHandling();
 builder.Services.AddUserProfileApiVersioning();

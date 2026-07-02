@@ -53,6 +53,7 @@ builder.Services.AddHostedService<CustomerErasureProcessor>();
 // hence the no-audience overload (ValidateAudience = false).
 builder.AddOrderSphereJwtAuth();
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("admin"));
 

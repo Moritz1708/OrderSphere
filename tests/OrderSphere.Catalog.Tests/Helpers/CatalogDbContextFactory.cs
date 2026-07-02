@@ -14,7 +14,7 @@ namespace OrderSphere.Catalog.Tests.Helpers;
 /// </summary>
 internal static class CatalogDbContextFactory
 {
-    internal static CatalogDbContext Create()
+    internal static CatalogDbContext Create(ITenantContext? tenantContext = null)
     {
         var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
@@ -23,7 +23,8 @@ internal static class CatalogDbContextFactory
             .UseSqlite(connection)
             .Options;
 
-        var context = new CatalogDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        var context = new CatalogDbContext(
+            options, NullPublisher.Instance, NullCurrentUser.Instance, tenantContext ?? NullTenantContext.Instance);
         context.Database.EnsureCreated();
         return context;
     }

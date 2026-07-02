@@ -24,6 +24,7 @@ builder.Services.AddInvoicingApplication();
 
 builder.AddOrderSphereJwtAuth("invoicing-api");
 builder.Services.AddCurrentUser();
+builder.Services.AddTenantContext();
 
 builder.AddOrderSphereExceptionHandling();
 

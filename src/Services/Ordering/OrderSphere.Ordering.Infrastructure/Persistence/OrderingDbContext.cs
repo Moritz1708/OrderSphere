@@ -21,7 +21,8 @@ namespace OrderSphere.Ordering.Infrastructure.Persistence;
 public sealed class OrderingDbContext(
     DbContextOptions<OrderingDbContext> options,
     IPublisher publisher,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    ITenantContext tenantContext)
     : DbContext(options), IOrderingDbContext
 {
     public DbSet<OrderView> Orders => Set<OrderView>();
@@ -93,7 +94,7 @@ public sealed class OrderingDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
 
         var events = ChangeTracker.Entries()
@@ -126,6 +127,7 @@ public sealed class OrderingDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderingDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
 
         // xmin is a PostgreSQL system column — only configure it when the provider is Npgsql.
         // SQLite (used in tests) and other providers do not support the xid column type.

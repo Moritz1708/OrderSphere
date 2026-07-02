@@ -4,6 +4,7 @@ using OrderSphere.Advisory.Infrastructure.Persistence;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
+using OrderSphere.BuildingBlocks.Security;
 
 namespace OrderSphere.Advisory.Api.Workers;
 
@@ -63,6 +64,8 @@ public sealed class CustomerErasureProcessor(
                     deadLetterErrorDescription: "Body was not a valid CustomerErasureRequestedIntegrationEvent.");
                 return;
             }
+
+            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<AdvisoryDbContext>();

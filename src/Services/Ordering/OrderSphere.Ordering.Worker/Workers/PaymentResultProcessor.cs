@@ -5,6 +5,7 @@ using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
 using OrderSphere.BuildingBlocks.Primitives;
+using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.Ordering.Application.Abstractions;
 using OrderSphere.Ordering.Domain.Entities;
@@ -67,6 +68,8 @@ public sealed class PaymentResultProcessor(
                     deadLetterErrorDescription: "Body was not a valid PaymentProcessedIntegrationEvent.");
                 return;
             }
+
+            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<OrderingDbContext>();

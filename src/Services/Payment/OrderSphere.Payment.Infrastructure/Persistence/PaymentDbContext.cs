@@ -17,7 +17,8 @@ namespace OrderSphere.Payment.Infrastructure.Persistence;
 public sealed class PaymentDbContext(
     DbContextOptions<PaymentDbContext> options,
     IPublisher publisher,
-    ICurrentUser currentUser) : DbContext(options), IPaymentDbContext
+    ICurrentUser currentUser,
+    ITenantContext tenantContext) : DbContext(options), IPaymentDbContext
 {
     public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
     internal DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
@@ -35,7 +36,7 @@ public sealed class PaymentDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ChangeTracker.ApplyAuditFields();
+        ChangeTracker.ApplyAuditFields(tenantContext.TenantId);
         ChangeTracker.CaptureAuditLog(currentUser);
 
         var events = ChangeTracker.Entries()
@@ -63,6 +64,7 @@ public sealed class PaymentDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PaymentDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new AuditLogEntryConfiguration());
+        modelBuilder.ApplyTenantQueryFilter(() => tenantContext.TenantId);
 
         // xmin is a PostgreSQL system column — only configure it when the provider is Npgsql.
         // SQLite (used in tests) and other providers do not support the xid column type.

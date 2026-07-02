@@ -11,12 +11,13 @@ namespace OrderSphere.UserProfile.Tests.Helpers;
 /// </summary>
 internal static class DbContextFactory
 {
-    internal static UserProfileDbContext Create()
+    internal static UserProfileDbContext Create(ITenantContext? tenantContext = null)
     {
         var options = new DbContextOptionsBuilder<UserProfileDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        return new UserProfileDbContext(options, NullPublisher.Instance, NullCurrentUser.Instance);
+        return new UserProfileDbContext(
+            options, NullPublisher.Instance, NullCurrentUser.Instance, tenantContext ?? NullTenantContext.Instance);
     }
 }

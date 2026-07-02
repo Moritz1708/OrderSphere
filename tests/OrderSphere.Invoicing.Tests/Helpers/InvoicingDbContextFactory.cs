@@ -20,13 +20,14 @@ internal static class InvoicingDbContextFactory
         return connection;
     }
 
-    internal static InvoicingDbContext Create(SqliteConnection connection)
+    internal static InvoicingDbContext Create(SqliteConnection connection, ITenantContext? tenantContext = null)
     {
         var options = new DbContextOptionsBuilder<InvoicingDbContext>()
             .UseSqlite(connection)
             .Options;
 
-        var context = new InvoicingDbContext(options, NullCurrentUser.Instance);
+        var context = new InvoicingDbContext(
+            options, NullCurrentUser.Instance, tenantContext ?? NullTenantContext.Instance);
         context.Database.EnsureCreated();
         return context;
     }
