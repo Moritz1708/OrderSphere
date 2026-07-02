@@ -41,7 +41,10 @@ builder.Services.AddHttpClient<ICatalogClient, HttpCatalogClient>(client =>
     var catalogUrl = builder.Configuration["Services:Catalog:BaseUrl"]
         ?? "https://ordersphere-catalog";
     client.BaseAddress = new Uri(catalogUrl);
-}).AddClientCredentialsHandler();
+})
+    .AddClientCredentialsHandler()
+    // No-op unless "Chaos:Enabled" is set — used for resilience drills / chaos testing.
+    .AddOrderSphereChaos(builder.Configuration);
 
 // Service Bus consumers
 builder.Services.AddHostedService<OrderProcessor>();
