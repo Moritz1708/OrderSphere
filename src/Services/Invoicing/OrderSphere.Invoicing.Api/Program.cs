@@ -3,6 +3,7 @@ using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Inbox;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
 using OrderSphere.Invoicing.Api.Endpoints;
 using OrderSphere.Invoicing.Api.Workers;
@@ -36,6 +37,10 @@ builder.AddAzureServiceBusClient("azure-service-bus");
 
 // Inbox idempotency (backed by InvoicingDbContext).
 builder.Services.AddScoped<IInboxStore, EfInboxStore<InvoicingDbContext>>();
+
+// Retention cleanup: processed inbox rows and audit log entries past their retention window.
+builder.Services.AddScheduledJob<InboxCleanupJob<InvoicingDbContext>>();
+builder.Services.AddScheduledJob<AuditLogRetentionJob<InvoicingDbContext>>();
 
 builder.Services.AddHostedService<InvoiceProcessor>();
 builder.Services.AddHostedService<CustomerErasureProcessor>();

@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Catalog\OrderSphere.Catalog.Api\OrderSphere.Catalog.Api.csproj" />
     <ProjectReference Include="..\..\src\Services\Catalog\OrderSphere.Catalog.Application\OrderSphere.Catalog.Application.csproj" />
     <ProjectReference Include="..\..\src\Services\Catalog\OrderSphere.Catalog.Domain\OrderSphere.Catalog.Domain.csproj" />
     <ProjectReference Include="..\..\src\Services\Catalog\OrderSphere.Catalog.Infrastructure\OrderSphere.Catalog.Infrastructure.csproj" />

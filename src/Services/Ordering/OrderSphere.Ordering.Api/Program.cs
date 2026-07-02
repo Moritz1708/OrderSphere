@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.Behaviors;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.Ordering.Api.Authorization;
 using OrderSphere.Ordering.Api.Configuration;
 using OrderSphere.Ordering.Api.Endpoints;
@@ -40,6 +41,10 @@ builder.Services.AddAzureServiceBusEventBus();
 await builder.AddOrderSphereRedisAsync();
 builder.Services.AddOrderSphereDistributedLocking();
 builder.Services.AddScoped<ICheckoutIdempotencyStore, RedisCheckoutIdempotencyStore>();
+
+// Retention cleanup: processed inbox rows and audit log entries past their retention window.
+builder.Services.AddScheduledJob<InboxCleanupJob<OrderingDbContext>>();
+builder.Services.AddScheduledJob<AuditLogRetentionJob<OrderingDbContext>>();
 
 // MediatR — scan this assembly for handlers + pipeline behaviors
 builder.Services.AddMediatR(cfg =>

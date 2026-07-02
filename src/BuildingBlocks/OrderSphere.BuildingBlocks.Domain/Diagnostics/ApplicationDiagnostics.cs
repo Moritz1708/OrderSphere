@@ -50,4 +50,15 @@ public static class ApplicationDiagnostics
     public static readonly Counter<long> AdvisorToolInvocations = Meter.CreateCounter<long>(
         "ordersphere.advisor.tool.invocations",
         description: "Advisory agent tool invocations, tagged by tool and outcome.");
+
+    /// <summary>Scheduled job runs (ScheduledJobRunner), tagged by job and outcome (success|failure).</summary>
+    public static readonly Counter<long> JobRuns = Meter.CreateCounter<long>(
+        "ordersphere.job.runs",
+        description: "Scheduled job runs, tagged by job and outcome.");
+
+    /// <summary>Scheduled job execution duration, tagged by job.</summary>
+    public static readonly Histogram<double> JobDuration = Meter.CreateHistogram<double>(
+        "ordersphere.job.duration",
+        unit: "ms",
+        description: "Scheduled job execution duration.");
 }

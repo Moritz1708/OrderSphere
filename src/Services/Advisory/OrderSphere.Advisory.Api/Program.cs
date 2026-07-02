@@ -9,6 +9,7 @@ using OrderSphere.Advisory.Infrastructure;
 using OrderSphere.Advisory.Infrastructure.Persistence;
 using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Inbox;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +48,10 @@ builder.AddAdvisoryInfrastructure();
 builder.AddAzureServiceBusClient("azure-service-bus");
 builder.Services.AddScoped<IInboxStore, EfInboxStore<AdvisoryDbContext>>();
 builder.Services.AddHostedService<CustomerErasureProcessor>();
+
+// Retention cleanup: processed inbox rows and audit log entries past their retention window.
+builder.Services.AddScheduledJob<InboxCleanupJob<AdvisoryDbContext>>();
+builder.Services.AddScheduledJob<AuditLogRetentionJob<AdvisoryDbContext>>();
 
 // Auth0 JWT validation. The end-user token is forwarded by the BFF; the agent
 // passes it on to the MCP server. Audience is validated downstream, not here —

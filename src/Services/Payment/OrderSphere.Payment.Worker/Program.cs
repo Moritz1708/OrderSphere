@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.Payment.Application;
 using OrderSphere.Payment.Infrastructure;
 using OrderSphere.Payment.Infrastructure.Persistence;
@@ -22,6 +23,11 @@ await builder.AddOrderSphereRedisAsync();
 builder.Services.AddOrderSphereDistributedLocking();
 
 builder.Services.AddPaymentInfrastructure(builder.Configuration);
+
+// Retention cleanup: processed inbox rows and audit log entries past their retention window.
+builder.Services.AddScheduledJob<InboxCleanupJob<PaymentDbContext>>();
+builder.Services.AddScheduledJob<AuditLogRetentionJob<PaymentDbContext>>();
+
 builder.Services.AddHostedService<PaymentProcessor>();
 builder.Services.AddHostedService<OrderConfirmationFailedProcessor>();
 builder.Services.AddHostedService<RefundRequestedProcessor>();
