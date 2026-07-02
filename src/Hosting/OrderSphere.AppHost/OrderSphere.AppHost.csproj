@@ -34,6 +34,7 @@
     <ProjectReference Include="..\..\Services\Payment\OrderSphere.Payment.Api\OrderSphere.Payment.Api.csproj" />
     <ProjectReference Include="..\..\Services\Payment\OrderSphere.Payment.Worker\OrderSphere.Payment.Worker.csproj" />
     <ProjectReference Include="..\..\Services\UserProfile\OrderSphere.UserProfile.Api\OrderSphere.UserProfile.Api.csproj" />
+    <ProjectReference Include="..\..\Services\Partners\OrderSphere.Partners.Api\OrderSphere.Partners.Api.csproj" />
     <ProjectReference Include="..\..\Services\Advisory\OrderSphere.Mcp.Server\OrderSphere.Mcp.Server.csproj" />
     <ProjectReference Include="..\..\Services\Advisory\OrderSphere.Advisory.Api\OrderSphere.Advisory.Api.csproj" />
     <ProjectReference Include="..\..\Services\Webhooks\OrderSphere.Webhooks.Api\OrderSphere.Webhooks.Api.csproj" />

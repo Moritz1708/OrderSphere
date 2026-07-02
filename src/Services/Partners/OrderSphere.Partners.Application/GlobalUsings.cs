@@ -1,0 +1,9 @@
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.DependencyInjection;
+global using OrderSphere.BuildingBlocks.Abstraction;
+global using OrderSphere.BuildingBlocks.Primitives;
+global using OrderSphere.Partners.Application.Abstractions;
+global using OrderSphere.Partners.Application.Models;
+global using OrderSphere.Partners.Domain.Errors;

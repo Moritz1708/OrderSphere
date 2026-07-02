@@ -1,5 +1,7 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using OrderSphere.ApiGateway.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +9,41 @@ builder.AddServiceDefaults();
 
 builder.AddOrderSphereJwtAuth();
 
-builder.Services.AddAuthorization();
+// B6 — B2B partners authenticate with X-API-Key instead of a user JWT. A policy scheme
+// picks the concrete scheme per request so existing JWT-authenticated routes are unaffected;
+// only routes with the "partner" policy accept the ApiKey scheme.
+const string PolicySchemeName = "smart";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = PolicySchemeName;
+    options.DefaultChallengeScheme = PolicySchemeName;
+})
+    .AddPolicyScheme(PolicySchemeName, "JWT or API Key", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+            context.Request.Headers.ContainsKey(ApiKeyAuthenticationHandler.HeaderName)
+                ? ApiKeyAuthenticationHandler.SchemeName
+                : JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        ApiKeyAuthenticationHandler.SchemeName, _ => { });
+
+builder.Services.AddMemoryCache();
+
+// D4 — the gateway's own M2M identity, used to resolve X-API-Key headers against the
+// Partners service's internal lookup endpoint.
+builder.Services.AddHttpClient<IPartnerLookupClient, HttpPartnerLookupClient>(client =>
+    client.BaseAddress = new Uri("https://ordersphere-partners"))
+    .AddServiceDiscovery()
+    .AddClientCredentialsHandler();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("partner", policy => policy
+        .AddAuthenticationSchemes(ApiKeyAuthenticationHandler.SchemeName)
+        .RequireAuthenticatedUser());
+});
 
 // D3 — distributed rate-limiting: gateway limiters share their quota counters across
 // every gateway instance via Redis instead of counting in-process.
@@ -26,12 +62,23 @@ builder.Services.AddRateLimiter(options =>
         RedisRateLimitPartition.GetRedisFixedWindowLimiter(
             "gateway-authenticated", redisMultiplexer, permitLimit: 100, window: TimeSpan.FromMinutes(1)));
 
-    // Global limiter runs after UseAuthentication() so the sub claim is available.
+    // Global limiter runs after UseAuthentication() so the sub/partner claims are available.
     // Authenticated users are partitioned per user-id (120 req/min) to prevent a
     // compromised token from consuming the IP quota of other users on shared egress
     // (NAT, corporate proxies). Anonymous callers fall back to per-IP (30 req/min).
+    // B6 — partners (X-API-Key) are partitioned per partner-id instead, with a quota that
+    // depends on their tier (Standard/Premium) rather than the flat per-user limit.
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
+        var partnerId = context.User.FindFirst("partner_id")?.Value;
+        if (partnerId is not null)
+        {
+            var quotaTier = context.User.FindFirst("quota_tier")?.Value;
+            var permitLimit = quotaTier == "Premium" ? 300 : 60;
+            return RedisRateLimitPartition.GetRedisFixedWindowLimiter(
+                $"partner:{partnerId}", redisMultiplexer, permitLimit: permitLimit, window: TimeSpan.FromMinutes(1));
+        }
+
         var sub = context.User.FindFirst("sub")?.Value;
         if (sub is not null)
         {

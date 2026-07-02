@@ -107,3 +107,8 @@ public sealed class TenantAggregateIdConverter : ValueConverter<TenantAggregateI
 {
     public TenantAggregateIdConverter() : base(id => id.Value, v => new TenantAggregateId(v)) { }
 }
+
+public sealed class PartnerIdConverter : ValueConverter<PartnerId, Guid>
+{
+    public PartnerIdConverter() : base(id => id.Value, v => new PartnerId(v)) { }
+}
