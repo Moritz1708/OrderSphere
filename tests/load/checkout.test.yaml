@@ -1,0 +1,35 @@
+# Azure Load Testing test configuration for the checkout critical path.
+# Wraps checkout-loadtest.jmx (Product -> Add to basket -> Checkout). See
+# docs/operations/load-testing.md for how to provision the ALT resource and run this.
+version: v0.1
+testId: checkout-loadtest
+displayName: OrderSphere Checkout Load Test
+testPlan: checkout-loadtest.jmx
+description: >-
+  Login->Product->Basket->Checkout critical path. Bearer tokens are supplied per virtual
+  user via ordersphere_users.csv (obtained out-of-band — the BFF has no dev-mode auth
+  bypass, see docs/operations/load-testing.md#auth-strategy).
+engineInstances: 1
+configurationFiles:
+  - ordersphere_users.csv
+env:
+  - name: virtualUsers
+    value: "50"
+  - name: rampSeconds
+    value: "60"
+  - name: loops
+    value: "10"
+  - name: baseUrl
+    value: https://ordering.dev.ordersphere.internal
+  - name: catalogUrl
+    value: https://catalog.dev.ordersphere.internal
+  - name: basketUrl
+    value: https://basket.dev.ordersphere.internal
+# Thresholds mirror the existing P95 alert in docs/operations.md (percentile(duration,95) > 2000ms)
+# and the checkout-success-rate SLO target documented in load-testing.md.
+failureCriteria:
+  - avg(response_time_ms) > 800
+  - percentage(error) > 1
+autoStop:
+  errorPercentage: 90
+  timeWindow: 60
