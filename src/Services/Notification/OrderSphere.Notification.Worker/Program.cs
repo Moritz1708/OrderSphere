@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Inbox;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
 using OrderSphere.Notification.Worker.Channels;
 using OrderSphere.Notification.Worker.Clients;
@@ -17,6 +18,9 @@ builder.AddServiceDefaults();
 // PostgreSQL — inbox for idempotent message processing
 builder.AddNpgsqlDbContext<NotificationDbContext>("notification-db");
 builder.Services.AddScoped<IInboxStore, EfInboxStore<NotificationDbContext>>();
+
+// Retention cleanup: processed inbox rows past their retention window (Retention:InboxDays, default 30).
+builder.Services.AddScheduledJob<InboxCleanupJob<NotificationDbContext>>();
 
 // Azure Service Bus
 builder.AddAzureServiceBusClient("azure-service-bus");

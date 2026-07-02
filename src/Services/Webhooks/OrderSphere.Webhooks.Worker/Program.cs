@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.Webhooks.Application;
 using OrderSphere.Webhooks.Infrastructure;
+using OrderSphere.Webhooks.Infrastructure.Persistence;
 using OrderSphere.Webhooks.Worker.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,10 @@ builder.Services.AddOrderSphereDistributedLocking();
 
 builder.AddWebhooksInfrastructure();
 builder.Services.AddWebhooksApplication();
+
+// Retention cleanup: processed inbox rows past their retention window (Retention:InboxDays, default 30).
+// WebhooksDbContext does not track AuditLogEntry, so no AuditLogRetentionJob here.
+builder.Services.AddScheduledJob<InboxCleanupJob<WebhooksDbContext>>();
 
 builder.AddAzureServiceBusClient("azure-service-bus");
 
