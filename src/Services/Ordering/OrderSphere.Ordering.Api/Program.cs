@@ -21,8 +21,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddOrderSphereSwagger("OrderSphere Ordering API");
 
-// EF Core — Aspire injects connection string via "ordering-db"
-builder.AddNpgsqlDbContext<OrderingDbContext>("ordering-db", settings =>
+// EF Core — Aspire injects connection string via "ordering-db".
+// Not pooled: OrderingDbContext takes scoped services (ICurrentUser, ITenantContext), which a
+// DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check and telemetry
+// wiring on top of the plain registration.
+builder.Services.AddDbContext<OrderingDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ordering-db")));
+builder.EnrichNpgsqlDbContext<OrderingDbContext>(settings =>
 {
     settings.DisableRetry = false;
 });

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
@@ -12,7 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddNpgsqlDbContext<PaymentDbContext>("payment-db");
+// Not pooled: PaymentDbContext takes scoped services (ICurrentUser, ITenantContext), which a
+// DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check and telemetry
+// wiring on top of the plain registration.
+builder.Services.AddDbContext<PaymentDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("payment-db")));
+builder.EnrichNpgsqlDbContext<PaymentDbContext>();
 builder.AddAzureServiceBusClient("azure-service-bus");
 
 builder.Services.AddAzureServiceBusEventBus(); // Required by OutboxDispatcher → PaymentProcessedEventHandler

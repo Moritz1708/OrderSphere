@@ -12,7 +12,12 @@ public static class DependencyInjection
 {
     public static IHostApplicationBuilder AddInvoicingInfrastructure(this IHostApplicationBuilder builder)
     {
-        builder.AddNpgsqlDbContext<InvoicingDbContext>("invoicing-db");
+        // Not pooled: InvoicingDbContext takes scoped services (ICurrentUser, ITenantContext),
+        // which a DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check
+        // and telemetry wiring on top of the plain registration.
+        builder.Services.AddDbContext<InvoicingDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("invoicing-db")));
+        builder.EnrichNpgsqlDbContext<InvoicingDbContext>();
 
         builder.Services.AddScoped<IInvoicingDbContext>(sp =>
             sp.GetRequiredService<InvoicingDbContext>());

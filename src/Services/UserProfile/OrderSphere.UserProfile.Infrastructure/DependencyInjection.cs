@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
@@ -12,7 +14,12 @@ public static class DependencyInjection
 {
     public static IHostApplicationBuilder AddUserProfileInfrastructure(this IHostApplicationBuilder builder)
     {
-        builder.AddNpgsqlDbContext<UserProfileDbContext>("userprofile-db", settings =>
+        // Not pooled: UserProfileDbContext takes scoped services (ICurrentUser, ITenantContext),
+        // which a DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check
+        // and telemetry wiring on top of the plain registration.
+        builder.Services.AddDbContext<UserProfileDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("userprofile-db")));
+        builder.EnrichNpgsqlDbContext<UserProfileDbContext>(settings =>
         {
             settings.DisableRetry = false;
         });
