@@ -1,0 +1,35 @@
+@implements IDisposable
+@inject ThemeState ThemeState
+@inject IJSRuntime JS
+@inject IUserProfileClient UserProfile
+@inject IStringLocalizer<AppStrings> L
+
+<MudIconButton Icon="@(ThemeState.IsDarkMode ? Icons.Material.Outlined.LightMode : Icons.Material.Outlined.DarkMode)"
+               Color="Color.Default"
+               aria-label="@L["DarkMode.AriaLabel"]"
+               OnClick="ToggleAsync" />
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override void OnInitialized() => ThemeState.OnChange += OnThemeChanged;
+
+    private async Task ToggleAsync()
+    {
+        ThemeState.Toggle();
+
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "os-dark-mode", ThemeState.IsDarkMode ? "true" : "false"); }
+        catch { /* localStorage unavailable (e.g. private mode) */ }
+
+        var state = await (AuthState ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            try { await UserProfile.UpdatePreferencesAsync(new UpdatePreferencesRequest(ThemeState.IsDarkMode)); }
+            catch { /* best-effort server sync; localStorage already holds the device-local value */ }
+        }
+    }
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => ThemeState.OnChange -= OnThemeChanged;
+}

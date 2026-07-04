@@ -85,6 +85,32 @@ public sealed class ThemeStateTests
         raised.Should().BeTrue();
     }
 
+    [Fact]
+    public void SetDarkMode_True_SetsFlag_AndRaisesOnChange()
+    {
+        var sut = new ThemeState();
+        var raised = false;
+        sut.OnChange += () => raised = true;
+
+        sut.SetDarkMode(true);
+
+        sut.IsDarkMode.Should().BeTrue();
+        raised.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetDarkMode_SameValue_DoesNotRaiseOnChange()
+    {
+        var sut = new ThemeState();
+        sut.SetDarkMode(true);
+        var raised = false;
+        sut.OnChange += () => raised = true;
+
+        sut.SetDarkMode(true);
+
+        raised.Should().BeFalse();
+    }
+
     [Theory]
     [InlineData("lime", "#163300")]
     [InlineData("sage", "#03363D")]
