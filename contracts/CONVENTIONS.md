@@ -5,10 +5,12 @@ How services expose and consume contracts in OrderSphere. Two contract surfaces 
 This document is the canonical reference for both; the behavioural rules it depends on live in
 [../CLAUDE.md](../CLAUDE.md) and the system map in [../docs/architecture.md](../docs/architecture.md).
 
-> **Scope note.** gRPC/Protobuf and per-service OpenAPI/NuGet contract packages are **not**
-> implemented. The `contracts/proto/` and `contracts/openapi/` folders are placeholders only; see
-> [Not implemented](#not-implemented--out-of-scope) at the end. Do not treat them as active
-> conventions.
+> **Scope note.** Typed HTTP clients are the default for synchronous cross-service calls. gRPC is a
+> deliberate, scoped exception used for exactly one path today (Basket → Catalog); see
+> [Synchronous contracts — gRPC (exception case)](#synchronous-contracts--grpc-exception-case).
+> Per-service OpenAPI/NuGet contract packages are **not** implemented; the `contracts/openapi/`
+> folder is a placeholder — see [Not implemented](#not-implemented--out-of-scope) at the end. Do not
+> treat that placeholder as an active convention.
 
 ## Synchronous contracts — typed HTTP clients
 
@@ -36,6 +38,28 @@ No service references another service's projects; the only coupling is the HTTP 
   existing version.
 - Routes are exposed to external callers only through the YARP API Gateway
   (`src/Gateways/OrderSphere.ApiGateway`); services are not reached directly from the browser.
+
+## Synchronous contracts — gRPC (exception case)
+
+HTTP clients remain the default for new cross-service calls. One internal path uses gRPC instead,
+as a deliberate, scoped choice for a latency-sensitive hot path — not a second general-purpose
+convention:
+
+- **Basket → Catalog** stock checks (`GetProductByIdAsync` / `GetProductInfosByIdsAsync`) go over
+  gRPC. Proto contract: `contracts/proto/catalog/v1/catalog.proto` (`CatalogService`).
+  - Server: `CatalogGrpcService` in
+    `src/Services/Catalog/OrderSphere.Catalog.Api/Grpc/CatalogGrpcService.cs`, registered via
+    `AddGrpc()` and `MapGrpcService<CatalogGrpcService>().RequireAuthorization()`.
+  - Client: `GrpcCatalogClient` in
+    `src/Services/Basket/OrderSphere.Basket.Infrastructure/CatalogClient/GrpcCatalogClient.cs`,
+    which implements `ICatalogClient` — the same interface an HTTP-backed client would implement,
+    so callers stay transport-agnostic. Registered via
+    `AddGrpcClient<CatalogService.CatalogServiceClient>(...).AddClientCredentialsHandler()`.
+  - M2M authentication reuses the same client-credentials handler as HTTP clients; there is no
+    separate auth mechanism for gRPC.
+- Do not default to gRPC for new cross-service calls without the "introducing a new architectural
+  pattern" sign-off in [../CLAUDE.md](../CLAUDE.md) — this exception is scoped to the one path
+  above.
 
 ## Asynchronous contracts — integration events
 
@@ -70,10 +94,8 @@ producer and consumer agree on the schema.
 ## Not implemented / out of scope
 
 The following are **not** part of the current system. They are recorded here only so the empty
-placeholder folders are not mistaken for active conventions:
+placeholder folder is not mistaken for an active convention:
 
-- **gRPC / Protobuf** — no gRPC services or clients exist. `contracts/proto/` (including the stub
-  `proto/catalog/v1/catalog.proto`) is unused. All synchronous calls are REST/HTTP.
 - **Per-service OpenAPI spec files** — `contracts/openapi/` is empty. API descriptions are generated
   at runtime from the minimal-API endpoints, not maintained as committed spec files.
 - **Published NuGet contract packages** (`OrderSphere.Contracts.<Service>.V1`) — do not exist. Shared
