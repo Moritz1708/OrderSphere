@@ -1,0 +1,60 @@
+name: Project - Branch created -> In progress
+
+on:
+  create:
+
+jobs:
+  set-in-progress:
+    if: github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+      PROJECT_ID: PVT_kwHODOo0bc4BbL6t
+      STATUS_FIELD_ID: PVTSSF_lAHODOo0bc4BbL6tzhV-QFs
+      STATUS_OPTION_IN_PROGRESS: "47fc9ee4"
+    steps:
+      - name: Extract issue number from branch name
+        id: extract
+        run: |
+          BRANCH="${{ github.event.ref }}"
+          if [[ "$BRANCH" =~ ^(feature|bug|refactor)/([0-9]+)- ]]; then
+            echo "issue_number=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Branch '$BRANCH' matches no feature/bug/refactor naming schema, skipping."
+            echo "issue_number=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Move linked issue to In progress
+        if: steps.extract.outputs.issue_number != ''
+        run: |
+          ISSUE_NUMBER="${{ steps.extract.outputs.issue_number }}"
+          ITEM_ID=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $number) {
+                  projectItems(first: 5) {
+                    nodes { id project { id } }
+                  }
+                }
+              }
+            }' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F number="$ISSUE_NUMBER" \
+            --jq ".data.repository.issue.projectItems.nodes[] | select(.project.id == \"$PROJECT_ID\") | .id")
+
+          if [ -z "$ITEM_ID" ]; then
+            echo "Issue #$ISSUE_NUMBER has no item in project $PROJECT_ID, skipping."
+            exit 0
+          fi
+
+          gh api graphql -f query='
+            mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $field
+                value: { singleSelectOptionId: $option }
+              }) {
+                projectV2Item { id }
+              }
+            }' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$STATUS_FIELD_ID" -f option="$STATUS_OPTION_IN_PROGRESS"
+
+          echo "Issue #$ISSUE_NUMBER -> In progress"

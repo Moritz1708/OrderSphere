@@ -49,4 +49,12 @@
     <ContainerUser>app</ContainerUser>
   </PropertyGroup>
 
+  <!-- Aktiviert die eingecheckten Git-Hooks unter .githooks/ (Branch-Namenskonvention,
+       siehe docs/branch-naming-convention.md). Läuft bei jedem lokalen Build einmal pro
+       Clone; no-op sobald core.hooksPath bereits gesetzt ist. Übersprungen in CI
+       (dort sind Hooks irrelevant und der Checkout hat oft kein .git/config zum Schreiben). -->
+  <Target Name="InstallGitHooks" BeforeTargets="Build" Condition="'$(CI)' == ''">
+    <Exec Command="git config core.hooksPath .githooks" WorkingDirectory="$(MSBuildThisFileDirectory)" ContinueOnError="WarnAndContinue" StandardOutputImportance="low" StandardErrorImportance="low" />
+  </Target>
+
 </Project>
