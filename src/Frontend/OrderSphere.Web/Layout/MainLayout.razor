@@ -50,6 +50,7 @@
     [Inject] private CartState CartState { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private ILogger<MainLayout> Logger { get; set; } = default!;
+    [Inject] private IUserProfileClient UserProfile { get; set; } = default!;
 
     private bool _cartOpen;
     private bool _advisorOpen;
@@ -75,9 +76,30 @@
         }
         catch { /* localStorage unavailable */ }
 
+        // Restore the persisted dark-mode preference (device-local, applies to anonymous and
+        // authenticated users). Only when no local value exists yet do we fall back to the
+        // server-side preference, so the toggle syncs on first login on a new device.
+        string? savedDarkMode = null;
+        try { savedDarkMode = await JS.InvokeAsync<string?>("localStorage.getItem", "os-dark-mode"); }
+        catch { /* localStorage unavailable */ }
+
+        if (savedDarkMode is not null)
+            ThemeState.SetDarkMode(savedDarkMode == "true");
+
         var state = await (AuthState ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
         if (state.User.Identity?.IsAuthenticated == true)
         {
+            if (savedDarkMode is null)
+            {
+                var profileResult = await UserProfile.GetOrCreateProfileAsync();
+                if (profileResult.IsSuccess)
+                {
+                    ThemeState.SetDarkMode(profileResult.Value!.DarkModeEnabled);
+                    try { await JS.InvokeVoidAsync("localStorage.setItem", "os-dark-mode", ThemeState.IsDarkMode ? "true" : "false"); }
+                    catch { /* localStorage unavailable */ }
+                }
+            }
+
             var userInfo = state.User.Identity as System.Security.Claims.ClaimsIdentity;
             var onboardingComplete = userInfo?.FindFirst("onboardingComplete")?.Value == "true";
 

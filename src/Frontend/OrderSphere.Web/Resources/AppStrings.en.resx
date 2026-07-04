@@ -163,6 +163,9 @@
   <data name="Currency.Label" xml:space="preserve">
     <value>Currency</value>
   </data>
+  <data name="DarkMode.AriaLabel" xml:space="preserve">
+    <value>Toggle dark mode</value>
+  </data>
   <data name="Common.AddToCart" xml:space="preserve">
     <value>Add to cart</value>
   </data>

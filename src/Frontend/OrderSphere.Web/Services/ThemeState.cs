@@ -130,6 +130,16 @@ public sealed class ThemeState
         OnChange?.Invoke();
     }
 
+    /// <summary>Sets dark mode to a known value (e.g. restoring a persisted preference). No-op if unchanged.</summary>
+    public void SetDarkMode(bool enabled)
+    {
+        if (IsDarkMode == enabled)
+            return;
+
+        IsDarkMode = enabled;
+        OnChange?.Invoke();
+    }
+
     private static MudTheme BuildTheme(BrandDefinition b) => new()
     {
         PaletteLight = BuildLight(b),

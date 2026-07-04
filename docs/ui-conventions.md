@@ -26,9 +26,13 @@ Change those two files first; this guide documents what they contain.
   primary, so it follows a brand switch automatically. Everything else is a flat surface.
 - **Two type roles.** Space Grotesk for display/headings, JetBrains Mono for numeric and
   metadata (prices, quantities, category/eyebrow labels, legal links).
-- **Light-only.** The application ships without a dark-mode switch. A `PaletteDark` and
-  `[data-mud-theme="dark"]` token overrides exist in code but are not surfaced in the UI;
-  do not add a dark-mode toggle. (The brand switch in §1a is separate and is surfaced.)
+- **Dark mode is supported.** A `PaletteDark` and `[data-mud-theme="dark"]` token overrides exist
+  in `ThemeState.cs` / `app.css` and are surfaced via the `DarkModeToggle` component in the header.
+  The preference is persisted to `localStorage` under `os-dark-mode` (device-local, works
+  anonymously) and, for authenticated users, mirrored to `CustomerProfile.DarkModeEnabled`
+  server-side so it follows the user across devices. `MainLayout` restores the local value first
+  (no flash) and falls back to the server value only when no local value exists yet (first login on
+  a new device). (The brand switch in §1a is a separate, orthogonal control.)
 - **Tokens over hardcoded values.** Use `var(--mud-palette-*)` for theme colors and
   `var(--os-*)` for radii, shadows, gradients, and spacing. For primary-coloured fills use the
   `--os-primary-tint{-weak,-strong}` tokens — never literal `rgba()` of a brand colour, or the fill
@@ -122,6 +126,25 @@ Values below are the **Electric** (default) brand. `Primary`, `PrimaryDarken`, `
 | Info | `#6260FF` | Informational (same as Primary) |
 | Divider | `#DCDDE6` | Borders, separators |
 | DividerLight | `#E8E9F0` | Hairline rows |
+
+### Dark mode (`ThemeState.cs`, `PaletteDark`)
+
+`Primary`/`PrimaryDarken`/`PrimaryLighten`/`Info` are unchanged from the active brand; every other
+token is dark-mode specific and shared across brands:
+
+| Token | Value | Use |
+|---|---|---|
+| Secondary | `#EEEEF4` | Off-white; strong text on dark surfaces |
+| Background | `#0D0E14` | Page background |
+| BackgroundGray | `#15161F` | Alternating sections, inert fills |
+| Surface | `#1C1E2A` | Cards, paper |
+| TextPrimary | `#EEEEF4` | Headings, primary text |
+| TextSecondary | `rgba(238,238,244,0.70)` | Muted body / captions |
+| Success | `#3DB85F` | Stock OK, free shipping |
+| Warning | `#FF9F0A` | Low stock (unchanged) |
+| Error | `#FF453A` | Errors, destructive actions |
+| Divider | `rgba(238,238,244,0.14)` | Borders, separators |
+| DividerLight | `rgba(238,238,244,0.08)` | Hairline rows |
 
 ---
 
