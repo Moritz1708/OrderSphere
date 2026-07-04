@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrderSphere.Basket.Application.Abstractions;
@@ -11,7 +13,12 @@ public static class DependencyInjection
 {
     public static IHostApplicationBuilder AddBasketInfrastructure(this IHostApplicationBuilder builder)
     {
-        builder.AddNpgsqlDbContext<BasketDbContext>("basket-db", settings =>
+        // Not pooled: BasketDbContext takes scoped services (ICurrentUser, ITenantContext),
+        // which a DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check
+        // and telemetry wiring on top of the plain registration.
+        builder.Services.AddDbContext<BasketDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("basket-db")));
+        builder.EnrichNpgsqlDbContext<BasketDbContext>(settings =>
         {
             settings.DisableRetry = false;
         });

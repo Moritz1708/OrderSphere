@@ -12,7 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddOrderSphereSwagger("OrderSphere Payment API");
 
-builder.AddNpgsqlDbContext<PaymentDbContext>("payment-db", settings =>
+// Not pooled: PaymentDbContext takes scoped services (ICurrentUser, ITenantContext), which a
+// DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check and telemetry
+// wiring on top of the plain registration.
+builder.Services.AddDbContext<PaymentDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("payment-db")));
+builder.EnrichNpgsqlDbContext<PaymentDbContext>(settings =>
 {
     settings.DisableRetry = false;
 });

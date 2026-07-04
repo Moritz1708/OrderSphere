@@ -11,7 +11,12 @@ public static class DependencyInjection
 {
     public static IHostApplicationBuilder AddCatalogInfrastructure(this IHostApplicationBuilder builder)
     {
-        builder.AddNpgsqlDbContext<CatalogDbContext>("catalog-db", settings =>
+        // Not pooled: CatalogDbContext takes scoped services (ICurrentUser, ITenantContext),
+        // which a DbContext pool cannot resolve. Enrich re-adds Aspire's retry, health-check
+        // and telemetry wiring on top of the plain registration.
+        builder.Services.AddDbContext<CatalogDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("catalog-db")));
+        builder.EnrichNpgsqlDbContext<CatalogDbContext>(settings =>
         {
             settings.DisableRetry = false;
         });
