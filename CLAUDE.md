@@ -39,6 +39,10 @@ These are the rules that are not derivable by reading existing code. For everyth
 
 All visual, theming, MudBlazor, and CSS rules live in [`docs/ui-conventions.md`](docs/ui-conventions.md). A path-scoped rule in `.claude/rules/ui.md` loads this automatically when `.razor` files are touched.
 
+## Branching
+
+Branch names must follow `feature/{issue-number}-{name}`, `bug/{issue-number}-{name}`, or `refactor/{issue-number}-{name}`, where `{name}` is the kebab-case slug of the linked GitHub sub-issue title. Enforced locally via Git hooks (`.githooks/`), auto-installed by a `Directory.Build.props` build target. Full details, including the GitHub Projects status automation tied to this schema, are in [docs/branch-naming-convention.md](docs/branch-naming-convention.md).
+
 ## Navigation discipline
 
 Before reading files to answer "who calls X" or "where is Y implemented", use the `cwm-roslyn-navigator` MCP tools (`find_references`, `find_implementations`, `get_type_hierarchy`, `find_callers`) — they answer symbol questions without loading files into context.
