@@ -6,6 +6,12 @@
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "--project", "src/Hosting/OrderSphere.AppHost"],
       "port": 15888
+    },
+    {
+      "name": "web-wasm",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/Frontend/OrderSphere.Web"],
+      "port": 7310
     }
   ]
 }
