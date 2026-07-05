@@ -106,7 +106,7 @@
 
                         @if (!_profile.Addresses.Any())
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            <MudText Typo="Typo.body2" Class="text-muted">
                                 @L["Profile.NoAddresses"]
                             </MudText>
                         }
@@ -126,7 +126,7 @@
                                                     }
                                                 </MudStack>
                                                 <MudText Typo="Typo.body2">@addr.FirstName @addr.LastName</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudText Typo="Typo.caption" Class="text-muted">
                                                     @addr.Street, @addr.PostalCode @addr.City, @addr.Country
                                                 </MudText>
                                             </MudStack>

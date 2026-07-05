@@ -52,7 +52,7 @@ else
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                     <MudStack Spacing="0">
                                         <MudText Typo="Typo.body1" Style="font-weight:500;">@line.ProductName</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             @line.Quantity × @Formatting.Currency(line.Price)
                                         </MudText>
                                     </MudStack>
@@ -107,7 +107,7 @@ else
                                 {
                                     <MudTimelineItem Color="@GetStatusColor(entry.Status)" Size="Size.Small">
                                         <MudText Typo="Typo.body2" Style="font-weight:600;">@GetStatusLabel(entry.Status)</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
                                         </MudText>
                                     </MudTimelineItem>
@@ -151,7 +151,7 @@ else
 
                         <MudPaper Elevation="0" Class="surface-card-lg pa-6">
                             <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">@L["OrderDetail.Details"]</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["OrderDetail.OrderDate"]</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">@L["OrderDetail.OrderDate"]</MudText>
                             <MudText Typo="Typo.body2">
                                 @Formatting.DateTime(_order.CreatedAt.ToLocalTime())
                             </MudText>

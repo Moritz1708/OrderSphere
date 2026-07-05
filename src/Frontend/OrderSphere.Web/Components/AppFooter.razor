@@ -5,14 +5,14 @@
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Spacing="4">
             <MudStack Spacing="1">
                 <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">OrderSphere</MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <MudText Typo="Typo.caption" Class="text-muted">
                     @L["Footer.Rights", DateTime.UtcNow.Year]
                 </MudText>
             </MudStack>
             <MudStack Row="true" Spacing="4">
-                <MudLink Href="/legal/privacy" Typo="Typo.caption" Color="Color.Secondary">@L["Footer.Privacy"]</MudLink>
-                <MudLink Href="/legal/imprint" Typo="Typo.caption" Color="Color.Secondary">@L["Footer.Imprint"]</MudLink>
-                <MudLink Href="/faq" Typo="Typo.caption" Color="Color.Secondary">@L["Footer.Faq"]</MudLink>
+                <MudLink Href="/legal/privacy" Typo="Typo.caption" Class="text-muted">@L["Footer.Privacy"]</MudLink>
+                <MudLink Href="/legal/imprint" Typo="Typo.caption" Class="text-muted">@L["Footer.Imprint"]</MudLink>
+                <MudLink Href="/faq" Typo="Typo.caption" Class="text-muted">@L["Footer.Faq"]</MudLink>
             </MudStack>
         </MudStack>
     </MudContainer>

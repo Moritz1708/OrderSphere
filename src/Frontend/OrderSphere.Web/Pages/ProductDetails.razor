@@ -63,7 +63,7 @@ else
                             </span>
                         </div>
 
-                        <MudText Typo="Typo.body1" Color="Color.Secondary" Style="line-height:1.7;">
+                        <MudText Typo="Typo.body1" Class="text-muted" Style="line-height:1.7;">
                             @_product.Description
                         </MudText>
 
@@ -115,11 +115,11 @@ else
                 <!-- Write a review -->
                 <MudItem xs="12" md="5">
                     <MudText Typo="Typo.h5" Style="font-weight:700;" Class="mb-2">@L["Reviews.WriteTitle"]</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Reviews.WriteHint"]</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted mb-4">@L["Reviews.WriteHint"]</MudText>
 
                     <MudStack Spacing="3">
                         <div>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Reviews.RatingLabel"]</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">@L["Reviews.RatingLabel"]</MudText>
                             <MudRating @bind-SelectedValue="_newRating" MaxValue="5" />
                         </div>
                         <MudTextField @bind-Value="_newTitle" Label="@L["Reviews.TitleLabel"]"
@@ -146,7 +146,7 @@ else
 
                     @if (_reviews.Count == 0)
                     {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Reviews.Empty"]</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Reviews.Empty"]</MudText>
                     }
                     else
                     {
@@ -165,7 +165,7 @@ else
                                         }
                                     </MudStack>
                                     <MudText Typo="Typo.subtitle1" Style="font-weight:600;margin-top:8px;">@review.Title</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="line-height:1.6;">@review.Body</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-muted" Style="line-height:1.6;">@review.Body</MudText>
                                     <MudText Typo="Typo.caption" Class="text-muted" Style="display:block;margin-top:8px;">
                                         @review.CreatedAt.ToLocalTime().ToString("d")
                                     </MudText>

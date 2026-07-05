@@ -14,7 +14,7 @@
         </div>
 
         <MudText Typo="Typo.h3" Style="font-weight:700;">@L["CheckoutSuccess.Title"]</MudText>
-        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mt-3">
+        <MudText Typo="Typo.body1" Class="text-muted mt-3">
             @L["CheckoutSuccess.Body"]
         </MudText>
 
@@ -28,7 +28,7 @@
         @if (_order is not null)
         {
             <MudPaper Elevation="0" Class="surface-card pa-6 mt-6 text-left">
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CheckoutSuccess.OrderNumber"]</MudText>
+                <MudText Typo="Typo.caption" Class="text-muted">@L["CheckoutSuccess.OrderNumber"]</MudText>
                 <MudText Typo="Typo.subtitle1" Class="text-monospace" Style="font-weight:600;">
                     #@_order.Id.ToString("N")[..8].ToUpperInvariant()
                 </MudText>

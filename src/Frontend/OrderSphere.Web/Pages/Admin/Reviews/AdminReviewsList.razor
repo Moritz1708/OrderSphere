@@ -8,7 +8,7 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudStack Spacing="0" Class="mb-6">
         <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Reviews.Title"]</MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Reviews.Subtitle"]</MudText>
+        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Reviews.Subtitle"]</MudText>
     </MudStack>
 
     @if (_loading)
@@ -20,7 +20,7 @@
     else if (_reviews.Count == 0)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.RateReview" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
+            <MudIcon Icon="@Icons.Material.Outlined.RateReview" Style="font-size:64px;" Class="text-muted mb-3" />
             <MudText Typo="Typo.h6">@L["Admin.Reviews.None"]</MudText>
         </MudPaper>
     }
@@ -40,7 +40,7 @@
                     </MudTd>
                     <MudTd DataLabel="@L["Admin.Reviews.ColReview"]">
                         <MudText Typo="Typo.body2" Style="font-weight:600;">@context.Title</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Body</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">@context.Body</MudText>
                     </MudTd>
                     <MudTd DataLabel="@L["Admin.Reviews.ColStatus"]">
                         <MudChip T="string"

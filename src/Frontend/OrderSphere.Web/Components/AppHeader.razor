@@ -48,7 +48,7 @@
                     <MudText Typo="Typo.body1" Style="font-weight: 600;">
                         @context.User.Identity?.Name
                     </MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    <MudText Typo="Typo.caption" Class="text-muted">
                         @context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
                     </MudText>
                 </div>

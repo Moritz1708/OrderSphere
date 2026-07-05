@@ -6,10 +6,11 @@
 
 <MudDrawer @bind-Open="IsOpen"
            Anchor="Anchor.Right"
-           Elevation="2"
+           Elevation="0"
            Variant="DrawerVariant.Temporary"
            Width="420px"
-           ClipMode="DrawerClipMode.Never">
+           ClipMode="DrawerClipMode.Never"
+           Style="box-shadow:var(--os-shadow-float);">
 
     <div style="padding:24px;height:100%;display:flex;flex-direction:column;gap:16px;">
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
@@ -25,7 +26,7 @@
             <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="flex:1;padding:40px 0;">
                 <MudIcon Icon="@Icons.Material.Outlined.ShoppingCart"
                          Style="font-size:64px;color:var(--mud-palette-divider);" />
-                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mt-3">
+                <MudText Typo="Typo.body1" Class="text-muted mt-3">
                     @L["Cart.Empty"]
                 </MudText>
                 <MudButton Href="/shop" Variant="Variant.Filled" Color="Color.Primary"
@@ -45,7 +46,7 @@
                                 <MudText Typo="Typo.body2" Style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                     @item.ProductName
                                 </MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudText Typo="Typo.caption" Class="text-muted">
                                     @item.Quantity × @Formatting.Currency(item.Price)
                                 </MudText>
                             </MudStack>

@@ -17,7 +17,7 @@
         {
             <MudStack AlignItems="AlignItems.Center" Class="py-12">
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">
+                <MudText Typo="Typo.body2" Class="text-muted mt-4">
                     @L["Orders.Loading"]
                 </MudText>
             </MudStack>
@@ -28,7 +28,7 @@
                 <MudIcon Icon="@Icons.Material.Outlined.ShoppingBag" Color="Color.Primary"
                          Style="font-size:80px;" Class="mb-4" />
                 <MudText Typo="Typo.h5" Class="mb-2" Style="font-weight:600;">@L["Orders.EmptyHeading"]</MudText>
-                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+                <MudText Typo="Typo.body1" Class="text-muted mb-6">
                     @L["Orders.EmptyBody"]
                 </MudText>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
@@ -48,11 +48,11 @@
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start"
                                   Wrap="Wrap.Wrap" Class="mb-4">
                             <MudStack Spacing="1">
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Orders.OrderNumber"]</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">@L["Orders.OrderNumber"]</MudText>
                                 <MudText Typo="Typo.subtitle1" Class="text-monospace" Style="font-weight:600;">
                                     #@order.Id.ToString("N")[..8].ToUpperInvariant()
                                 </MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudText Typo="Typo.caption" Class="text-muted">
                                     @Formatting.DateTime(order.CreatedAt.ToLocalTime())
                                 </MudText>
                             </MudStack>
@@ -71,7 +71,7 @@
                             {
                                 <MudStack Row="true" Justify="Justify.SpaceBetween">
                                     <MudText Typo="Typo.body2">@line.Quantity × @line.ProductName</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    <MudText Typo="Typo.body2" Class="text-muted">
                                         @Formatting.Currency(line.Price * line.Quantity)
                                     </MudText>
                                 </MudStack>
@@ -81,7 +81,7 @@
                         <MudDivider Class="mb-4" />
 
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            <MudText Typo="Typo.body2" Class="text-muted">
                                 @order.ShippingAddress.FirstName @order.ShippingAddress.LastName,
                                 @order.ShippingAddress.City
                             </MudText>
