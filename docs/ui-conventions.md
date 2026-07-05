@@ -231,7 +231,8 @@ On gradient/dark backgrounds use the hero text helpers: `.hero-title`, `.hero-ti
 
 ### Status, misc
 - Stock: `stock-ok`, `stock-low`, `stock-out`; free shipping: `shipping-free`.
-- Icon bubbles: `icon-bubble-primary|success|success-soft|on-hero`; initials: `avatar-initials`.
+- Icon bubbles: `icon-bubble-primary|success-soft|on-hero`; initials: `avatar-initials`.
+- Star rating color: `--os-star-gold` (brand-independent, no dark-mode override).
 - Destructive zones: `danger-zone` / `danger-zone-title`.
 
 ---

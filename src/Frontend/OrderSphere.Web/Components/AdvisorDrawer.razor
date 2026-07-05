@@ -77,7 +77,7 @@
                         {
                             <MudPaper Elevation="0"
                                       Class="surface-card pa-3"
-                                      Style="@(m.IsUser ? "align-self:flex-end;max-width:85%;background:var(--mud-palette-primary);color:#fff;" : "align-self:flex-start;max-width:85%;")">
+                                      Style="@(m.IsUser ? "align-self:flex-end;max-width:85%;background:var(--mud-palette-primary);color:var(--mud-palette-primary-text);" : "align-self:flex-start;max-width:85%;")">
                                 <MudText Typo="Typo.body2" Style="white-space:pre-wrap;overflow-wrap:anywhere;">@m.Text</MudText>
                                 @if (!m.IsUser && !string.IsNullOrEmpty(m.Text))
                                 {
