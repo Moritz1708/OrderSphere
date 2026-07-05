@@ -20,8 +20,7 @@
     else if (_reviews.Count == 0)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.RateReview" Style="font-size:64px;" Class="text-muted mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Reviews.None"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.RateReview" IconClass="text-muted" Title="@L["Admin.Reviews.None"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else

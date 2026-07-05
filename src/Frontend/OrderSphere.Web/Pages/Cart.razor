@@ -23,21 +23,10 @@
         else if (_items.Count == 0)
         {
             <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <MudIcon Icon="@Icons.Material.Outlined.ShoppingCart"
-                         Color="Color.Primary"
-                         Style="font-size: 80px;" Class="mb-4" />
-                <MudText Typo="Typo.h5" Class="mb-2" Style="font-weight: 600;">
-                    @L["Cart.EmptyHeading"]
-                </MudText>
-                <MudText Typo="Typo.body1" Class="text-muted mb-6">
-                    @L["Cart.AddProductsHint"]
-                </MudText>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
-                           Href="/shop"
-                           StartIcon="@Icons.Material.Outlined.Storefront"
-                           Style="border-radius: 100px;">
-                    @L["Cart.DiscoverProducts"]
-                </MudButton>
+                <EmptyStateCard Icon="@Icons.Material.Outlined.ShoppingCart" IconSize="80px"
+                                Title="@L["Cart.EmptyHeading"]" Body="@L["Cart.AddProductsHint"]"
+                                ActionText="@L["Cart.DiscoverProducts"]" ActionHref="/shop"
+                                ActionStartIcon="@Icons.Material.Outlined.Storefront" />
             </MudPaper>
         }
         else

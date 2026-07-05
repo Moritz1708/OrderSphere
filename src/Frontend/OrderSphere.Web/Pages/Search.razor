@@ -44,33 +44,16 @@
         else if (string.IsNullOrWhiteSpace(Query))
         {
             <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <MudIcon Icon="@Icons.Material.Outlined.Search"
-                         Color="Color.Primary"
-                         Style="font-size: 80px;" Class="mb-4" />
-                <MudText Typo="Typo.h5" Style="font-weight: 600;">
-                    @L["Search.Prompt"]
-                </MudText>
-                <MudText Typo="Typo.body1" Class="text-muted mt-2">
-                    @L["Search.PromptHint"]
-                </MudText>
+                <EmptyStateCard Icon="@Icons.Material.Outlined.Search" IconSize="80px"
+                                Title="@L["Search.Prompt"]" Body="@L["Search.PromptHint"]" />
             </MudPaper>
         }
         else if (_results.Count == 0)
         {
             <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <MudIcon Icon="@Icons.Material.Outlined.SearchOff"
-                         Color="Color.Primary"
-                         Style="font-size: 80px;" Class="mb-4" />
-                <MudText Typo="Typo.h5" Style="font-weight: 600;">
-                    @L["Search.NoResults", Query!]
-                </MudText>
-                <MudText Typo="Typo.body1" Class="text-muted mt-2 mb-6">
-                    @L["Search.NoResultsHint"]
-                </MudText>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
-                           Href="/shop" Style="border-radius: 100px;">
-                    @L["Cart.ToShop"]
-                </MudButton>
+                <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconSize="80px"
+                                Title="@L["Search.NoResults", Query!]" Body="@L["Search.NoResultsHint"]"
+                                ActionText="@L["Cart.ToShop"]" ActionHref="/shop" />
             </MudPaper>
         }
         else

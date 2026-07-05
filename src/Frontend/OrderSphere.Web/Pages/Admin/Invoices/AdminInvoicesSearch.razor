@@ -92,15 +92,13 @@
     else if (_notFound)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center surface-card">
-            <MudIcon Icon="@Icons.Material.Outlined.SearchOff" Style="font-size:64px;" Class="text-muted mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Invoices.NoResults"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.Invoices.NoResults"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
     {
         <MudPaper Elevation="0" Class="pa-12 text-center surface-card">
-            <MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Style="font-size:64px;" Class="text-muted mb-3" />
-            <MudText Typo="Typo.body1" Class="text-muted">@L["Admin.Invoices.Prompt"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.ReceiptLong" IconClass="text-muted" Title="@L["Admin.Invoices.Prompt"]" TitleTypo="Typo.body1" />
         </MudPaper>
     }
 </MudContainer>

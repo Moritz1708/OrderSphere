@@ -24,12 +24,7 @@
         else if (_categories.Count == 0)
         {
             <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <MudIcon Icon="@Icons.Material.Outlined.Category"
-                         Color="Color.Primary"
-                         Style="font-size: 80px;" Class="mb-4" />
-                <MudText Typo="Typo.h5" Style="font-weight: 600;">
-                    @L["Categories.None"]
-                </MudText>
+                <EmptyStateCard Icon="@Icons.Material.Outlined.Category" IconSize="80px" Title="@L["Categories.None"]" />
             </MudPaper>
         }
         else

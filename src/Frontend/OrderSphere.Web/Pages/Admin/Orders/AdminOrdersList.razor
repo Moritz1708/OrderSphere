@@ -32,8 +32,7 @@
     else if (_orders.Count == 0)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.Inbox" Style="font-size:64px;" Class="text-muted mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Orders.None"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.Inbox" IconClass="text-muted" Title="@L["Admin.Orders.None"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
