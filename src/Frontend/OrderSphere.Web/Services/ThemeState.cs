@@ -12,6 +12,7 @@ public sealed record BrandDefinition(
     string Primary,
     string PrimaryDarken,
     string PrimaryLighten,
+    string PrimaryText,
     string PrimaryContrastText = "#FFFFFF");
 
 /// <summary>
@@ -24,12 +25,12 @@ public sealed class ThemeState
     /// <summary>Available brands. Indigo is the default and the original "Flat &amp; Focused" identity.</summary>
     public static readonly IReadOnlyList<BrandDefinition> Brands =
     [
-        new("electric", "Electric", "#6260FF", "#4A48CC", "#E4E4FF"),
-        new("lime",     "Lime",     "#9FE870", "#163300", "#C4F5A7", "#163300"),
-        new("sage",     "Sage",     "#BDD9D7", "#03363D", "#D8EDEC", "#03363D"),
-        new("royal",    "Royal",    "#3447AA", "#253592", "#FBEAEB"),
-        new("solar",    "Solar",    "#FCDB32", "#141D38", "#FEF08A", "#141D38"),
-        new("mint",     "Mint",     "#34E0A1", "#000000", "#87EEC8", "#000000"),
+        new("electric", "Electric", "#6260FF", "#4A48CC", "#E4E4FF", "#6260FF"),
+        new("lime",     "Lime",     "#9FE870", "#163300", "#C4F5A7", "#163300", "#163300"),
+        new("sage",     "Sage",     "#BDD9D7", "#03363D", "#D8EDEC", "#03363D", "#03363D"),
+        new("royal",    "Royal",    "#3447AA", "#253592", "#FBEAEB", "#3447AA"),
+        new("solar",    "Solar",    "#FCDB32", "#141D38", "#FEF08A", "#141D38", "#141D38"),
+        new("mint",     "Mint",     "#34E0A1", "#000000", "#87EEC8", "#000000", "#000000"),
     ];
 
     private static readonly string[] _fontFamily =
@@ -154,6 +155,7 @@ public sealed class ThemeState
         PrimaryContrastText = b.PrimaryContrastText,
         PrimaryDarken = b.PrimaryDarken,
         PrimaryLighten = b.PrimaryLighten,
+        Tertiary = b.PrimaryText,
         Secondary = "#0D0D18",
         SecondaryContrastText = "#FFFFFF",
         Background = "#FFFFFF",
@@ -182,6 +184,7 @@ public sealed class ThemeState
         PrimaryContrastText = b.PrimaryContrastText,
         PrimaryDarken = b.PrimaryDarken,
         PrimaryLighten = b.PrimaryLighten,
+        Tertiary = b.PrimaryText,
         Secondary = "#EEEEF4",
         SecondaryContrastText = "#0D0E14",
         Background = "#0D0E14",

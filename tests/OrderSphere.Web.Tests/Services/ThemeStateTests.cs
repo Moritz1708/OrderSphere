@@ -122,4 +122,59 @@ public sealed class ThemeStateTests
 
         brand.PrimaryContrastText.Should().Be(expectedContrast);
     }
+
+    [Theory]
+    [InlineData("lime", "#163300")]
+    [InlineData("sage", "#03363D")]
+    [InlineData("solar", "#141D38")]
+    [InlineData("mint", "#000000")]
+    public void LightPrimaryBrands_HaveDarkPrimaryText(string brandId, string expectedPrimaryText)
+    {
+        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
+
+        brand.PrimaryText.Should().Be(expectedPrimaryText);
+    }
+
+    [Theory]
+    [InlineData("electric")]
+    [InlineData("royal")]
+    public void DarkPrimaryBrands_UseOwnPrimaryAsPrimaryText(string brandId)
+    {
+        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
+
+        brand.PrimaryText.Should().Be(brand.Primary);
+    }
+
+    [Theory]
+    [InlineData("electric")]
+    [InlineData("lime")]
+    [InlineData("sage")]
+    [InlineData("royal")]
+    [InlineData("solar")]
+    [InlineData("mint")]
+    public void PrimaryText_MeetsContrastRatioAgainstWhite(string brandId)
+    {
+        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
+
+        ContrastRatioAgainstWhite(brand.PrimaryText).Should().BeGreaterThanOrEqualTo(4.5,
+            $"{brand.Name}'s PrimaryText must stay legible as brand-colored text on light surfaces");
+    }
+
+    private static double ContrastRatioAgainstWhite(string hex)
+    {
+        var luminance = RelativeLuminance(hex);
+        return 1.05 / (luminance + 0.05);
+    }
+
+    private static double RelativeLuminance(string hex)
+    {
+        var r = Convert.ToInt32(hex.Substring(1, 2), 16) / 255.0;
+        var g = Convert.ToInt32(hex.Substring(3, 2), 16) / 255.0;
+        var b = Convert.ToInt32(hex.Substring(5, 2), 16) / 255.0;
+
+        return 0.2126 * Linearize(r) + 0.7152 * Linearize(g) + 0.0722 * Linearize(b);
+    }
+
+    private static double Linearize(double channel) =>
+        channel <= 0.03928 ? channel / 12.92 : Math.Pow((channel + 0.055) / 1.055, 2.4);
 }
