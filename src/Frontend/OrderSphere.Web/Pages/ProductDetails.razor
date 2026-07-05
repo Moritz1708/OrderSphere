@@ -17,7 +17,7 @@
 }
 else if (_product is null)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:80px 0;">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:var(--os-section-py-md) 0;">
         <MudText Typo="Typo.h5">@L["ProductDetails.NotFound"]</MudText>
         <MudButton Href="/shop" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-4">
             @L["ProductDetails.BackToShop"]
@@ -26,7 +26,7 @@ else if (_product is null)
 }
 else
 {
-    <section style="padding:64px 0 80px;">
+    <section style="padding:64px 0 var(--os-section-py-md);">
         <MudContainer MaxWidth="MaxWidth.Large">
             <MudGrid Spacing="6">
                 <!-- Image -->
@@ -108,7 +108,7 @@ else
         </MudContainer>
     </section>
 
-    <section style="padding:0 0 80px;">
+    <section style="padding:0 0 var(--os-section-py-md);">
         <MudContainer MaxWidth="MaxWidth.Large">
             <MudDivider Class="mb-8" />
             <MudGrid Spacing="6">

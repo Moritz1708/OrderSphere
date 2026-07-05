@@ -16,7 +16,7 @@
 }
 else if (_order is null)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:80px 0;">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:var(--os-section-py-md) 0;">
         <MudText Typo="Typo.h5">@L["OrderDetail.NotFound"]</MudText>
         <MudButton Href="/account/orders" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-4">
             @L["Common.Back"]
@@ -25,7 +25,7 @@ else if (_order is null)
 }
 else
 {
-    <section style="padding:48px 0 80px;">
+    <section style="padding:48px 0 var(--os-section-py-md);">
         <MudContainer MaxWidth="MaxWidth.Medium">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
                 <MudIconButton Icon="@Icons.Material.Outlined.ArrowBack"

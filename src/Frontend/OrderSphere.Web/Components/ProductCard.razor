@@ -6,7 +6,7 @@
           role="button"
           tabindex="0">
 
-    <div class="product-card-image" style="height:200px;display:flex;align-items:center;justify-content:center;background:var(--mud-palette-background-grey);position:relative;">
+    <div class="product-card-image" style="display:flex;align-items:center;justify-content:center;background:var(--mud-palette-background-grey);">
         @if (!string.IsNullOrWhiteSpace(Product.ImageUrl))
         {
             <img src="@Product.ImageUrl" alt="@Product.Name"
