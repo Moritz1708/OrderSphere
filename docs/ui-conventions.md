@@ -43,21 +43,29 @@ Change those two files first; this guide documents what they contain.
 ## 1a. Brands (multi-brand)
 
 The app supports multiple brands. A brand only redefines the **primary colour family**
-(`Primary`, `PrimaryDarken`, `PrimaryLighten`); typography, layout, neutral greys, dividers and the
-semantic colours (`Success`, `Warning`, `Error`) are shared across all brands.
+(`Primary`, `PrimaryDarken`, `PrimaryLighten`, `PrimaryText`); typography, layout, neutral greys,
+dividers and the semantic colours (`Success`, `Warning`, `Error`) are shared across all brands.
 
 Brands are declared in `ThemeState.Brands` (`ThemeState.cs`):
 
-| Id | Name | Primary | PrimaryDarken | PrimaryLighten | ContrastText |
-|---|---|---|---|---|---|
-| `electric` *(default)* | Electric | `#6260FF` | `#4A48CC` | `#E4E4FF` | `#FFFFFF` |
-| `lime` | Lime | `#9FE870` | `#163300` | `#C4F5A7` | `#163300` |
-| `sage` | Sage | `#BDD9D7` | `#03363D` | `#D8EDEC` | `#03363D` |
-| `royal` | Royal | `#3447AA` | `#253592` | `#FBEAEB` | `#FFFFFF` |
-| `solar` | Solar | `#FCDB32` | `#141D38` | `#FEF08A` | `#141D38` |
-| `mint` | Mint | `#34E0A1` | `#000000` | `#87EEC8` | `#000000` |
+| Id | Name | Primary | PrimaryDarken | PrimaryLighten | PrimaryText | ContrastText |
+|---|---|---|---|---|---|---|
+| `electric` *(default)* | Electric | `#6260FF` | `#4A48CC` | `#E4E4FF` | `#6260FF` | `#FFFFFF` |
+| `lime` | Lime | `#9FE870` | `#163300` | `#C4F5A7` | `#163300` | `#163300` |
+| `sage` | Sage | `#BDD9D7` | `#03363D` | `#D8EDEC` | `#03363D` | `#03363D` |
+| `royal` | Royal | `#3447AA` | `#253592` | `#FBEAEB` | `#3447AA` | `#FFFFFF` |
+| `solar` | Solar | `#FCDB32` | `#141D38` | `#FEF08A` | `#141D38` | `#141D38` |
+| `mint` | Mint | `#34E0A1` | `#000000` | `#87EEC8` | `#000000` | `#000000` |
 
 `BrandDefinition` carries a `PrimaryContrastText` field (defaults `"#FFFFFF"`). Brands with light primaries (Lime, Sage, Solar, Mint) set a dark contrast value so button labels remain legible.
+
+`PrimaryText` is a separate token: the color to use for **brand-colored text on light/white
+surfaces** (eyebrows, footer/nav hover, prices, the white pill button), exposed as
+`--os-primary-text` in `app.css` (via MudBlazor's otherwise-unused `Tertiary` palette slot). It is
+independent of `PrimaryContrastText`, which answers a different question — the color of text
+painted *on top of* a Primary-colored background. For brands whose `Primary` itself already has
+≥4.5:1 contrast against white (Electric, Royal), `PrimaryText` equals `Primary`; for the light
+brands it equals the same dark value as `PrimaryContrastText`.
 
 Mechanics:
 
@@ -69,7 +77,10 @@ Mechanics:
 
 **Adding a brand:** append one `BrandDefinition` to `ThemeState.Brands`. Nothing else is required —
 do not add brand-specific CSS. Verify white-on-gradient hero text still has adequate contrast for the
-chosen primary (the hero text helpers are fixed white).
+chosen primary (the hero text helpers are fixed white), and choose a `PrimaryText` value with at
+least 4.5:1 contrast against white (verify with the `PrimaryText_MeetsContrastRatioAgainstWhite`
+test in `ThemeStateTests` or a contrast checker) — this is the value used for brand-colored text on
+light surfaces and must be checked independently of `PrimaryContrastText`.
 
 ---
 
@@ -126,6 +137,7 @@ Values below are the **Electric** (default) brand. `Primary`, `PrimaryDarken`, `
 | Info | `#6260FF` | Informational (same as Primary) |
 | Divider | `#DCDDE6` | Borders, separators |
 | DividerLight | `#E8E9F0` | Hairline rows |
+| `--os-primary-text` | `#6260FF` | Derived (repurposes MudBlazor's `Tertiary` slot). Brand-colored text on light/white surfaces — eyebrow, footer/nav hover, price, pill-button text. Use instead of raw `Primary` for text (§1a) |
 
 ### Dark mode (`ThemeState.cs`, `PaletteDark`)
 

@@ -39,6 +39,11 @@
     --os-primary-tint-strong: color-mix(in srgb, var(--mud-palette-primary) 16%, transparent);
     --os-success-soft-bg:     var(--os-primary-tint);
 
+    /* Primary-brand-colored text guaranteed legible on light/white surfaces. Repurposes
+       MudBlazor's unused Tertiary slot (see ThemeState.BuildLight/BuildDark) — do not
+       reference --mud-palette-tertiary directly elsewhere. */
+    --os-primary-text: var(--mud-palette-tertiary);
+
     /* ── Semantic accents ────────────────────────────────────
        Brand-independent; shared across light and dark mode. */
     --os-star-gold: #f5a623;
@@ -148,7 +153,7 @@ body.scroll-locked {
     font-weight: 500;
     letter-spacing: 0.10em;
     text-transform: uppercase;
-    color: var(--mud-palette-primary);
+    color: var(--os-primary-text);
 }
 
 .os-eyebrow::before {
@@ -356,7 +361,7 @@ body.scroll-locked {
 
 .btn-pill-white {
     background:    #FFFFFF !important;
-    color:         var(--mud-palette-primary) !important;
+    color:         var(--os-primary-text) !important;
     border-radius: var(--os-radius-pill) !important;
     padding:       12px 32px !important;
     font-weight:   600 !important;
@@ -534,7 +539,7 @@ body.scroll-locked {
     display:         block;
 }
 
-.footer-link:hover { color: var(--mud-palette-primary); }
+.footer-link:hover { color: var(--os-primary-text); }
 
 .footer-bottom {
     padding:     24px 0 0;
@@ -576,7 +581,7 @@ body.scroll-locked {
     transition:      color 0.14s;
 }
 
-.mobile-nav-item:hover { color: var(--mud-palette-primary); }
+.mobile-nav-item:hover { color: var(--os-primary-text); }
 
 /* ============================================================
    SURFACE CARDS
@@ -636,10 +641,10 @@ body.scroll-locked {
 /* ============================================================
    TYPOGRAPHY HELPERS (backward compat)
    ============================================================ */
-.text-primary-color { color: var(--mud-palette-primary) !important; }
+.text-primary-color { color: var(--os-primary-text) !important; }
 .text-monospace     { font-family: "JetBrains Mono", ui-monospace, monospace; }
 .text-tracking      { font-family: "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.06em; }
-.product-price      { color: var(--mud-palette-primary); font-weight: 700; }
+.product-price      { color: var(--os-primary-text); font-weight: 700; }
 
 /* Page-section helpers (kept for existing pages) */
 .page-section          { background: var(--mud-palette-background-grey); padding: var(--os-section-py-sm) 0; min-height: 60vh; }
