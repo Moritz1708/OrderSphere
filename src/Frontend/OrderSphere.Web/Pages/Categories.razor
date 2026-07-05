@@ -1,7 +1,6 @@
 @page "/categories"
 @attribute [Authorize]
 @inject ICatalogClient Catalog
-@inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
@@ -17,6 +16,10 @@
             <MudStack AlignItems="AlignItems.Center" Style="min-height:40vh;justify-content:center;">
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
             </MudStack>
+        }
+        else if (_error is not null)
+        {
+            <ErrorStateWithRetry Message="@_error" OnRetry="LoadCategoriesAsync" />
         }
         else if (_categories.Count == 0)
         {
@@ -70,20 +73,25 @@
 @code {
     private List<CategoryDto> _categories = [];
     private bool _loading = true;
+    private string? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await LoadCategoriesAsync();
+
+    private async Task LoadCategoriesAsync()
     {
+        _loading = true;
+        _error = null;
         try
         {
             var res = await Catalog.GetCategoriesAsync();
             if (res.IsSuccess)
                 _categories = res.Value!.Items.ToList();
             else
-                Snackbar.Add(res.Error!.Message, Severity.Error);
+                _error = res.Error!.Message;
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Categories.LoadError", ex.Message], Severity.Error);
+            _error = L["Categories.LoadError", ex.Message];
         }
         finally
         {

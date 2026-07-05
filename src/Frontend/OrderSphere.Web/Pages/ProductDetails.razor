@@ -144,7 +144,11 @@ else
                         @L["Reviews.ListTitle"] (@_reviews.Count)
                     </MudText>
 
-                    @if (_reviews.Count == 0)
+                    @if (_reviewsError is not null)
+                    {
+                        <ErrorStateWithRetry Message="@_reviewsError" OnRetry="LoadReviewsAsync" />
+                    }
+                    else if (_reviews.Count == 0)
                     {
                         <MudText Typo="Typo.body2" Class="text-muted">@L["Reviews.Empty"]</MudText>
                     }
@@ -189,6 +193,7 @@ else
     private int _quantity = 1;
 
     private List<ReviewDto> _reviews = [];
+    private string? _reviewsError;
     private int _newRating;
     private string _newTitle = string.Empty;
     private string _newBody = string.Empty;
@@ -219,9 +224,19 @@ else
     private async Task LoadReviewsAsync()
     {
         if (_product is null) return;
-        var res = await Catalog.GetReviewsAsync(_product.Id);
-        if (res.IsSuccess)
-            _reviews = res.Value ?? [];
+        _reviewsError = null;
+        try
+        {
+            var res = await Catalog.GetReviewsAsync(_product.Id);
+            if (res.IsSuccess)
+                _reviews = res.Value ?? [];
+            else
+                _reviewsError = res.Error!.Message;
+        }
+        catch (Exception ex)
+        {
+            _reviewsError = L["ProductDetails.Error", ex.Message];
+        }
     }
 
     private async Task SubmitReviewAsync()

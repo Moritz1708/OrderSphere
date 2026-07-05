@@ -18,7 +18,7 @@
     }
     else if (_stats is null)
     {
-        <MudAlert Severity="Severity.Error">@L["Common.LoadError", "–"]</MudAlert>
+        <ErrorStateWithRetry Message="@L["Common.LoadError", "–"]" OnRetry="LoadAsync" />
     }
     else
     {
@@ -144,8 +144,12 @@
     private int _totalProducts;
     private bool _loading = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
     {
+        _loading = true;
+        _stats = null;
         try
         {
             var stats = await AdminOrdering.GetStatsAsync();
