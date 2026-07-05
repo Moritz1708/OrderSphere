@@ -29,7 +29,8 @@ else
         <MudContainer MaxWidth="MaxWidth.Medium">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
                 <MudIconButton Icon="@Icons.Material.Outlined.ArrowBack"
-                               OnClick="@(() => Navigation.NavigateTo("/account/orders"))" />
+                               OnClick="@(() => Navigation.NavigateTo("/account/orders"))"
+                               aria-label="@L["Common.BackAria"]" />
                 <MudText Typo="Typo.h5" Style="font-weight:600;">
                     @L["Admin.OrderDetail.Order"] #@_order.Id.ToString("N")[..8].ToUpperInvariant()
                 </MudText>

@@ -4,6 +4,7 @@
 @inject ILogger<AdvisorDrawer> Logger
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject IStringLocalizer<AppStrings> L
 
 <MudDrawer @bind-Open="IsOpen"
            Anchor="Anchor.Right"
@@ -17,11 +18,11 @@
             <MudText Typo="Typo.h6" Style="font-weight:600;">Berater</MudText>
             <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
                 <MudIconButton Icon="@Icons.Material.Outlined.Add"
-                               OnClick="NewChat" Size="Size.Small" title="Neue Unterhaltung" />
+                               OnClick="NewChat" Size="Size.Small" aria-label="@L["Advisor.NewChatAria"]" />
                 <MudIconButton Icon="@(_showHistory ? Icons.Material.Filled.History : Icons.Material.Outlined.History)"
-                               OnClick="ToggleHistoryAsync" Size="Size.Small" title="Verlauf" />
+                               OnClick="ToggleHistoryAsync" Size="Size.Small" aria-label="@L["Advisor.ToggleHistoryAria"]" />
                 <MudIconButton Icon="@Icons.Material.Outlined.Close"
-                               OnClick="Close" Size="Size.Small" />
+                               OnClick="Close" Size="Size.Small" aria-label="@L["Advisor.CloseAria"]" />
             </MudStack>
         </MudStack>
 
@@ -84,7 +85,7 @@
                                     <MudIconButton Icon="@Icons.Material.Outlined.VolumeUp"
                                                    Size="Size.Small"
                                                    Color="Color.Default"
-                                                   title="Vorlesen"
+                                                   aria-label="@L["Advisor.SpeakAria"]"
                                                    Style="margin-top:2px;padding:2px;"
                                                    OnClick="@(() => SpeakAsync(m.Text))" />
                                 }
@@ -144,11 +145,12 @@
                                Color="@(_recording ? Color.Error : Color.Default)"
                                OnClick="ToggleRecordingAsync"
                                Disabled="_busy && !_recording"
-                               title="@(_recording ? "Aufnahme beenden" : "Spracheingabe")"
+                               aria-label="@(_recording ? L["Advisor.StopRecordingAria"] : L["Advisor.StartRecordingAria"])"
                                Style="@(_recording ? "animation:pulse 1s ease-in-out infinite;" : string.Empty)" />
                 <MudIconButton Icon="@Icons.Material.Filled.Send"
                                Color="Color.Primary"
                                OnClick="SendAsync"
+                               aria-label="@L["Advisor.SendAria"]"
                                Disabled="@(_busy || string.IsNullOrWhiteSpace(_input))" />
             </MudStack>
         }

@@ -68,11 +68,13 @@
                     <MudTd DataLabel="@L["Admin.Coupons.ColAction"]" Style="text-align:right;">
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Color="Color.Primary" Size="Size.Small"
-                                       OnClick="@(() => OpenEdit(context))" />
+                                       OnClick="@(() => OpenEdit(context))"
+                                       aria-label="@L["Admin.EditCouponAria"]" />
                         <MudIconButton Icon="@Icons.Material.Outlined.Block"
                                        Color="Color.Error" Size="Size.Small"
                                        Disabled="@(!context.IsActive)"
-                                       OnClick="@(() => DeactivateAsync(context))" />
+                                       OnClick="@(() => DeactivateAsync(context))"
+                                       aria-label="@L["Admin.DeactivateCouponAria"]" />
                     </MudTd>
                 </RowTemplate>
             </MudTable>

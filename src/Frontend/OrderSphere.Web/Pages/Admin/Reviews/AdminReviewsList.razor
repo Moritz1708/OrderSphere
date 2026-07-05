@@ -53,11 +53,13 @@
                         <MudIconButton Icon="@Icons.Material.Outlined.Check"
                                        Color="Color.Success" Size="Size.Small"
                                        Disabled="@(context.Status == "Approved")"
-                                       OnClick="@(() => ModerateAsync(context, true))" />
+                                       OnClick="@(() => ModerateAsync(context, true))"
+                                       aria-label="@L["Admin.ApproveReviewAria"]" />
                         <MudIconButton Icon="@Icons.Material.Outlined.Block"
                                        Color="Color.Error" Size="Size.Small"
                                        Disabled="@(context.Status == "Rejected")"
-                                       OnClick="@(() => ModerateAsync(context, false))" />
+                                       OnClick="@(() => ModerateAsync(context, false))"
+                                       aria-label="@L["Admin.RejectReviewAria"]" />
                     </MudTd>
                 </RowTemplate>
             </MudTable>

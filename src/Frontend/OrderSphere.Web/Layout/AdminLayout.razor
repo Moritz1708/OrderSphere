@@ -2,6 +2,7 @@
 @inject ThemeState ThemeState
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IStringLocalizer<AppStrings> L
 
 <MudThemeProvider Theme="ThemeState.Theme" IsDarkMode="ThemeState.IsDarkMode" />
 <MudPopoverProvider />
@@ -11,7 +12,7 @@
 <MudLayout>
     <MudAppBar Elevation="0" Style="border-bottom: 1px solid var(--mud-palette-divider);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       OnClick="ToggleDrawer" />
+                       OnClick="ToggleDrawer" aria-label="@L["Admin.ToggleMenuAria"]" />
         <MudText Typo="Typo.h6" Style="font-weight: 700; margin-left: 4px;">OrderSphere Admin</MudText>
         <MudSpacer />
         <MudButton Variant="Variant.Text" Color="Color.Inherit"

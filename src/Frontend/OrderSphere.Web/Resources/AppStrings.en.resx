@@ -1276,4 +1276,64 @@
   <data name="Admin.Invoices.Detail.TypeCredit" xml:space="preserve">
     <value>Credit</value>
   </data>
+  <data name="Advisor.NewChatAria" xml:space="preserve">
+    <value>Start new conversation</value>
+  </data>
+  <data name="Advisor.ToggleHistoryAria" xml:space="preserve">
+    <value>Show history</value>
+  </data>
+  <data name="Advisor.CloseAria" xml:space="preserve">
+    <value>Close advisor</value>
+  </data>
+  <data name="Advisor.SpeakAria" xml:space="preserve">
+    <value>Read reply aloud</value>
+  </data>
+  <data name="Advisor.StartRecordingAria" xml:space="preserve">
+    <value>Start voice input</value>
+  </data>
+  <data name="Advisor.StopRecordingAria" xml:space="preserve">
+    <value>Stop recording</value>
+  </data>
+  <data name="Advisor.SendAria" xml:space="preserve">
+    <value>Send message</value>
+  </data>
+  <data name="Cart.CloseAria" xml:space="preserve">
+    <value>Close cart</value>
+  </data>
+  <data name="Profile.DeleteAddressAria" xml:space="preserve">
+    <value>Delete address</value>
+  </data>
+  <data name="Common.BackAria" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Admin.EditProductAria" xml:space="preserve">
+    <value>Edit product</value>
+  </data>
+  <data name="Admin.DeleteProductAria" xml:space="preserve">
+    <value>Delete product</value>
+  </data>
+  <data name="Admin.EditCategoryAria" xml:space="preserve">
+    <value>Edit category</value>
+  </data>
+  <data name="Admin.DeleteCategoryAria" xml:space="preserve">
+    <value>Delete category</value>
+  </data>
+  <data name="Admin.EditCouponAria" xml:space="preserve">
+    <value>Edit coupon</value>
+  </data>
+  <data name="Admin.DeactivateCouponAria" xml:space="preserve">
+    <value>Deactivate coupon</value>
+  </data>
+  <data name="Admin.ApproveReviewAria" xml:space="preserve">
+    <value>Approve review</value>
+  </data>
+  <data name="Admin.RejectReviewAria" xml:space="preserve">
+    <value>Reject review</value>
+  </data>
+  <data name="Admin.ToggleMenuAria" xml:space="preserve">
+    <value>Toggle menu</value>
+  </data>
+  <data name="Common.Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
 </root>

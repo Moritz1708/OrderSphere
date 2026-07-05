@@ -77,10 +77,12 @@
                     <MudTd DataLabel="@L["Admin.Products.ColAction"]" Style="text-align:right;">
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Color="Color.Primary" Size="Size.Small"
-                                       Href="@($"/admin/products/{context.Id}")" />
+                                       Href="@($"/admin/products/{context.Id}")"
+                                       aria-label="@L["Admin.EditProductAria"]" />
                         <MudIconButton Icon="@Icons.Material.Outlined.Delete"
                                        Color="Color.Error" Size="Size.Small"
-                                       OnClick="@(() => DeleteAsync(context.Id, context.Name))" />
+                                       OnClick="@(() => DeleteAsync(context.Id, context.Name))"
+                                       aria-label="@L["Admin.DeleteProductAria"]" />
                     </MudTd>
                 </RowTemplate>
             </MudTable>

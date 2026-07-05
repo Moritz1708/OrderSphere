@@ -136,10 +136,11 @@
                                                     <MudIconButton Icon="@Icons.Material.Outlined.Star"
                                                                    Size="Size.Small"
                                                                    OnClick="@(() => SetDefaultAsync(addr.Id))"
-                                                                   title="@L["Profile.SetDefault"]" />
+                                                                   aria-label="@L["Profile.SetDefault"]" />
                                                 }
                                                 <MudIconButton Icon="@Icons.Material.Outlined.Delete"
                                                                Color="Color.Error" Size="Size.Small"
+                                                               aria-label="@L["Profile.DeleteAddressAria"]"
                                                                OnClick="@(() => DeleteAddressAsync(addr.Id))" />
                                             </MudStack>
                                         </MudStack>
