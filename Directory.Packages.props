@@ -8,7 +8,7 @@
          decompression, high severity). Pinned to the first patched v2 release;
          the affected projects add an explicit (versionless) PackageReference. -->
     <PackageVersion Include="Aspire.Hosting.Azure.ApplicationInsights" Version="13.4.6" />
-    <PackageVersion Include="MessagePack" Version="3.1.7" />
+    <PackageVersion Include="MessagePack" Version="3.1.8" />
     <PackageVersion Include="Aspire.Azure.Messaging.ServiceBus" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.PostgreSQL" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.Redis" Version="13.4.6" />
