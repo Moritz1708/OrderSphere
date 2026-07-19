@@ -46,43 +46,36 @@ public sealed class GenerateInvoiceCommandHandler(
             .ToList();
 
         var issuedAt = DateTime.UtcNow;
-        var blobPath = string.Empty;
 
         // The number draw and the invoice insert share one transaction so the counter row stays locked
         // until commit — concurrent generations serialise and a rollback reverts the increment, keeping
         // numbering gapless. PDF render / blob upload run inside the transaction too; the row lock is
-        // brief given the low consumer concurrency (InvoiceProcessor MaxConcurrentCalls = 2).
-        await context.BeginTransactionAsync(ct);
-        InvoiceEntity invoice;
-        try
+        // brief given the low consumer concurrency (InvoiceProcessor MaxConcurrentCalls = 2). The whole
+        // delegate is retried as a unit by the Npgsql execution strategy on transient failures.
+        var invoice = await context.ExecuteInTransactionAsync(async innerCt =>
         {
-            var invoiceNumber = await numberGenerator.NextAsync(issuedAt, ct);
+            var invoiceNumber = await numberGenerator.NextAsync(issuedAt, innerCt);
 
-            invoice = InvoiceEntity.Create(
+            var newInvoice = InvoiceEntity.Create(
                 request.OrderId, request.CustomerEmail, request.CustomerName, request.Total,
                 lineItems, invoiceNumber, issuedAt, taxRateProvider.DefaultRate);
 
-            var pdfBytes = await pdfService.GenerateAsync(invoice, ct);
+            var pdfBytes = await pdfService.GenerateAsync(newInvoice, innerCt);
 
             if (blobStorage.IsEnabled)
             {
-                var blobName = $"invoices/{invoice.OrderId}/{invoice.InvoiceNumber}.pdf";
+                var blobName = $"invoices/{newInvoice.OrderId}/{newInvoice.InvoiceNumber}.pdf";
                 using var stream = new MemoryStream(pdfBytes);
-                blobPath = await blobStorage.UploadAsync(blobName, stream, "application/pdf", ct);
-                invoice.SetBlobPath(blobPath);
+                var blobPath = await blobStorage.UploadAsync(blobName, stream, "application/pdf", innerCt);
+                newInvoice.SetBlobPath(blobPath);
             }
 
-            context.Invoices.Add(invoice);
-            await context.CommitAsync(ct);
-        }
-        catch
-        {
-            await context.RollbackAsync(ct);
-            throw;
-        }
+            context.Invoices.Add(newInvoice);
+            return newInvoice;
+        }, ct);
 
-        var downloadUrl = blobPath.Length > 0
-            ? await blobStorage.GetSasUrlAsync(blobPath, ct)
+        var downloadUrl = invoice.BlobPath.Length > 0
+            ? await blobStorage.GetSasUrlAsync(invoice.BlobPath, ct)
             : string.Empty;
 
         return Result<InvoiceCreatedDto>.Success(new InvoiceCreatedDto(invoice.InvoiceNumber, downloadUrl));
