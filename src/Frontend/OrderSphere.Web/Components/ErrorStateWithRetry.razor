@@ -1,0 +1,16 @@
+@inject IStringLocalizer<AppStrings> L
+
+<MudAlert Severity="Severity.Error" Class="@Class">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="4">
+        <MudText>@Message</MudText>
+        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="OnRetry">
+            @L["Common.Retry"]
+        </MudButton>
+    </MudStack>
+</MudAlert>
+
+@code {
+    [Parameter, EditorRequired] public string Message { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public EventCallback OnRetry { get; set; }
+    [Parameter] public string? Class { get; set; }
+}

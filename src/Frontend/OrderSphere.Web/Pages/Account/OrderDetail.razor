@@ -16,7 +16,7 @@
 }
 else if (_order is null)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:80px 0;">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:var(--os-section-py-md) 0;">
         <MudText Typo="Typo.h5">@L["OrderDetail.NotFound"]</MudText>
         <MudButton Href="/account/orders" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-4">
             @L["Common.Back"]
@@ -25,11 +25,12 @@ else if (_order is null)
 }
 else
 {
-    <section style="padding:48px 0 80px;">
+    <section style="padding:48px 0 var(--os-section-py-md);">
         <MudContainer MaxWidth="MaxWidth.Medium">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
                 <MudIconButton Icon="@Icons.Material.Outlined.ArrowBack"
-                               OnClick="@(() => Navigation.NavigateTo("/account/orders"))" />
+                               OnClick="@(() => Navigation.NavigateTo("/account/orders"))"
+                               aria-label="@L["Common.BackAria"]" />
                 <MudText Typo="Typo.h5" Style="font-weight:600;">
                     @L["Admin.OrderDetail.Order"] #@_order.Id.ToString("N")[..8].ToUpperInvariant()
                 </MudText>
@@ -51,7 +52,7 @@ else
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                     <MudStack Spacing="0">
                                         <MudText Typo="Typo.body1" Style="font-weight:500;">@line.ProductName</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             @line.Quantity × @Formatting.Currency(line.Price)
                                         </MudText>
                                     </MudStack>
@@ -106,7 +107,7 @@ else
                                 {
                                     <MudTimelineItem Color="@GetStatusColor(entry.Status)" Size="Size.Small">
                                         <MudText Typo="Typo.body2" Style="font-weight:600;">@GetStatusLabel(entry.Status)</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
                                         </MudText>
                                     </MudTimelineItem>
@@ -150,7 +151,7 @@ else
 
                         <MudPaper Elevation="0" Class="surface-card-lg pa-6">
                             <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">@L["OrderDetail.Details"]</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["OrderDetail.OrderDate"]</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">@L["OrderDetail.OrderDate"]</MudText>
                             <MudText Typo="Typo.body2">
                                 @Formatting.DateTime(_order.CreatedAt.ToLocalTime())
                             </MudText>

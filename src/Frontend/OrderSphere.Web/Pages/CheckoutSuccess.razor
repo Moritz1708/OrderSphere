@@ -6,15 +6,15 @@
 
 <PageTitle>@L["CheckoutSuccess.PageTitle"]</PageTitle>
 
-<section style="padding:80px 0;">
+<section style="padding:var(--os-section-py-md) 0;">
     <MudContainer MaxWidth="MaxWidth.Small" Class="text-center">
 
-        <div style="width:80px;height:80px;border-radius:50%;background:var(--mud-palette-primary);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+        <IconBadge CssClass="avatar-initials" Style="margin:0 auto 24px;">
             <MudIcon Icon="@Icons.Material.Outlined.CheckCircle" Style="font-size:48px;color:var(--mud-palette-primary-text);" />
-        </div>
+        </IconBadge>
 
         <MudText Typo="Typo.h3" Style="font-weight:700;">@L["CheckoutSuccess.Title"]</MudText>
-        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mt-3">
+        <MudText Typo="Typo.body1" Class="text-muted mt-3">
             @L["CheckoutSuccess.Body"]
         </MudText>
 
@@ -28,7 +28,7 @@
         @if (_order is not null)
         {
             <MudPaper Elevation="0" Class="surface-card pa-6 mt-6 text-left">
-                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["CheckoutSuccess.OrderNumber"]</MudText>
+                <MudText Typo="Typo.caption" Class="text-muted">@L["CheckoutSuccess.OrderNumber"]</MudText>
                 <MudText Typo="Typo.subtitle1" Class="text-monospace" Style="font-weight:600;">
                     #@_order.Id.ToString("N")[..8].ToUpperInvariant()
                 </MudText>

@@ -8,7 +8,7 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudStack Spacing="0" Class="mb-6">
         <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Invoices.Title"]</MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Invoices.Subtitle"]</MudText>
+        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.Subtitle"]</MudText>
     </MudStack>
 
     <MudPaper Elevation="0" Class="pa-4 mb-6 surface-card">
@@ -41,7 +41,7 @@
         <MudPaper Elevation="0" Class="pa-6 surface-card">
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
                 <MudStack Spacing="0">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Admin.Invoices.ColNumber"]</MudText>
+                    <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Invoices.ColNumber"]</MudText>
                     <MudText Typo="Typo.h6" Class="os-mono">@_result.InvoiceNumber</MudText>
                 </MudStack>
                 <MudChip T="string" Color="@StatusColor(_result.Status)" Size="Size.Small"
@@ -53,23 +53,23 @@
             <MudSimpleTable Dense="true" Hover="false" Bordered="false" Striped="false" Style="background:transparent;">
                 <tbody>
                     <tr>
-                        <td><MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Invoices.ColOrder"]</MudText></td>
+                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColOrder"]</MudText></td>
                         <td><MudText Typo="Typo.body2" Class="os-mono">#@_result.OrderId.ToString("N")[..8].ToUpperInvariant()</MudText></td>
                     </tr>
                     <tr>
-                        <td><MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Invoices.ColCustomer"]</MudText></td>
+                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColCustomer"]</MudText></td>
                         <td><MudText Typo="Typo.body2">@_result.CustomerName</MudText></td>
                     </tr>
                     <tr>
-                        <td><MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Invoices.ColEmail"]</MudText></td>
+                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColEmail"]</MudText></td>
                         <td><MudText Typo="Typo.body2">@_result.CustomerEmail</MudText></td>
                     </tr>
                     <tr>
-                        <td><MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Invoices.ColDate"]</MudText></td>
+                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColDate"]</MudText></td>
                         <td><MudText Typo="Typo.body2">@Formatting.DateTime(_result.IssuedAt.ToLocalTime())</MudText></td>
                     </tr>
                     <tr>
-                        <td><MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Invoices.ColAmount"]</MudText></td>
+                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColAmount"]</MudText></td>
                         <td><MudText Typo="Typo.body2" Style="font-weight:600;">@Formatting.Currency(_result.Total)</MudText></td>
                     </tr>
                 </tbody>
@@ -92,15 +92,13 @@
     else if (_notFound)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center surface-card">
-            <MudIcon Icon="@Icons.Material.Outlined.SearchOff" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Invoices.NoResults"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.Invoices.NoResults"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
     {
         <MudPaper Elevation="0" Class="pa-12 text-center surface-card">
-            <MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
-            <MudText Typo="Typo.body1" Color="Color.Secondary">@L["Admin.Invoices.Prompt"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.ReceiptLong" IconClass="text-muted" Title="@L["Admin.Invoices.Prompt"]" TitleTypo="Typo.body1" />
         </MudPaper>
     }
 </MudContainer>

@@ -20,8 +20,7 @@
     else if (_invoice is null)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.SearchOff" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Invoices.Detail.NotFound"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.Invoices.Detail.NotFound"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
@@ -32,9 +31,9 @@
                     <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
                             <MudStack Spacing="0">
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Admin.Invoices.ColNumber"]</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Invoices.ColNumber"]</MudText>
                                 <MudText Typo="Typo.h5" Class="os-mono" Style="font-weight:700;">@_invoice.InvoiceNumber</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudText Typo="Typo.caption" Class="text-muted">
                                     @Formatting.DateTime(_invoice.IssuedAt.ToLocalTime())
                                 </MudText>
                             </MudStack>
@@ -44,8 +43,8 @@
                             </MudChip>
                         </MudStack>
                         <MudDivider Class="mb-3" />
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@_invoice.CustomerName</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@_invoice.CustomerEmail</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@_invoice.CustomerName</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@_invoice.CustomerEmail</MudText>
                     </MudPaper>
 
                     <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">

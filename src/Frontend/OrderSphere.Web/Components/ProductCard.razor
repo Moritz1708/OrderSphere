@@ -6,7 +6,7 @@
           role="button"
           tabindex="0">
 
-    <div class="product-card-image" style="height:200px;display:flex;align-items:center;justify-content:center;background:var(--mud-palette-background-grey);position:relative;">
+    <div class="product-card-image" style="display:flex;align-items:center;justify-content:center;background:var(--mud-palette-background-grey);">
         @if (!string.IsNullOrWhiteSpace(Product.ImageUrl))
         {
             <img src="@Product.ImageUrl" alt="@Product.Name"
@@ -42,7 +42,7 @@
 
         @if (!string.IsNullOrWhiteSpace(Product.Description))
         {
-            <MudText Typo="Typo.body2" Color="Color.Secondary"
+            <MudText Typo="Typo.body2" Class="text-muted"
                      Style="flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
                 @Product.Description
             </MudText>

@@ -8,7 +8,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudText Typo="Typo.h4" Class="mb-2" Style="font-weight: 700;">@L["Admin.Dashboard.Title"]</MudText>
-    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-8">@L["Admin.Dashboard.Subtitle"]</MudText>
+    <MudText Typo="Typo.body1" Class="text-muted mb-8">@L["Admin.Dashboard.Subtitle"]</MudText>
 
     @if (_loading)
     {
@@ -18,7 +18,7 @@
     }
     else if (_stats is null)
     {
-        <MudAlert Severity="Severity.Error">@L["Common.LoadError", "–"]</MudAlert>
+        <ErrorStateWithRetry Message="@L["Common.LoadError", "–"]" OnRetry="LoadAsync" />
     }
     else
     {
@@ -28,8 +28,8 @@
                     <MudStack Spacing="1">
                         <MudIcon Icon="@Icons.Material.Outlined.Receipt" Color="Color.Primary" />
                         <MudText Typo="Typo.h4" Style="font-weight:700;">@_stats.TotalOrders</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Dashboard.TotalOrders"]</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Admin.Dashboard.OrdersToday", _stats.OrdersToday]</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.TotalOrders"]</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Dashboard.OrdersToday", _stats.OrdersToday]</MudText>
                     </MudStack>
                 </MudPaper>
             </MudItem>
@@ -38,8 +38,8 @@
                     <MudStack Spacing="1">
                         <MudIcon Icon="@Icons.Material.Outlined.Euro" Color="Color.Success" />
                         <MudText Typo="Typo.h4" Style="font-weight:700;">@Formatting.Currency(_stats.TotalRevenue)</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Dashboard.TotalRevenue"]</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@Formatting.Currency(_stats.RevenueToday) @L["Admin.Dashboard.OrdersToday", ""]</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.TotalRevenue"]</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">@Formatting.Currency(_stats.RevenueToday) @L["Admin.Dashboard.OrdersToday", ""]</MudText>
                     </MudStack>
                 </MudPaper>
             </MudItem>
@@ -48,7 +48,7 @@
                     <MudStack Spacing="1">
                         <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Color="Color.Warning" />
                         <MudText Typo="Typo.h4" Style="font-weight:700;">@_stats.PendingShipments</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Dashboard.PendingShipments"]</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.PendingShipments"]</MudText>
                     </MudStack>
                 </MudPaper>
             </MudItem>
@@ -57,8 +57,8 @@
                     <MudStack Spacing="1">
                         <MudIcon Icon="@Icons.Material.Outlined.Warning" Color="Color.Error" />
                         <MudText Typo="Typo.h4" Style="font-weight:700;">@_lowStockCount</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Dashboard.LowStock"]</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Admin.Dashboard.LowStockOf", _totalProducts]</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.LowStock"]</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Dashboard.LowStockOf", _totalProducts]</MudText>
                     </MudStack>
                 </MudPaper>
             </MudItem>
@@ -73,7 +73,7 @@
                     </MudStack>
                     @if (!_stats.RecentOrders.Any())
                     {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Dashboard.NoOrders"]</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.NoOrders"]</MudText>
                     }
                     else
                     {
@@ -83,13 +83,13 @@
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                     <MudStack Spacing="0">
                                         <MudText Typo="Typo.body2" Style="font-weight:500;">@order.CustomerName</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             #@order.Id.ToString("N")[..8].ToUpperInvariant() · @Formatting.DateTime(order.CreatedAt.ToLocalTime())
                                         </MudText>
                                     </MudStack>
                                     <MudStack Spacing="0" AlignItems="AlignItems.End">
                                         <MudText Typo="Typo.body2" Style="font-weight:600;">@Formatting.Currency(order.Total)</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@order.Status</MudText>
+                                        <MudText Typo="Typo.caption" Class="text-muted">@order.Status</MudText>
                                     </MudStack>
                                 </MudStack>
                             }
@@ -108,7 +108,7 @@
                     {
                         <MudStack AlignItems="AlignItems.Center" Class="py-4">
                             <MudIcon Icon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" Style="font-size:48px;" />
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Dashboard.AllGood"]</MudText>
+                            <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.AllGood"]</MudText>
                         </MudStack>
                     }
                     else
@@ -119,7 +119,7 @@
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                     <MudStack Spacing="0">
                                         <MudText Typo="Typo.body2">@p.Name</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="os-mono">@p.SKU</MudText>
+                                        <MudText Typo="Typo.caption" Class="text-muted os-mono">@p.SKU</MudText>
                                     </MudStack>
                                     <MudChip T="string"
                                              Color="@(p.Stock == 0 ? Color.Error : Color.Warning)"
@@ -144,8 +144,12 @@
     private int _totalProducts;
     private bool _loading = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
     {
+        _loading = true;
+        _stats = null;
         try
         {
             var stats = await AdminOrdering.GetStatsAsync();
