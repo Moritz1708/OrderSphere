@@ -3,5 +3,40 @@
     "playwright@claude-plugins-official": false,
     "stripe@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": false
+  },
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet format:*)",
+      "Bash(dotnet list package:*)",
+      "Bash(dotnet ef migrations list:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git ls-files:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-conventions.sh\"",
+            "timeout": 15,
+            "statusMessage": "Checking OrderSphere conventions"
+          }
+        ]
+      }
+    ]
   }
 }
