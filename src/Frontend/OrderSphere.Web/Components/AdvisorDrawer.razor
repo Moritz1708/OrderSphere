@@ -4,24 +4,26 @@
 @inject ILogger<AdvisorDrawer> Logger
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject IStringLocalizer<AppStrings> L
 
 <MudDrawer @bind-Open="IsOpen"
            Anchor="Anchor.Right"
-           Elevation="2"
+           Elevation="0"
            Variant="DrawerVariant.Temporary"
            Width="420px"
-           ClipMode="DrawerClipMode.Never">
+           ClipMode="DrawerClipMode.Never"
+           Style="box-shadow:var(--os-shadow-float);">
 
     <div style="padding:24px;height:100%;display:flex;flex-direction:column;gap:16px;">
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudText Typo="Typo.h6" Style="font-weight:600;">Berater</MudText>
             <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
                 <MudIconButton Icon="@Icons.Material.Outlined.Add"
-                               OnClick="NewChat" Size="Size.Small" title="Neue Unterhaltung" />
+                               OnClick="NewChat" Size="Size.Small" aria-label="@L["Advisor.NewChatAria"]" />
                 <MudIconButton Icon="@(_showHistory ? Icons.Material.Filled.History : Icons.Material.Outlined.History)"
-                               OnClick="ToggleHistoryAsync" Size="Size.Small" title="Verlauf" />
+                               OnClick="ToggleHistoryAsync" Size="Size.Small" aria-label="@L["Advisor.ToggleHistoryAria"]" />
                 <MudIconButton Icon="@Icons.Material.Outlined.Close"
-                               OnClick="Close" Size="Size.Small" />
+                               OnClick="Close" Size="Size.Small" aria-label="@L["Advisor.CloseAria"]" />
             </MudStack>
         </MudStack>
 
@@ -34,7 +36,7 @@
                 }
                 else if (_conversations.Count == 0)
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mt-4">
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="text-muted mt-4">
                         Noch keine gespeicherten Unterhaltungen.
                     </MudText>
                 }
@@ -49,7 +51,7 @@
                             <MudText Typo="Typo.body2" Style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                 @(string.IsNullOrWhiteSpace(c.LastMessage) ? "(leer)" : c.LastMessage)
                             </MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            <MudText Typo="Typo.caption" Class="text-muted">
                                 @c.UpdatedAt.ToLocalTime().ToString("g") · @c.MessageCount Nachrichten
                             </MudText>
                         </MudPaper>
@@ -65,7 +67,7 @@
                     <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="flex:1;padding:40px 0;">
                         <MudIcon Icon="@Icons.Material.Outlined.SupportAgent"
                                  Style="font-size:64px;color:var(--mud-palette-divider);" />
-                        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mt-3" Align="Align.Center">
+                        <MudText Typo="Typo.body1" Align="Align.Center" Class="text-muted mt-3">
                             Frag mich nach Produkten, deinen Bestellungen oder deinem Konto.
                         </MudText>
                     </MudStack>
@@ -84,7 +86,7 @@
                                     <MudIconButton Icon="@Icons.Material.Outlined.VolumeUp"
                                                    Size="Size.Small"
                                                    Color="Color.Default"
-                                                   title="Vorlesen"
+                                                   aria-label="@L["Advisor.SpeakAria"]"
                                                    Style="margin-top:2px;padding:2px;"
                                                    OnClick="@(() => SpeakAsync(m.Text))" />
                                 }
@@ -110,12 +112,12 @@
                         {
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="align-self:flex-start;">
                                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@_toolActivity…</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">@_toolActivity…</MudText>
                             </MudStack>
                         }
                         @if (_pendingConfirm is not null)
                         {
-                            <MudPaper Elevation="1" Class="pa-3 mt-1"
+                            <MudPaper Elevation="0" Class="surface-card pa-3 mt-1"
                                       Style="align-self:flex-start;max-width:100%;border-left:3px solid var(--mud-palette-primary);">
                                 <MudText Typo="Typo.subtitle2" Style="font-weight:600;">In den Warenkorb legen?</MudText>
                                 <MudText Typo="Typo.body2" Class="mt-1">@_pendingConfirm.Summary</MudText>
@@ -144,11 +146,12 @@
                                Color="@(_recording ? Color.Error : Color.Default)"
                                OnClick="ToggleRecordingAsync"
                                Disabled="_busy && !_recording"
-                               title="@(_recording ? "Aufnahme beenden" : "Spracheingabe")"
+                               aria-label="@(_recording ? L["Advisor.StopRecordingAria"] : L["Advisor.StartRecordingAria"])"
                                Style="@(_recording ? "animation:pulse 1s ease-in-out infinite;" : string.Empty)" />
                 <MudIconButton Icon="@Icons.Material.Filled.Send"
                                Color="Color.Primary"
                                OnClick="SendAsync"
+                               aria-label="@L["Advisor.SendAria"]"
                                Disabled="@(_busy || string.IsNullOrWhiteSpace(_input))" />
             </MudStack>
         }

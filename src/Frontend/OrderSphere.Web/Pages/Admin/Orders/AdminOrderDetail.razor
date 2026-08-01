@@ -21,8 +21,7 @@
     else if (_order is null)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.SearchOff" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.OrderDetail.NotFound"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.OrderDetail.NotFound"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
@@ -33,11 +32,11 @@
                     <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
                             <MudStack Spacing="0">
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Admin.OrderDetail.Order"]</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.OrderDetail.Order"]</MudText>
                                 <MudText Typo="Typo.h5" Class="os-mono" Style="font-weight:700;">
                                     #@_order.Id.ToString("N")[..8].ToUpperInvariant()
                                 </MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudText Typo="Typo.caption" Class="text-muted">
                                     @Formatting.DateTime(_order.CreatedAt.ToLocalTime())
                                 </MudText>
                             </MudStack>
@@ -64,7 +63,7 @@
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                     <MudStack Spacing="0">
                                         <MudText Typo="Typo.body1" Style="font-weight:500;">@line.ProductName</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             @line.Quantity × @Formatting.Currency(line.Price)
                                         </MudText>
                                     </MudStack>
@@ -119,7 +118,7 @@
                                 {
                                     <MudTimelineItem Color="@StatusColor(entry.Status)" Size="Size.Small">
                                         <MudText Typo="Typo.body2" Style="font-weight:600;">@StatusLabel(entry.Status)</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        <MudText Typo="Typo.caption" Class="text-muted">
                                             @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
                                         </MudText>
                                     </MudTimelineItem>

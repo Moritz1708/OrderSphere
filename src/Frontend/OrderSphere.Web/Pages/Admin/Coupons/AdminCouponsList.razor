@@ -9,7 +9,7 @@
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
         <MudStack Spacing="0">
             <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Coupons.Title"]</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Coupons.Subtitle"]</MudText>
+            <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Coupons.Subtitle"]</MudText>
         </MudStack>
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                    StartIcon="@Icons.Material.Outlined.Add"
@@ -28,8 +28,7 @@
     else if (_coupons.Count == 0)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.LocalOffer" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Coupons.None"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.LocalOffer" IconClass="text-muted" Title="@L["Admin.Coupons.None"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
@@ -68,11 +67,13 @@
                     <MudTd DataLabel="@L["Admin.Coupons.ColAction"]" Style="text-align:right;">
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Color="Color.Primary" Size="Size.Small"
-                                       OnClick="@(() => OpenEdit(context))" />
+                                       OnClick="@(() => OpenEdit(context))"
+                                       aria-label="@L["Admin.EditCouponAria"]" />
                         <MudIconButton Icon="@Icons.Material.Outlined.Block"
                                        Color="Color.Error" Size="Size.Small"
                                        Disabled="@(!context.IsActive)"
-                                       OnClick="@(() => DeactivateAsync(context))" />
+                                       OnClick="@(() => DeactivateAsync(context))"
+                                       aria-label="@L["Admin.DeactivateCouponAria"]" />
                     </MudTd>
                 </RowTemplate>
             </MudTable>

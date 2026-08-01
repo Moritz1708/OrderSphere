@@ -17,7 +17,7 @@
 }
 else if (_product is null)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:80px 0;">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:var(--os-section-py-md) 0;">
         <MudText Typo="Typo.h5">@L["ProductDetails.NotFound"]</MudText>
         <MudButton Href="/shop" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-4">
             @L["ProductDetails.BackToShop"]
@@ -26,7 +26,7 @@ else if (_product is null)
 }
 else
 {
-    <section style="padding:64px 0 80px;">
+    <section style="padding:64px 0 var(--os-section-py-md);">
         <MudContainer MaxWidth="MaxWidth.Large">
             <MudGrid Spacing="6">
                 <!-- Image -->
@@ -63,7 +63,7 @@ else
                             </span>
                         </div>
 
-                        <MudText Typo="Typo.body1" Color="Color.Secondary" Style="line-height:1.7;">
+                        <MudText Typo="Typo.body1" Class="text-muted" Style="line-height:1.7;">
                             @_product.Description
                         </MudText>
 
@@ -108,18 +108,18 @@ else
         </MudContainer>
     </section>
 
-    <section style="padding:0 0 80px;">
+    <section style="padding:0 0 var(--os-section-py-md);">
         <MudContainer MaxWidth="MaxWidth.Large">
             <MudDivider Class="mb-8" />
             <MudGrid Spacing="6">
                 <!-- Write a review -->
                 <MudItem xs="12" md="5">
                     <MudText Typo="Typo.h5" Style="font-weight:700;" Class="mb-2">@L["Reviews.WriteTitle"]</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Reviews.WriteHint"]</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted mb-4">@L["Reviews.WriteHint"]</MudText>
 
                     <MudStack Spacing="3">
                         <div>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Reviews.RatingLabel"]</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">@L["Reviews.RatingLabel"]</MudText>
                             <MudRating @bind-SelectedValue="_newRating" MaxValue="5" />
                         </div>
                         <MudTextField @bind-Value="_newTitle" Label="@L["Reviews.TitleLabel"]"
@@ -144,9 +144,13 @@ else
                         @L["Reviews.ListTitle"] (@_reviews.Count)
                     </MudText>
 
-                    @if (_reviews.Count == 0)
+                    @if (_reviewsError is not null)
                     {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Reviews.Empty"]</MudText>
+                        <ErrorStateWithRetry Message="@_reviewsError" OnRetry="LoadReviewsAsync" />
+                    }
+                    else if (_reviews.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="text-muted">@L["Reviews.Empty"]</MudText>
                     }
                     else
                     {
@@ -165,7 +169,7 @@ else
                                         }
                                     </MudStack>
                                     <MudText Typo="Typo.subtitle1" Style="font-weight:600;margin-top:8px;">@review.Title</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="line-height:1.6;">@review.Body</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-muted" Style="line-height:1.6;">@review.Body</MudText>
                                     <MudText Typo="Typo.caption" Class="text-muted" Style="display:block;margin-top:8px;">
                                         @review.CreatedAt.ToLocalTime().ToString("d")
                                     </MudText>
@@ -189,6 +193,7 @@ else
     private int _quantity = 1;
 
     private List<ReviewDto> _reviews = [];
+    private string? _reviewsError;
     private int _newRating;
     private string _newTitle = string.Empty;
     private string _newBody = string.Empty;
@@ -219,9 +224,19 @@ else
     private async Task LoadReviewsAsync()
     {
         if (_product is null) return;
-        var res = await Catalog.GetReviewsAsync(_product.Id);
-        if (res.IsSuccess)
-            _reviews = res.Value ?? [];
+        _reviewsError = null;
+        try
+        {
+            var res = await Catalog.GetReviewsAsync(_product.Id);
+            if (res.IsSuccess)
+                _reviews = res.Value ?? [];
+            else
+                _reviewsError = res.Error!.Message;
+        }
+        catch (Exception ex)
+        {
+            _reviewsError = L["ProductDetails.Error", ex.Message];
+        }
     }
 
     private async Task SubmitReviewAsync()

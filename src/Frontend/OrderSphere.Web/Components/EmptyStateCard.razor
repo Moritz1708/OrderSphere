@@ -1,0 +1,28 @@
+<MudIcon Icon="@Icon" Color="@IconColor" Class="@IconClass" Style="@($"font-size:{IconSize};margin-bottom:16px;{IconStyle}")" />
+<MudText Typo="@TitleTypo" Style="font-weight:600;" Class="@(Body is not null ? "mb-2" : null)">@Title</MudText>
+@if (Body is not null)
+{
+    <MudText Typo="Typo.body1" Class="text-muted mb-6">@Body</MudText>
+}
+@if (ActionText is not null)
+{
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+               Href="@ActionHref" OnClick="OnAction" StartIcon="@ActionStartIcon" Class="btn-pill">
+        @ActionText
+    </MudButton>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Icon { get; set; } = string.Empty;
+    [Parameter] public string IconSize { get; set; } = "64px";
+    [Parameter] public Color IconColor { get; set; } = Color.Primary;
+    [Parameter] public string? IconClass { get; set; }
+    [Parameter] public string? IconStyle { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public Typo TitleTypo { get; set; } = Typo.h5;
+    [Parameter] public string? Body { get; set; }
+    [Parameter] public string? ActionText { get; set; }
+    [Parameter] public string? ActionHref { get; set; }
+    [Parameter] public string? ActionStartIcon { get; set; }
+    [Parameter] public EventCallback OnAction { get; set; }
+}

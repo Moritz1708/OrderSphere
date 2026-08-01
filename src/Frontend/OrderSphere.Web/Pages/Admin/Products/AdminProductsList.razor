@@ -9,7 +9,7 @@
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
         <MudStack Spacing="0">
             <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Products.Title"]</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin.Products.Subtitle"]</MudText>
+            <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Products.Subtitle"]</MudText>
         </MudStack>
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                    StartIcon="@Icons.Material.Outlined.Add"
@@ -28,8 +28,7 @@
     else if (_products.Count == 0)
     {
         <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Color="Color.Secondary" Style="font-size:64px;" Class="mb-3" />
-            <MudText Typo="Typo.h6">@L["Admin.Products.None"]</MudText>
+            <EmptyStateCard Icon="@Icons.Material.Outlined.Inventory2" IconClass="text-muted" Title="@L["Admin.Products.None"]" TitleTypo="Typo.h6" />
         </MudPaper>
     }
     else
@@ -77,10 +76,12 @@
                     <MudTd DataLabel="@L["Admin.Products.ColAction"]" Style="text-align:right;">
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit"
                                        Color="Color.Primary" Size="Size.Small"
-                                       Href="@($"/admin/products/{context.Id}")" />
+                                       Href="@($"/admin/products/{context.Id}")"
+                                       aria-label="@L["Admin.EditProductAria"]" />
                         <MudIconButton Icon="@Icons.Material.Outlined.Delete"
                                        Color="Color.Error" Size="Size.Small"
-                                       OnClick="@(() => DeleteAsync(context.Id, context.Name))" />
+                                       OnClick="@(() => DeleteAsync(context.Id, context.Name))"
+                                       aria-label="@L["Admin.DeleteProductAria"]" />
                     </MudTd>
                 </RowTemplate>
             </MudTable>
