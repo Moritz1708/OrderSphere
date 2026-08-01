@@ -1276,4 +1276,64 @@
   <data name="Admin.Invoices.Detail.TypeCredit" xml:space="preserve">
     <value>Gutschrift</value>
   </data>
+  <data name="Advisor.NewChatAria" xml:space="preserve">
+    <value>Neue Unterhaltung starten</value>
+  </data>
+  <data name="Advisor.ToggleHistoryAria" xml:space="preserve">
+    <value>Verlauf anzeigen</value>
+  </data>
+  <data name="Advisor.CloseAria" xml:space="preserve">
+    <value>Berater schließen</value>
+  </data>
+  <data name="Advisor.SpeakAria" xml:space="preserve">
+    <value>Antwort vorlesen</value>
+  </data>
+  <data name="Advisor.StartRecordingAria" xml:space="preserve">
+    <value>Spracheingabe starten</value>
+  </data>
+  <data name="Advisor.StopRecordingAria" xml:space="preserve">
+    <value>Aufnahme beenden</value>
+  </data>
+  <data name="Advisor.SendAria" xml:space="preserve">
+    <value>Nachricht senden</value>
+  </data>
+  <data name="Cart.CloseAria" xml:space="preserve">
+    <value>Warenkorb schließen</value>
+  </data>
+  <data name="Profile.DeleteAddressAria" xml:space="preserve">
+    <value>Adresse löschen</value>
+  </data>
+  <data name="Common.BackAria" xml:space="preserve">
+    <value>Zurück</value>
+  </data>
+  <data name="Admin.EditProductAria" xml:space="preserve">
+    <value>Produkt bearbeiten</value>
+  </data>
+  <data name="Admin.DeleteProductAria" xml:space="preserve">
+    <value>Produkt löschen</value>
+  </data>
+  <data name="Admin.EditCategoryAria" xml:space="preserve">
+    <value>Kategorie bearbeiten</value>
+  </data>
+  <data name="Admin.DeleteCategoryAria" xml:space="preserve">
+    <value>Kategorie löschen</value>
+  </data>
+  <data name="Admin.EditCouponAria" xml:space="preserve">
+    <value>Gutschein bearbeiten</value>
+  </data>
+  <data name="Admin.DeactivateCouponAria" xml:space="preserve">
+    <value>Gutschein deaktivieren</value>
+  </data>
+  <data name="Admin.ApproveReviewAria" xml:space="preserve">
+    <value>Bewertung freigeben</value>
+  </data>
+  <data name="Admin.RejectReviewAria" xml:space="preserve">
+    <value>Bewertung ablehnen</value>
+  </data>
+  <data name="Admin.ToggleMenuAria" xml:space="preserve">
+    <value>Menü umschalten</value>
+  </data>
+  <data name="Common.Retry" xml:space="preserve">
+    <value>Erneut versuchen</value>
+  </data>
 </root>

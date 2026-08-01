@@ -8,7 +8,7 @@
 
 <PageHero Title="@L["Account.MyProfile"]" Subtitle="@L["Profile.HeroSubtitle"]" />
 
-<section style="padding:48px 0 80px;">
+<section style="padding:48px 0 var(--os-section-py-md);">
     <MudContainer MaxWidth="MaxWidth.Medium">
         @if (_loading)
         {
@@ -106,7 +106,7 @@
 
                         @if (!_profile.Addresses.Any())
                         {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            <MudText Typo="Typo.body2" Class="text-muted">
                                 @L["Profile.NoAddresses"]
                             </MudText>
                         }
@@ -126,7 +126,7 @@
                                                     }
                                                 </MudStack>
                                                 <MudText Typo="Typo.body2">@addr.FirstName @addr.LastName</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudText Typo="Typo.caption" Class="text-muted">
                                                     @addr.Street, @addr.PostalCode @addr.City, @addr.Country
                                                 </MudText>
                                             </MudStack>
@@ -136,10 +136,11 @@
                                                     <MudIconButton Icon="@Icons.Material.Outlined.Star"
                                                                    Size="Size.Small"
                                                                    OnClick="@(() => SetDefaultAsync(addr.Id))"
-                                                                   title="@L["Profile.SetDefault"]" />
+                                                                   aria-label="@L["Profile.SetDefault"]" />
                                                 }
                                                 <MudIconButton Icon="@Icons.Material.Outlined.Delete"
                                                                Color="Color.Error" Size="Size.Small"
+                                                               aria-label="@L["Profile.DeleteAddressAria"]"
                                                                OnClick="@(() => DeleteAddressAsync(addr.Id))" />
                                             </MudStack>
                                         </MudStack>

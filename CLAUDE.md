@@ -41,11 +41,14 @@ All visual, theming, MudBlazor, and CSS rules live in [`docs/ui-conventions.md`]
 
 ## Branching
 
-Branch names must follow `feature/{issue-number}-{name}`, `bug/{issue-number}-{name}`, or `refactor/{issue-number}-{name}`, where `{name}` is the kebab-case slug of the linked GitHub sub-issue title. Enforced locally via Git hooks (`.githooks/`), auto-installed by a `Directory.Build.props` build target. Full details, including the GitHub Projects status automation tied to this schema, are in [docs/branch-naming-convention.md](docs/branch-naming-convention.md).
+Branch names must follow `feature/{issue-number}-{name}`, `bug/{issue-number}-{name}`, or `refactor/{issue-number}-{name}`, where `{name}` is the kebab-case slug of the linked GitHub sub-issue title. Work with no linked issue (tooling, docs, CI) uses `chore/{name}` — same slug rules, no issue number. Set `ORDERSPHERE_SKIP_BRANCH_CHECK=1` to bypass the check for anything else. Enforced locally via Git hooks (`.githooks/`), auto-installed by a `Directory.Build.props` build target. Full details, including the GitHub Projects status automation tied to this schema, are in [docs/branch-naming-convention.md](docs/branch-naming-convention.md).
 
 ## Navigation discipline
 
-Before reading files to answer "who calls X" or "where is Y implemented", use the `cwm-roslyn-navigator` MCP tools (`find_references`, `find_implementations`, `get_type_hierarchy`, `find_callers`) — they answer symbol questions without loading files into context.
+Answer "who calls X" or "where is Y implemented" without loading whole files into context.
+
+- **If the `cwm-roslyn-navigator` MCP tools are available** (`find_references`, `find_implementations`, `get_type_hierarchy`, `find_callers`), use them first — they answer symbol questions directly. They are not part of this repository's toolchain: they ship with the third-party `dotnet-claude-kit` plugin, which each developer installs (or does not) individually.
+- **Otherwise** fall back to `Grep`/`Glob` to locate the symbol, then read only the files the search points at.
 
 For broad codebase investigations (spanning more than 3–4 files), use an Explore subagent so the read overhead stays in the subagent's context, not the main session. For multi-step tasks requiring planning, use Plan mode before implementation.
 

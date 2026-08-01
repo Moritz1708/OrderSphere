@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Storage;
 using OrderSphere.BuildingBlocks.Auditing;
 using OrderSphere.BuildingBlocks.Extensions;
 
@@ -17,51 +16,30 @@ public sealed class InvoicingDbContext(
     internal DbSet<InvoiceNumberCounter> InvoiceNumberCounters => Set<InvoiceNumberCounter>();
     internal DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
 
-    private IDbContextTransaction? _transaction;
-
-    public async Task BeginTransactionAsync(CancellationToken ct = default)
+    // The Npgsql resiliency strategy (wired via EnrichNpgsqlDbContext) forbids user-managed
+    // transactions spanning retries, so the whole unit of work — including non-DB side effects
+    // like PDF rendering and blob upload — is retried together per Microsoft's execution-strategy
+    // guidance. Callers must keep the delegate free of external effects that aren't safe to repeat.
+    public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+        Func<CancellationToken, Task<TResult>> operation, CancellationToken ct = default)
     {
-        if (_transaction != null)
-            throw new InvalidOperationException("A transaction is already active.");
-
-        _transaction = await Database.BeginTransactionAsync(ct);
-    }
-
-    public async Task CommitAsync(CancellationToken ct = default)
-    {
-        if (_transaction == null)
-            throw new InvalidOperationException("No active transaction.");
-
-        try
+        var strategy = Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            await SaveChangesAsync(ct);
-            await _transaction.CommitAsync(ct);
-        }
-        catch
-        {
-            await _transaction.DisposeAsync();
-            _transaction = null;
-            throw;
-        }
-
-        await _transaction.DisposeAsync();
-        _transaction = null;
-    }
-
-    public async Task RollbackAsync(CancellationToken ct = default)
-    {
-        if (_transaction == null)
-            return;
-
-        try
-        {
-            await _transaction.RollbackAsync(ct);
-        }
-        finally
-        {
-            await _transaction.DisposeAsync();
-            _transaction = null;
-        }
+            await using var transaction = await Database.BeginTransactionAsync(ct);
+            try
+            {
+                var result = await operation(ct);
+                await SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(ct);
+                throw;
+            }
+        });
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

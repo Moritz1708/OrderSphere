@@ -6,7 +6,6 @@ public interface IInvoicingDbContext
     DbSet<InvoiceAdjustment> InvoiceAdjustments { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
-    Task BeginTransactionAsync(CancellationToken ct = default);
-    Task CommitAsync(CancellationToken ct = default);
-    Task RollbackAsync(CancellationToken ct = default);
+    Task<TResult> ExecuteInTransactionAsync<TResult>(
+        Func<CancellationToken, Task<TResult>> operation, CancellationToken ct = default);
 }

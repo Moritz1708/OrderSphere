@@ -1,0 +1,18 @@
+@if (!string.IsNullOrEmpty(CssClass))
+{
+    <div class="@CssClass" style="@Style">@ChildContent</div>
+}
+else
+{
+    <div style="@($"width:{Size};height:{Size};border-radius:50%;background:{Background};display:flex;align-items:center;justify-content:center;{Style}")">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string Size { get; set; } = "48px";
+    [Parameter] public string Background { get; set; } = "var(--mud-palette-primary)";
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

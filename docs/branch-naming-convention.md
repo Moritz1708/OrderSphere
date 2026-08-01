@@ -8,18 +8,36 @@
 feature/{issue-nummer}-{name}
 bug/{issue-nummer}-{name}
 refactor/{issue-nummer}-{name}
+chore/{name}
 ```
 
 - **`feature/`** — neue Funktionalität
 - **`bug/`** — Fehlerbehebung
 - **`refactor/`** — Umstrukturierung ohne Verhaltensänderung
+- **`chore/`** — Arbeit ohne verknüpftes Issue (Tooling, Doku, CI, AI-Setup); **ohne** Issue-Nummer
 - **`{issue-nummer}`** — Nummer des GitHub Sub-Issues, an dem gearbeitet wird
 - **`{name}`** — kebab-case-Slug des Sub-Issue-Titels (Kleinschreibung, Umlaute transliteriert: ä→ae, ö→oe, ü→ue, ß→ss)
 
 **Beispiel**: Sub-Issue #187 "Validatoren für Payment-Commands ergänzen"
 → Branch: `feature/187-validatoren-fuer-payment-commands-ergaenzen`
 
-Andere Branch-Namen (auch abweichende Präfixe oder fehlende Issue-Nummer) sind nicht zulässig. `master`/`main` sind von der Prüfung ausgenommen.
+Andere Branch-Namen (abweichende Präfixe oder fehlende Issue-Nummer bei `feature`/`bug`/`refactor`) sind nicht zulässig. `master`/`main` sind von der Prüfung ausgenommen.
+
+### `chore/` — Arbeit ohne Issue
+
+Nicht jede Änderung hat ein Sub-Issue: Tooling, Doku, CI-Anpassungen, AI-Setup. Dafür ist `chore/{name}` vorgesehen — gleiche Slug-Regeln (kebab-case, Kleinschreibung), aber keine Issue-Nummer.
+
+`chore/`-Branches lösen **bewusst keine** Projects-Automatisierung aus: `project-branch-created.yml` reagiert nur auf `feature`/`bug`/`refactor`, es wird also keine Board-Karte erwartet oder verschoben.
+
+### Notausgang
+
+Für alles, was in kein Schema passt, lässt sich die Prüfung explizit übergehen:
+
+```bash
+ORDERSPHERE_SKIP_BRANCH_CHECK=1 git commit -m "..."
+```
+
+Für eine ganze Shell-Sitzung: `export ORDERSPHERE_SKIP_BRANCH_CHECK=1`. Die Hooks melden dann sichtbar, dass die Prüfung übersprungen wurde — der Bypass ist bewusst laut, nicht still.
 
 ## Durchsetzung
 
