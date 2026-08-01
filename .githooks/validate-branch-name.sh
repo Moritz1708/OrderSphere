@@ -3,6 +3,16 @@
 # Schema: (feature|bug|refactor)/{issue-number}-{slug}
 # {slug} must match the title of the referenced GitHub sub-issue (best-effort,
 # only checked when `gh` is available and authenticated).
+#
+# Two escape hatches (see docs/branch-naming-convention.md):
+#   1. chore/{slug} - work with no linked issue (tooling, docs, CI, AI setup).
+#   2. ORDERSPHERE_SKIP_BRANCH_CHECK=1 - bypass for anything else.
+
+# Explicit opt-out for one command or one shell.
+if [ -n "${ORDERSPHERE_SKIP_BRANCH_CHECK:-}" ]; then
+  echo "Branch-Namensprüfung übersprungen (ORDERSPHERE_SKIP_BRANCH_CHECK gesetzt)."
+  exit 0
+fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -12,6 +22,14 @@ case "$BRANCH" in
     exit 0
     ;;
 esac
+
+# Work not tied to a GitHub issue lives under chore/ and needs no issue number.
+# The Projects automation ignores these branches by design - project-branch-created.yml
+# only reacts to feature/bug/refactor, so no board card is expected.
+CHORE_PATTERN='^chore/([a-z0-9]+(-[a-z0-9]+)*)$'
+if echo "$BRANCH" | grep -qE "$CHORE_PATTERN"; then
+  exit 0
+fi
 
 PATTERN='^(feature|bug|refactor)/([0-9]+)-([a-z0-9]+(-[a-z0-9]+)*)$'
 
@@ -25,6 +43,13 @@ if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
   echo "  refactor/{issue-nummer}-{name}  z.B. refactor/190-asnotracking-in-read-handlern"
   echo ""
   echo "{name} muss aus dem Titel des GitHub Sub-Issues abgeleitet sein (kebab-case, klein geschrieben)."
+  echo ""
+  echo "Arbeit ohne verknüpftes Issue (Tooling, Doku, CI):"
+  echo "  chore/{name}                   z.B. chore/ai-setup"
+  echo ""
+  echo "Einmalig umgehen:"
+  echo "  ORDERSPHERE_SKIP_BRANCH_CHECK=1 git commit ..."
+  echo "  ORDERSPHERE_SKIP_BRANCH_CHECK=1 git push"
   echo ""
   exit 1
 fi
