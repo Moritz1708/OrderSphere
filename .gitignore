@@ -372,12 +372,17 @@ FodyWeavers.xsd
 .claude/settings.local.json
 
 # Claude Code – skills live in ~/.claude/skills (global) and are not repo artifacts.
-# Exception: project-authored skills (ordersphere-scaffold) are committed so all
-# developers get them automatically. Per-developer or plugin-installed skills are
-# excluded via the wildcard below.
+# Exception: project-authored skills are committed so all developers get them
+# automatically — they are referenced by committed agents and rules and must not be
+# per-developer state. Plugin-installed skills (aspire*, dotnet-inspect) stay excluded
+# via the wildcard below.
 .claude/skills/*
 !.claude/skills/ordersphere-scaffold
 !.claude/skills/ordersphere-scaffold/**
+!.claude/skills/ordersphere-patterns
+!.claude/skills/ordersphere-patterns/**
+!.claude/skills/doc-sync
+!.claude/skills/doc-sync/**
 
 # Claude Code – graphify skill output (generated on demand, not source)
 graphify-out/
