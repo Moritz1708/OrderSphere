@@ -47,7 +47,7 @@
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.4.6" />
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.4.6" />
     <PackageVersion Include="Azure.Communication.Email" Version="1.1.0" />
-    <PackageVersion Include="QuestPDF" Version="2026.6.1" />
+    <PackageVersion Include="QuestPDF" Version="2026.7.1" />
     <PackageVersion Include="Stripe.net" Version="52.1.0" />
     <PackageVersion Include="Extensions.MudBlazor.StaticInput" Version="4.1.0" />
     <PackageVersion Include="MediatR" Version="14.1.0" />
