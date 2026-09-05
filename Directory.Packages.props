@@ -40,7 +40,7 @@
     <PackageVersion Include="MockQueryable.NSubstitute" Version="10.0.8" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.4.6" />
     <PackageVersion Include="bunit" Version="2.7.2" />
-    <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
+    <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.KeyVault" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.ServiceBus" Version="13.4.6" />
