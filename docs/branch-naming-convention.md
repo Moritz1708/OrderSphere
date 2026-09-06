@@ -1,6 +1,8 @@
 # Branch-Namenskonvention
 
-> Gültig ab 2026-07-04. Gilt für alle Arbeit in diesem Repository.
+> Gültig ab 2026-07-04. Empfohlenes Schema; seit 2026-09-06 **nicht mehr durch lokale
+> Git-Hooks erzwungen** (`.githooks/` wurde entfernt). Weiterhin relevant für die
+> GitHub-Projects-Automatisierung unten, die auf diesem Schema aufbaut.
 
 ## Schema
 
@@ -29,35 +31,14 @@ Nicht jede Änderung hat ein Sub-Issue: Tooling, Doku, CI-Anpassungen, AI-Setup.
 
 `chore/`-Branches lösen **bewusst keine** Projects-Automatisierung aus: `project-branch-created.yml` reagiert nur auf `feature`/`bug`/`refactor`, es wird also keine Board-Karte erwartet oder verschoben.
 
-### Notausgang
-
-Für alles, was in kein Schema passt, lässt sich die Prüfung explizit übergehen:
-
-```bash
-ORDERSPHERE_SKIP_BRANCH_CHECK=1 git commit -m "..."
-```
-
-Für eine ganze Shell-Sitzung: `export ORDERSPHERE_SKIP_BRANCH_CHECK=1`. Die Hooks melden dann sichtbar, dass die Prüfung übersprungen wurde — der Bypass ist bewusst laut, nicht still.
-
 ## Durchsetzung
 
-Wird lokal über Git-Hooks erzwungen, nicht über GitHub Actions:
-
-- **`.githooks/pre-commit`** — blockiert jeden Commit auf einem nicht-konformen Branch
-- **`.githooks/pre-push`** — blockiert zusätzlich das Pushen (verhindert dadurch faktisch auch die PR-Erstellung, da ein nicht gepushter Branch auf GitHub nicht existiert)
-- **`.githooks/validate-branch-name.sh`** — gemeinsame Prüflogik beider Hooks
-
-Beide Hooks vergleichen zusätzlich den Slug gegen den echten Issue-Titel (per `gh issue view`, sofern `gh` lokal installiert und authentifiziert ist). Diese Prüfung ist nur eine **Warnung**, kein Blocker — sie funktioniert nicht offline und nicht ohne `gh`-Login.
-
-### Automatische Aktivierung
-
-Die Hooks werden **nicht** durch bloßes Einchecken aktiv — Git liest `core.hooksPath` aus der lokalen, nicht versionierten Git-Konfiguration. Damit die Hooks bei jedem Clone garantiert greifen, setzt ein MSBuild-Target in [`Directory.Build.props`](../Directory.Build.props) (`InstallGitHooks`) bei jedem lokalen `dotnet build`/`dotnet restore` automatisch:
-
-```
-git config core.hooksPath .githooks
-```
-
-Das Target überspringt sich selbst in CI-Umgebungen (`$(CI) != ''`), dort sind die Hooks irrelevant.
+Keine. Es gab bis 2026-09-06 lokale Git-Hooks (`.githooks/pre-commit`, `.githooks/pre-push`,
+`.githooks/validate-branch-name.sh`), automatisch aktiviert über ein MSBuild-Target
+(`InstallGitHooks`) in `Directory.Build.props`. Beides wurde entfernt — ein abweichender
+Branch-Name blockiert weder Commit noch Push mehr. Das Schema oben ist reine Konvention;
+Einhaltung ist nötig, damit die Projects-Automatisierung unten greift, wird aber nicht
+technisch geprüft.
 
 ## GitHub-Projects-Automatisierung
 

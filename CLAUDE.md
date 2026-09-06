@@ -41,7 +41,7 @@ All visual, theming, MudBlazor, and CSS rules live in [`docs/ui-conventions.md`]
 
 ## Branching
 
-Branch names must follow `feature/{issue-number}-{name}`, `bug/{issue-number}-{name}`, or `refactor/{issue-number}-{name}`, where `{name}` is the kebab-case slug of the linked GitHub sub-issue title. Work with no linked issue (tooling, docs, CI) uses `chore/{name}` — same slug rules, no issue number. Set `ORDERSPHERE_SKIP_BRANCH_CHECK=1` to bypass the check for anything else. Enforced locally via Git hooks (`.githooks/`), auto-installed by a `Directory.Build.props` build target. Full details, including the GitHub Projects status automation tied to this schema, are in [docs/branch-naming-convention.md](docs/branch-naming-convention.md).
+Recommended schema (not locally enforced): `feature/{issue-number}-{name}`, `bug/{issue-number}-{name}`, or `refactor/{issue-number}-{name}`, where `{name}` is the kebab-case slug of the linked GitHub sub-issue title. Work with no linked issue (tooling, docs, CI) uses `chore/{name}` — same slug rules, no issue number. The local Git-hook enforcement (`.githooks/`, the `Directory.Build.props` build target that installed it) has been removed; nothing blocks a commit or push on branch name anymore. Matching this schema still matters for the GitHub Projects status automation tied to it — see [docs/branch-naming-convention.md](docs/branch-naming-convention.md).
 
 ## Navigation discipline
 
