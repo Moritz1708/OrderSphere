@@ -54,6 +54,10 @@ if (authEnabled)
     app.UseAuthorization();
 }
 
+// Outside the auth branch: the MCP surface is logged either way. When auth is on it runs after
+// UseAuthentication, so the log scope carries the authenticated user.
+app.UseOrderSphereRequestLogging();
+
 app.MapDefaultEndpoints();
 app.MapMcp("/mcp").RequireRateLimiting(RateLimitingExtensions.McpPolicy);
 

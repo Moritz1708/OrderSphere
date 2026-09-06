@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -81,7 +82,7 @@ public sealed class ClientCredentialsTokenHandler(
             var response = await client.PostAsync(tokenEndpoint, body, ct);
             if (!response.IsSuccessStatusCode)
             {
-                var error = await response.Content.ReadAsStringAsync(ct);
+                var error = await OAuthErrorReader.ReadAsync(response.Content, ct);
                 logger.LogWarning(
                     "Client credentials token request failed for {ClientId} ({StatusCode}): {Error}",
                     clientId, (int)response.StatusCode, error);

@@ -59,6 +59,10 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// DLQ admin endpoints are a real HTTP surface; log them like any other.
+// Placed after auth so the log scope carries the authenticated user.
+app.UseOrderSphereRequestLogging();
+
 // Admin DLQ surface — the gateway forwards /api/v1/admin/payment/dlq/** here.
 app.MapDlqAdminEndpoints("api/v1/admin/payment/dlq", "AdminPolicy");
 

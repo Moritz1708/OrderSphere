@@ -8,7 +8,7 @@ public sealed class FallbackUserProfileClient(ILogger<FallbackUserProfileClient>
 {
     public Task<NotificationPreferences> GetNotificationPreferencesAsync(string customerEmail, CancellationToken ct)
     {
-        logger.LogDebug("UserProfile URL not configured; using default notification preferences for {Email}.", customerEmail);
+        logger.NotificationPreferencesDefaulted(customerEmail);
         return Task.FromResult(NotificationPreferences.Default);
     }
 }

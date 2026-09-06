@@ -44,9 +44,9 @@ public sealed class WebhookEventProcessor(
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
         var messageId = args.Message.MessageId;
-        logger.LogInformation("Received webhook event message {MessageId}.", messageId);
+        logger.MessageReceived();
 
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WebhooksDbContext>();
@@ -60,7 +60,7 @@ public sealed class WebhookEventProcessor(
             if (eventType is null)
             {
                 logger.LogWarning(
-                    "Message {MessageId} has an unknown or missing EventType. Dead-lettering.", messageId);
+                    "Message has an unknown or missing EventType. Dead-lettering.");
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "UnknownEventType",
                     deadLetterErrorDescription: "Could not determine event type from message properties or body.",
@@ -76,7 +76,7 @@ public sealed class WebhookEventProcessor(
             catch (Exception ex)
             {
                 logger.LogError(ex,
-                    "Message {MessageId} body could not be deserialized. Dead-lettering.", messageId);
+                    "Message body could not be deserialized. Dead-lettering.");
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: ex.Message,
@@ -97,7 +97,7 @@ public sealed class WebhookEventProcessor(
             if (webhookEventType is null)
             {
                 logger.LogWarning(
-                    "Message {MessageId} has event type '{EventType}' with no webhook mapping. Dead-lettering.",
+                    "Message has event type '{EventType}' with no webhook mapping. Dead-lettering.",
                     messageId, eventType);
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "UnknownEventType",
@@ -147,8 +147,7 @@ public sealed class WebhookEventProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
-                "Unhandled exception processing webhook event message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message, cancellationToken: args.CancellationToken);
         }
     }

@@ -27,7 +27,7 @@ public sealed class NotificationProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("NotificationProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(NotificationProcessor), QueueName);
 
         try
         {
@@ -37,22 +37,21 @@ public sealed class NotificationProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("NotificationProcessor stopped.");
+            logger.ProcessorStopped(nameof(NotificationProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received notification message {MessageId}.", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<OrderPlacedIntegrationEvent>();
             if (evt is null)
             {
-                logger.LogError("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid OrderPlacedIntegrationEvent.");
@@ -69,7 +68,7 @@ public sealed class NotificationProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing notification message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

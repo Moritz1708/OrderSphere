@@ -4,7 +4,6 @@ using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Invoicing.Application.Features.Invoice.GenerateInvoice;
 using AppItemDto = OrderSphere.Invoicing.Application.Models.InvoiceItemDto;
 using ContractItemDto = OrderSphere.BuildingBlocks.Contracts.Events.InvoiceItemDto;
@@ -32,7 +31,7 @@ public sealed class InvoiceProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("InvoiceProcessor started, listening on queue '{Queue}'.", InputQueue);
+        logger.ProcessorStarted(nameof(InvoiceProcessor), InputQueue);
 
         try
         {
@@ -42,15 +41,14 @@ public sealed class InvoiceProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("InvoiceProcessor stopped.");
+            logger.ProcessorStopped(nameof(InvoiceProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, InputQueue);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received invoice-generation message {MessageId}.", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, InputQueue);
+        logger.MessageReceived();
 
         try
         {
@@ -63,7 +61,7 @@ public sealed class InvoiceProcessor(
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var inboxStore = scope.ServiceProvider.GetRequiredService<IInboxStore>();
@@ -88,7 +86,10 @@ public sealed class InvoiceProcessor(
 
             if (result.IsFailure)
             {
-                logger.LogError("Invoice generation failed for order {OrderId}: {Error}.", evt.OrderId, result.Error);
+                // Result failure, no exception: the message is abandoned and retried.
+                // Code and description as separate fields so failures group by code.
+                logger.LogWarning("Invoice generation failed for order {OrderId}: [{ErrorCode}] {ErrorDescription}",
+                    evt.OrderId, result.Error.Code, result.Error.Description);
                 await args.AbandonMessageAsync(args.Message);
                 return;
             }
@@ -113,7 +114,7 @@ public sealed class InvoiceProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing invoice-generation message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

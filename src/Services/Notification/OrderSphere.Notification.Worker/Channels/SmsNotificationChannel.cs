@@ -12,9 +12,7 @@ public sealed class SmsNotificationChannel(ILogger<SmsNotificationChannel> logge
 
     public Task SendOrderConfirmationAsync(OrderPlacedIntegrationEvent evt, CancellationToken ct)
     {
-        logger.LogInformation(
-            "[SMS] Order confirmation for order {OrderId} would be sent to customer {Email}. (No SMS provider configured.)",
-            evt.OrderId, evt.CustomerEmail);
+        logger.SmsNotificationStubbed(evt.OrderId, evt.CustomerEmail);
         return Task.CompletedTask;
     }
 }

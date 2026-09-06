@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <!--
     Solution-wide compiler and analysis settings.
@@ -26,7 +26,12 @@
       directive. Emitted only by the Razor source generator for .razor-derived
       code; not actionable in hand-written source. Suppressed solution-wide.
     -->
-    <NoWarn>$(NoWarn);CS8669</NoWarn>
+    <!--
+      EXTEXP0002: HmacRedactor is marked experimental in
+      Microsoft.Extensions.Compliance.Redaction. It is the deliberate choice for
+      PII in logs (correlatable without plaintext) - see docs/logging.md.
+    -->
+    <NoWarn>$(NoWarn);CS8669;EXTEXP0002</NoWarn>
   </PropertyGroup>
 
   <!-- Solution-weite Produktversion. Einziger Pflegeort; gilt fÃ¼r alle Projekte.

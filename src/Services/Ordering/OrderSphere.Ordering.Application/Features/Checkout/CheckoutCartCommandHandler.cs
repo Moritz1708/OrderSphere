@@ -49,7 +49,9 @@ public sealed class CheckoutCartCommandHandler(
             var cartResult = await basketClient.GetCartAsync(request.CustomerId.Value, cancellationToken);
             if (cartResult.IsFailure)
             {
-                logger.LogError("Cart not found for customer {CustomerId} via Basket service", request.CustomerId);
+                // An empty or expired cart is a normal user outcome, returned as a Result
+                // failure — not an error condition for the service.
+                logger.LogWarning("Cart not found for customer {CustomerId} via Basket service", request.CustomerId);
                 return Result<Guid>.Failure(CheckoutCartErrors.CartNotFoundError);
             }
 

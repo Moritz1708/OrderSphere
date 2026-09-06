@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.Payment.Domain.Enums;
 using OrderSphere.Payment.Infrastructure.Persistence;
@@ -40,7 +39,7 @@ public sealed class RefundRequestedProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("RefundRequestedProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(RefundRequestedProcessor), QueueName);
 
         try
         {
@@ -50,29 +49,28 @@ public sealed class RefundRequestedProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("RefundRequestedProcessor stopped.");
+            logger.ProcessorStopped(nameof(RefundRequestedProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received refund-requested message {MessageId}", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<RefundRequestedIntegrationEvent>();
             if (evt is null)
             {
-                logger.LogError("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid RefundRequestedIntegrationEvent.");
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
@@ -85,7 +83,7 @@ public sealed class RefundRequestedProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing refund-requested {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }
@@ -109,7 +107,7 @@ public sealed class RefundRequestedProcessor(
         if (payment is null)
         {
             // No capture on record — nothing to refund. Mark processed to avoid endless retry.
-            logger.LogError("No payment found for order {OrderId} on refund request {ReturnRequestId}; cannot refund.",
+            logger.LogWarning("No payment found for order {OrderId} on refund request {ReturnRequestId}; nothing to refund.",
                 evt.OrderId, evt.ReturnRequestId);
             await inboxStore.MarkAsProcessedAsync(evt.Id, nameof(RefundRequestedIntegrationEvent), ct);
             return;

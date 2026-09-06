@@ -26,7 +26,7 @@ public sealed class RealtimeNotificationProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("RealtimeNotificationProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(RealtimeNotificationProcessor), QueueName);
 
         try
         {
@@ -36,13 +36,13 @@ public sealed class RealtimeNotificationProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("RealtimeNotificationProcessor stopped.");
+            logger.ProcessorStopped(nameof(RealtimeNotificationProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
         var messageId = args.Message.MessageId;
 
         try
@@ -50,7 +50,7 @@ public sealed class RealtimeNotificationProcessor(
             var evt = args.Message.Body.ToObjectFromJson<RealtimeNotificationEvent>();
             if (evt is null)
             {
-                logger.LogWarning("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid RealtimeNotificationEvent.");
@@ -70,14 +70,14 @@ public sealed class RealtimeNotificationProcessor(
                 args.CancellationToken);
 
             logger.LogInformation(
-                "Pushed {Type} notification to user {UserId}. MessageId: {MessageId}",
+                "Pushed {Type} notification to user {UserId}.",
                 evt.Type, evt.UserId, messageId);
 
             await args.CompleteMessageAsync(args.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing realtime notification {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

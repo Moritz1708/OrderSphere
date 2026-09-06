@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.Ordering.Infrastructure.Persistence;
 
@@ -34,7 +33,7 @@ public sealed class CustomerErasureProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("CustomerErasureProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(CustomerErasureProcessor), QueueName);
 
         try
         {
@@ -44,15 +43,14 @@ public sealed class CustomerErasureProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("CustomerErasureProcessor stopped.");
+            logger.ProcessorStopped(nameof(CustomerErasureProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received erasure-ordering message {MessageId}.", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
@@ -65,7 +63,7 @@ public sealed class CustomerErasureProcessor(
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<OrderingDbContext>();
@@ -95,7 +93,7 @@ public sealed class CustomerErasureProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing erasure-ordering message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

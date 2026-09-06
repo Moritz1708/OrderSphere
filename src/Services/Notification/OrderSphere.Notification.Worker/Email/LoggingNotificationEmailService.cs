@@ -7,26 +7,13 @@ internal sealed class LoggingNotificationEmailService(ILogger<LoggingNotificatio
 {
     public Task SendOrderConfirmationAsync(OrderPlacedIntegrationEvent evt, CancellationToken ct = default)
     {
-        logger.LogInformation(
-            "[DEV] Order confirmation email suppressed. OrderId={OrderId} Tracking={TrackingNumber} To={Email}",
-            evt.OrderId, evt.TrackingNumber, MaskEmail(evt.CustomerEmail));
+        logger.OrderConfirmationEmailSuppressed(evt.OrderId, evt.TrackingNumber, evt.CustomerEmail);
         return Task.CompletedTask;
     }
 
     public Task SendInvoiceReadyAsync(InvoiceGeneratedIntegrationEvent evt, CancellationToken ct = default)
     {
-        logger.LogInformation(
-            "[DEV] Invoice-ready email suppressed. Invoice={InvoiceNumber} OrderId={OrderId} To={Email}",
-            evt.InvoiceNumber, evt.OrderId, MaskEmail(evt.CustomerEmail));
+        logger.InvoiceReadyEmailSuppressed(evt.InvoiceNumber, evt.OrderId, evt.CustomerEmail);
         return Task.CompletedTask;
-    }
-
-    private static string MaskEmail(string? email)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return "(none)";
-
-        var at = email.IndexOf('@');
-        return at <= 0 ? "***" : $"{email[0]}***{email[at..]}";
     }
 }

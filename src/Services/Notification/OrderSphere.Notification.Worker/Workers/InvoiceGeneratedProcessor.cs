@@ -26,7 +26,7 @@ public sealed class InvoiceGeneratedProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("InvoiceGeneratedProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(InvoiceGeneratedProcessor), QueueName);
 
         try
         {
@@ -36,15 +36,14 @@ public sealed class InvoiceGeneratedProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("InvoiceGeneratedProcessor stopped.");
+            logger.ProcessorStopped(nameof(InvoiceGeneratedProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received invoice-ready message {MessageId}.", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
@@ -76,7 +75,7 @@ public sealed class InvoiceGeneratedProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing invoice-ready message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

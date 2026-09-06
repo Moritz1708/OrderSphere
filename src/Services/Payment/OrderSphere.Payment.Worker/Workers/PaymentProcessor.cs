@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.Payment.Domain.Entities;
 using OrderSphere.Payment.Infrastructure.Persistence;
@@ -35,7 +34,7 @@ public sealed class PaymentProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("PaymentProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(PaymentProcessor), QueueName);
 
         try
         {
@@ -45,29 +44,29 @@ public sealed class PaymentProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("PaymentProcessor stopped.");
+            logger.ProcessorStopped(nameof(PaymentProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
         var messageId = args.Message.MessageId;
-        logger.LogInformation("Received payment request message {MessageId}", messageId);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<PaymentRequestedIntegrationEvent>();
             if (evt is null)
             {
-                logger.LogError("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid PaymentRequestedIntegrationEvent.");
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
@@ -100,12 +99,12 @@ public sealed class PaymentProcessor(
             await context.SaveChangesAsync(args.CancellationToken);
 
             await args.CompleteMessageAsync(args.Message);
-            logger.LogInformation("Payment message {MessageId} processed. OrderId: {OrderId}, Succeeded: {Succeeded}",
+            logger.LogInformation("Payment message processed. OrderId: {OrderId}, Succeeded: {Succeeded}",
                 messageId, evt.OrderId, succeeded);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing payment message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

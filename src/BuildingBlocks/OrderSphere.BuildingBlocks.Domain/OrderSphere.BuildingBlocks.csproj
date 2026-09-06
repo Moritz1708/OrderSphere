@@ -11,6 +11,11 @@
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" />
+    <!-- Telemetry.Abstractions carries the extended [LoggerMessage] generator and
+         ILogEnricher; Compliance.Abstractions the DataClassification types. Placed
+         here so every downstream project can write classified log methods. -->
+    <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Compliance.Abstractions" />
   </ItemGroup>
 
 </Project>

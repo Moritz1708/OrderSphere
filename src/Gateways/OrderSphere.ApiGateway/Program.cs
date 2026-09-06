@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -106,7 +107,11 @@ app.Use(async (context, next) =>
 {
     if (!context.Request.Headers.ContainsKey("X-Request-Id"))
     {
-        context.Request.Headers["X-Request-Id"] = Guid.NewGuid().ToString("N");
+        // Seeded from the trace id so the client-visible id, the log correlation_id and the
+        // trace are one and the same value — including across the outbox, where only the trace
+        // context is persisted. Same 32-char lowercase hex shape as the previous Guid("N").
+        context.Request.Headers["X-Request-Id"] =
+            Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
     }
     context.Response.Headers["X-Request-Id"] = context.Request.Headers["X-Request-Id"].ToString();
     await next();

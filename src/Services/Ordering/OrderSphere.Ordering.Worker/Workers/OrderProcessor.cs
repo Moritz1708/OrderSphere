@@ -3,7 +3,6 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.BuildingBlocks.ValueObjects;
 using OrderSphere.Ordering.Application.Abstractions;
@@ -36,7 +35,7 @@ public sealed class OrderProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("OrderProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(OrderProcessor), QueueName);
 
         try
         {
@@ -46,29 +45,28 @@ public sealed class OrderProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("OrderProcessor stopped.");
+            logger.ProcessorStopped(nameof(OrderProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received message {MessageId}", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<CheckoutCartIntegrationEvent>();
             if (evt is null)
             {
-                logger.LogError("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid CheckoutCartEvent.");
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<OrderingDbContext>();
@@ -78,19 +76,21 @@ public sealed class OrderProcessor(
             if (result.IsSuccess)
             {
                 await args.CompleteMessageAsync(args.Message);
-                logger.LogInformation("Message {MessageId} processed. CorrelationId: {CorrelationId}",
-                    messageId, evt.CorrelationId);
+                // CorrelationId here is the business idempotency key on the event, distinct
+                // from the log correlation_id supplied by enrichment.
+                logger.LogInformation("Message processed. Event correlation {EventCorrelationId}",
+                    evt.CorrelationId);
             }
             else
             {
-                logger.LogWarning("ProcessOrder returned failure for message {MessageId}: {Error}. Abandoning.",
-                    messageId, result.ErrorMessage);
+                logger.LogWarning("ProcessOrder returned failure: {Error}. Abandoning.",
+                    result.ErrorMessage);
                 await args.AbandonMessageAsync(args.Message);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing message {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

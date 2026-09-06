@@ -71,6 +71,20 @@ dotnet_style_readonly_field = true:suggestion
 # Unused usings flagged (kept as warning so analyzers surface them)
 dotnet_diagnostic.IDE0005.severity = warning
 
+# --- Logging (see docs/logging.md) ------------------------------------------
+
+# CA2254: the logging message template must be a compile-time constant. An interpolated or
+# concatenated template produces a distinct template per call, which destroys grouping in the
+# log backend and defeats structured querying. Error: there are zero violations today, so this
+# is a ratchet rather than a backlog.
+dotnet_diagnostic.CA2254.severity = error
+
+# CA1848: prefer the LoggerMessage source generator over the ILogger.LogX extension methods.
+# Suggestion rather than warning: it is required on hot paths and on anything carrying
+# classified data (redaction depends on it), but forcing it on every one of the ~250 remaining
+# call sites would be churn without benefit.
+dotnet_diagnostic.CA1848.severity = suggestion
+
 # --- Naming conventions -----------------------------------------------------
 
 # Interfaces start with I

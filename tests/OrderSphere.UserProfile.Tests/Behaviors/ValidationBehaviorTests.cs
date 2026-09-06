@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging.Abstractions;
 using OrderSphere.BuildingBlocks.Behaviors;
 using OrderSphere.BuildingBlocks.Primitives;
 using Xunit;
@@ -66,7 +67,7 @@ public sealed class ValidationBehaviorTests
     public async Task Handle_NoValidators_InvokesNext()
     {
         var tracker = new CallTracker<Result>(Result.Success());
-        var behavior = new ValidationBehavior<VoidCommand, Result>([]);
+        var behavior = new ValidationBehavior<VoidCommand, Result>([], NullLogger<ValidationBehavior<VoidCommand, Result>>.Instance);
 
         await behavior.Handle(new VoidCommand("x"), tracker.Delegate, CancellationToken.None);
 
@@ -78,7 +79,7 @@ public sealed class ValidationBehaviorTests
     public async Task Handle_ValidationPasses_InvokesNext()
     {
         var tracker = new CallTracker<Result>(Result.Success());
-        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()]);
+        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()], NullLogger<ValidationBehavior<VoidCommand, Result>>.Instance);
 
         await behavior.Handle(new VoidCommand("non-empty"), tracker.Delegate, CancellationToken.None);
 
@@ -90,7 +91,7 @@ public sealed class ValidationBehaviorTests
     public async Task Handle_ValidationFails_NonGenericResult_ReturnsFailureWithoutThrowing()
     {
         var tracker = new CallTracker<Result>(Result.Success());
-        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()]);
+        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()], NullLogger<ValidationBehavior<VoidCommand, Result>>.Instance);
 
         var result = await behavior.Handle(new VoidCommand(""), tracker.Delegate, CancellationToken.None);
 
@@ -101,7 +102,7 @@ public sealed class ValidationBehaviorTests
     [Fact]
     public async Task Handle_ValidationFails_NonGenericResult_ErrorCodeIsValidationInvalid()
     {
-        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()]);
+        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()], NullLogger<ValidationBehavior<VoidCommand, Result>>.Instance);
         RequestHandlerDelegate<Result> next = _ => Task.FromResult(Result.Success());
 
         var result = await behavior.Handle(new VoidCommand(""), next, CancellationToken.None);
@@ -114,7 +115,7 @@ public sealed class ValidationBehaviorTests
     public async Task Handle_ValidationFails_GenericResultT_ReturnsFailureWithoutThrowing()
     {
         var tracker = new CallTracker<Result<string>>(Result<string>.Success("ok"));
-        var behavior = new ValidationBehavior<DtoCommand, Result<string>>([new DtoCommandValidator()]);
+        var behavior = new ValidationBehavior<DtoCommand, Result<string>>([new DtoCommandValidator()], NullLogger<ValidationBehavior<DtoCommand, Result<string>>>.Instance);
 
         var result = await behavior.Handle(new DtoCommand(""), tracker.Delegate, CancellationToken.None);
 
@@ -125,7 +126,7 @@ public sealed class ValidationBehaviorTests
     [Fact]
     public async Task Handle_ValidationFails_GenericResultT_ErrorCodeIsValidationInvalid()
     {
-        var behavior = new ValidationBehavior<DtoCommand, Result<string>>([new DtoCommandValidator()]);
+        var behavior = new ValidationBehavior<DtoCommand, Result<string>>([new DtoCommandValidator()], NullLogger<ValidationBehavior<DtoCommand, Result<string>>>.Instance);
         RequestHandlerDelegate<Result<string>> next = _ => Task.FromResult(Result<string>.Success("ok"));
 
         var result = await behavior.Handle(new DtoCommand(""), next, CancellationToken.None);
@@ -136,7 +137,7 @@ public sealed class ValidationBehaviorTests
     [Fact]
     public async Task Handle_ValidationFails_GenericResultT_ValueAccessThrows()
     {
-        var behavior = new ValidationBehavior<DtoCommand, Result<string>>([new DtoCommandValidator()]);
+        var behavior = new ValidationBehavior<DtoCommand, Result<string>>([new DtoCommandValidator()], NullLogger<ValidationBehavior<DtoCommand, Result<string>>>.Instance);
         RequestHandlerDelegate<Result<string>> next = _ => Task.FromResult(Result<string>.Success("ok"));
 
         var result = await behavior.Handle(new DtoCommand(""), next, CancellationToken.None);
@@ -149,7 +150,7 @@ public sealed class ValidationBehaviorTests
     [Fact]
     public async Task Handle_ValidationFails_NonResultResponseType_ThrowsValidationException()
     {
-        var behavior = new ValidationBehavior<PlainCommand, string>([new PlainCommandValidator()]);
+        var behavior = new ValidationBehavior<PlainCommand, string>([new PlainCommandValidator()], NullLogger<ValidationBehavior<PlainCommand, string>>.Instance);
         RequestHandlerDelegate<string> next = _ => Task.FromResult("ok");
 
         await behavior.Invoking(b => b.Handle(new PlainCommand(""), next, CancellationToken.None))
@@ -160,7 +161,7 @@ public sealed class ValidationBehaviorTests
     [Fact]
     public async Task Handle_ValidationFails_ErrorDescriptionContainsValidatorMessage()
     {
-        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()]);
+        var behavior = new ValidationBehavior<VoidCommand, Result>([new VoidCommandValidator()], NullLogger<ValidationBehavior<VoidCommand, Result>>.Instance);
         RequestHandlerDelegate<Result> next = _ => Task.FromResult(Result.Success());
 
         var result = await behavior.Handle(new VoidCommand(""), next, CancellationToken.None);

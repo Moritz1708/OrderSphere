@@ -130,7 +130,7 @@ public sealed class RefreshTokenHandler : CookieAuthenticationEvents
         var response = await client.PostAsync(tokenEndpoint, body);
         if (!response.IsSuccessStatusCode)
         {
-            var error = await response.Content.ReadAsStringAsync();
+            var error = await OAuthErrorReader.ReadAsync(response.Content);
             _logger.LogWarning("Token endpoint returned {StatusCode}: {Error}", response.StatusCode, error);
             return null;
         }

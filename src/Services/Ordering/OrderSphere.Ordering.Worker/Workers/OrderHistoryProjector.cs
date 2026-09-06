@@ -2,7 +2,6 @@ using Azure.Messaging.ServiceBus;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Ordering.Domain.Entities;
 using OrderSphere.Ordering.Infrastructure.Persistence;
 
@@ -36,7 +35,7 @@ public sealed class OrderHistoryProjector(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("OrderHistoryProjector started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(OrderHistoryProjector), QueueName);
 
         try
         {
@@ -46,29 +45,28 @@ public sealed class OrderHistoryProjector(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("OrderHistoryProjector stopped.");
+            logger.ProcessorStopped(nameof(OrderHistoryProjector));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received order-history message {MessageId}", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<OrderStatusChangedIntegrationEvent>();
             if (evt is null)
             {
-                logger.LogError("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid OrderStatusChangedIntegrationEvent.");
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<OrderingDbContext>();
@@ -80,7 +78,7 @@ public sealed class OrderHistoryProjector(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception projecting order-history {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }

@@ -1,14 +1,19 @@
 using Microsoft.Extensions.Logging;
+using OrderSphere.BuildingBlocks.Compliance;
 using OrderSphere.BuildingBlocks.Security;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// ISecurityAuditLogger implementation that writes structured log entries via
-/// the standard ILogger pipeline. OpenTelemetry (wired in ServiceDefaults) carries
-/// these entries to the configured telemetry sink with the originating trace_id attached.
+/// ISecurityAuditLogger implementation that writes structured log entries via the standard
+/// ILogger pipeline. OpenTelemetry (wired in ServiceDefaults) carries these entries to the
+/// configured telemetry sink with the originating trace_id attached.
+/// <para>
+/// Each field is its own structured property, so an investigation can filter on
+/// <c>audit_event</c> or <c>audit_session_id</c> directly instead of parsing a delimited string.
+/// </para>
 /// </summary>
-internal sealed class SecurityAuditLogger(ILogger<SecurityAuditLogger> logger)
+internal sealed partial class SecurityAuditLogger(ILogger<SecurityAuditLogger> logger)
     : ISecurityAuditLogger
 {
     public void Log(SecurityAuditEvent evt)
@@ -23,9 +28,9 @@ internal sealed class SecurityAuditLogger(ILogger<SecurityAuditLogger> logger)
             _ => LogLevel.Information,
         };
 
-        logger.Log(
+        SecurityAudit(
+            logger,
             level,
-            "SECURITY_AUDIT | {EventType} | user={UserId} | sid={SessionId} | ip={IpAddress} | {Details} | ts={OccurredAt:o}",
             evt.Type,
             evt.UserId ?? "-",
             evt.SessionId ?? "-",
@@ -33,6 +38,33 @@ internal sealed class SecurityAuditLogger(ILogger<SecurityAuditLogger> logger)
             evt.Details ?? "-",
             evt.OccurredAt);
     }
+
+    /// <summary>
+    /// EventId 1201 (ServiceDefaults range 1200-1299, see docs/logging.md). The level is a
+    /// parameter because it is derived from the event type.
+    /// <para>
+    /// The session id and IP are hashed: they identify a person via a join and have no
+    /// operational value in plaintext, while the hash still groups repeated attempts from one
+    /// source. The user id stays readable so an investigation can pivot to that user's other
+    /// records, which carry the same value as the <c>user_id</c> enrichment tag.
+    /// </para>
+    /// <para>
+    /// <c>details</c> is written by OrderSphere code, never by request input; it must not be
+    /// used to carry user-supplied text.
+    /// </para>
+    /// </summary>
+    [LoggerMessage(
+        EventId = 1201,
+        Message = "Security audit: {auditEvent}.")]
+    private static partial void SecurityAudit(
+        ILogger logger,
+        LogLevel level,
+        SecurityAuditEventType auditEvent,
+        string auditUserId,
+        [PseudonymousId] string auditSessionId,
+        [PseudonymousId] string auditIpAddress,
+        string auditDetails,
+        DateTimeOffset auditOccurredAt);
 }
 
 /// <summary>

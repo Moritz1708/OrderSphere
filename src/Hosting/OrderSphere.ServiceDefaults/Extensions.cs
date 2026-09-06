@@ -1,4 +1,7 @@
+using System.Globalization;
 using System.Reflection;
+using System.Security.Cryptography;
+using OrderSphere.BuildingBlocks.Compliance;
 using System.Text.Json.Serialization;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +9,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -48,7 +52,12 @@ public static class Extensions
 
             // Turn on service discovery by default
             http.AddServiceDiscovery();
+
+            // Carry the log correlation id (X-Request-Id) across service hops.
+            http.AddHttpMessageHandler<CorrelationPropagationHandler>();
         });
+
+        builder.Services.AddTransient<CorrelationPropagationHandler>();
 
         // Uncomment the following to restrict the allowed schemes for service discovery.
         // builder.Services.Configure<ServiceDiscoveryOptions>(options =>
@@ -73,6 +82,9 @@ public static class Extensions
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
         });
+
+        builder.ConfigureLogEnrichment();
+        builder.ConfigureLogRedaction();
 
         // EF Core logs every SQL command at Information by default. Default it to Warning so the
         // database story comes from traces (DB spans), not log spam — raise the
@@ -104,8 +116,17 @@ public static class Extensions
                 // Parent-based ratio sampler; ratio from "OpenTelemetry:TracesSampleRatio"
                 // (default 1.0 = sample everything). Lower it in production to control cost.
                 // Azure Monitor applies its own sampler via APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE.
+                //
+                // InvariantCulture is required: configuration values are culture-invariant, but a
+                // plain double.TryParse uses the host's current culture, where "0.1" on a de-DE
+                // machine parses as 1 and "1.0" as 10 - both outside the sampler's [0,1] range.
+                // The value is clamped as well so a typo degrades sampling instead of crashing
+                // the host at startup.
                 var sampleRatio = double.TryParse(
-                    builder.Configuration["OpenTelemetry:TracesSampleRatio"], out var ratio) ? ratio : 1.0;
+                    builder.Configuration["OpenTelemetry:TracesSampleRatio"],
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out var ratio) ? Math.Clamp(ratio, 0d, 1d) : 1.0;
 
                 tracing.SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(sampleRatio)))
                     .AddSource(builder.Environment.ApplicationName)
@@ -127,6 +148,76 @@ public static class Extensions
             });
 
         builder.AddOpenTelemetryExporters();
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Replaces the default ILoggerFactory with ExtendedLoggerFactory and registers the
+    /// OrderSphere enrichers. Enrichment tags are written into the log-record state, which the
+    /// OpenTelemetry logger provider reads as attributes — so tenant_id / correlation_id /
+    /// user_id reach the Aspire dashboard and Application Insights without further wiring.
+    /// </summary>
+    private static TBuilder ConfigureLogEnrichment<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        builder.Logging.EnableEnrichment();
+
+        // OrderSphereLogEnricher is a singleton and reads the user from the accessor; workers
+        // simply never have an HttpContext and fall through to the ambient slots.
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddLogEnricher<OrderSphereLogEnricher>();
+        builder.Services.AddStaticLogEnricher<OrderSphereStaticLogEnricher>();
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Activates redaction for classified [LoggerMessage] parameters. The classifications and
+    /// their mapping to the sensitivity tiers in docs/data-classification.md live in
+    /// <see cref="OrderSphereDataClassifications"/>.
+    /// <para>
+    /// Redaction applies only to source-generated log methods whose parameters carry a
+    /// classification attribute — never to plain logger.LogX(...) calls.
+    /// </para>
+    /// </summary>
+    private static TBuilder ConfigureLogRedaction<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        builder.Logging.EnableRedaction();
+
+        // Key material is per-deployment: two environments produce unrelated hashes, so a value
+        // cannot be correlated across them. Absent configuration (local dev, tests) a process-
+        // lifetime random key is used — redaction still holds, correlation just ends at restart.
+        var hmacKey = builder.Configuration["Logging:Redaction:HmacKey"]
+            ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+        builder.Services.AddRedaction(redaction =>
+        {
+            // Direct PII (T1) and pseudonymous identifiers (T2) are hashed rather than erased so
+            // that "all records for the same customer" stays answerable without storing the value.
+            // Distinct key ids keep the two tiers from being cross-correlated.
+            redaction.SetHmacRedactor(
+                options =>
+                {
+                    options.KeyId = 1;
+                    options.Key = hmacKey;
+                },
+                OrderSphereDataClassifications.DirectPii);
+
+            redaction.SetHmacRedactor(
+                options =>
+                {
+                    options.KeyId = 2;
+                    options.Key = hmacKey;
+                },
+                OrderSphereDataClassifications.PseudonymousId);
+
+            // Free text (T4) carries the highest re-identification risk per byte and has no
+            // operational value in a log record, so it is dropped outright.
+            redaction.SetRedactor<ErasingRedactor>(OrderSphereDataClassifications.FreeText);
+
+            // Anything classified but unmapped is erased rather than leaked.
+            redaction.SetFallbackRedactor<ErasingRedactor>();
+        });
 
         return builder;
     }

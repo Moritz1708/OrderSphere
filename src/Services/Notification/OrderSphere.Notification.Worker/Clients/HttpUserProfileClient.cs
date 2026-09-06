@@ -17,9 +17,7 @@ public sealed class HttpUserProfileClient(
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning(
-                    "UserProfile returned {Status} for email {Email}. Using default preferences.",
-                    (int)response.StatusCode, customerEmail);
+                logger.NotificationPreferencesUnavailable((int)response.StatusCode, customerEmail);
                 return NotificationPreferences.Default;
             }
 
@@ -30,7 +28,7 @@ public sealed class HttpUserProfileClient(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to fetch notification preferences for {Email}. Using defaults.", customerEmail);
+            logger.NotificationPreferencesFetchFailed(ex, customerEmail);
             return NotificationPreferences.Default;
         }
     }

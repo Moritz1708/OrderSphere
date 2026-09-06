@@ -12,9 +12,7 @@ public sealed class PushNotificationChannel(ILogger<PushNotificationChannel> log
 
     public Task SendOrderConfirmationAsync(OrderPlacedIntegrationEvent evt, CancellationToken ct)
     {
-        logger.LogInformation(
-            "[Push] Order confirmation for order {OrderId} would be pushed to customer {Email}. (No push provider configured.)",
-            evt.OrderId, evt.CustomerEmail);
+        logger.PushNotificationStubbed(evt.OrderId, evt.CustomerEmail);
         return Task.CompletedTask;
     }
 }

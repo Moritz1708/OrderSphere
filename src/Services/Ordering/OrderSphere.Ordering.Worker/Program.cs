@@ -60,7 +60,13 @@ builder.Services.AddHostedService<PaymentRefundProcessor>();
 builder.Services.AddHostedService<OrderHistoryProjector>();
 builder.Services.AddHostedService<CustomerErasureProcessor>();
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    // The only MediatR host that was missing these; every *.Application does register them.
+    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 builder.Services.AddTransient(typeof(INotificationHandler<>), typeof(DomainEventLoggingHandler<>));
 
 // DLQ admin surface: admin-protected dead-letter reader/replay for this worker's queues, plus the
@@ -79,6 +85,10 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// DLQ admin endpoints are a real HTTP surface; log them like any other.
+// Placed after auth so the log scope carries the authenticated user.
+app.UseOrderSphereRequestLogging();
 
 // Admin DLQ surface — the gateway forwards /api/v1/admin/ordering/dlq/** here.
 app.MapDlqAdminEndpoints("api/v1/admin/ordering/dlq", "AdminPolicy");

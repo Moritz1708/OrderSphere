@@ -2,7 +2,8 @@
 
 How to observe and operate OrderSphere. The cross-cutting wiring lives in
 `src/Hosting/OrderSphere.ServiceDefaults` (`Extensions.cs`), applied by every service and gateway.
-Deployment is covered separately in [deploy-ordersphere.md](deploy-ordersphere.md).
+Deployment is covered separately in [deploy-ordersphere.md](deploy-ordersphere.md); the log
+schema, level policy and PII enforcement in [logging.md](logging.md).
 
 ## Endpoints exposed by every service
 
@@ -55,9 +56,17 @@ to `10`–`20` depending on volume and cost targets.
 
 Log messages must not include personally identifiable information. Enforced by:
 
+- **Redaction on classified log parameters.** `Microsoft.Extensions.Compliance.Redaction` is
+  active in every host; a `[LoggerMessage]` parameter marked `[DirectPii]`, `[PseudonymousId]` or
+  `[FreeText]` is replaced before it reaches any sink. This is the primary control — see
+  [logging.md](logging.md#pii) for the tier-to-redactor mapping and for the important limitation
+  that redaction does *not* apply to plain `logger.LogX(...)` calls.
 - `DomainEventLoggingHandler` — logs event type only, never the event payload.
-- `LoggingNotificationEmailService` — masks email addresses (`a***@domain.com`).
+- `RequestContextEnrichmentMiddleware` — logs `client_ip_hash`, never the raw client IP.
 - All new log statements must follow the same rule: log IDs and types, not customer data.
+
+The regression guard is `tests/OrderSphere.Notification.Tests/Logging/LogRedactionTests.cs`,
+which asserts a customer email address never reaches a sink in plaintext.
 
 ### Where telemetry goes
 

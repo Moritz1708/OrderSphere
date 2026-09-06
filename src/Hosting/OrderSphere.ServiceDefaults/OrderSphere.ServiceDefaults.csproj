@@ -27,6 +27,11 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
     <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
+    <!-- ExtendedLoggerFactory: log enrichment + redaction, wired in ConfigureOpenTelemetry.
+         Enrichment tags land in the log-record state and are picked up as attributes
+         by the OpenTelemetry logger provider. See docs/logging.md. -->
+    <PackageReference Include="Microsoft.Extensions.Telemetry" />
+    <PackageReference Include="Microsoft.Extensions.Compliance.Redaction" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <!-- JwtBearer is part of Microsoft.AspNetCore.App but must be explicitly
          referenced from non-Web SDK projects to make the types visible. -->
