@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <!--
     Solution-wide compiler and analysis settings.
@@ -29,10 +29,10 @@
     <NoWarn>$(NoWarn);CS8669</NoWarn>
   </PropertyGroup>
 
-  <!-- Solution-weite Produktversion. Einziger Pflegeort; gilt für alle Projekte.
+  <!-- Solution-weite Produktversion. Einziger Pflegeort; gilt fÃ¼r alle Projekte.
        MSBuild leitet aus VersionPrefix AssemblyVersion, FileVersion und
        InformationalVersion ab. VersionSuffix (z. B. -rc.1) bleibt per Build-Flag
-       ergänzbar, ohne den Prefix zu ändern. -->
+       ergÃ¤nzbar, ohne den Prefix zu Ã¤ndern. -->
   <PropertyGroup>
     <VersionPrefix>1.0.4</VersionPrefix>
     <Product>OrderSphere</Product>
@@ -48,13 +48,5 @@
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled</ContainerBaseImage>
     <ContainerUser>app</ContainerUser>
   </PropertyGroup>
-
-  <!-- Aktiviert die eingecheckten Git-Hooks unter .githooks/ (Branch-Namenskonvention,
-       siehe docs/branch-naming-convention.md). Läuft bei jedem lokalen Build einmal pro
-       Clone; no-op sobald core.hooksPath bereits gesetzt ist. Übersprungen in CI
-       (dort sind Hooks irrelevant und der Checkout hat oft kein .git/config zum Schreiben). -->
-  <Target Name="InstallGitHooks" BeforeTargets="Build" Condition="'$(CI)' == ''">
-    <Exec Command="git config core.hooksPath .githooks" WorkingDirectory="$(MSBuildThisFileDirectory)" ContinueOnError="WarnAndContinue" StandardOutputImportance="low" StandardErrorImportance="low" />
-  </Target>
 
 </Project>

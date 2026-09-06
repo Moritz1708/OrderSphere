@@ -20,7 +20,10 @@
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Google.Protobuf" />
-    <PackageReference Include="Grpc.Tools" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MessagePack" />
   </ItemGroup>
 

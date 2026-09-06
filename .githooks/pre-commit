@@ -1,3 +1,0 @@
-#!/bin/sh
-DIR="$(dirname "$0")"
-sh "$DIR/validate-branch-name.sh" || exit 1
