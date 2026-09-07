@@ -22,7 +22,7 @@ public sealed class HttpBasketClient(HttpClient httpClient, ILogger<HttpBasketCl
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching cart for customer {CustomerId} from Basket", customerId);
+            logger.LogWarning(ex, "Error fetching cart for customer {CustomerId} from Basket", customerId);
             return Result<BasketCartInfo>.Failure(new Error("Basket.Unavailable", "Basket service unavailable."));
         }
     }
@@ -38,7 +38,7 @@ public sealed class HttpBasketClient(HttpClient httpClient, ILogger<HttpBasketCl
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error clearing cart items for customer {CustomerId}", customerId);
+            logger.LogWarning(ex, "Error clearing cart items for customer {CustomerId}", customerId);
             return Result.Failure(new Error("Basket.Unavailable", "Basket service unavailable."));
         }
     }

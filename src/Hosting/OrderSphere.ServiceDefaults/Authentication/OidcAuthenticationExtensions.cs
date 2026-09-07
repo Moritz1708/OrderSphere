@@ -81,10 +81,15 @@ public static class OidcAuthenticationExtensions
                         var audit = ctx.HttpContext.RequestServices
                             .GetRequiredService<ISecurityAuditLogger>();
 
+                        // The exception type names the failure mode (expired, bad signature,
+                        // wrong audience); its Message can echo token content, so it stays out
+                        // of the audit record and is carried by the logger instead.
                         audit.Log(new SecurityAuditEvent(
                             SecurityAuditEventType.TokenValidationFailed,
                             IpAddress: ctx.HttpContext.Connection.RemoteIpAddress?.ToString(),
-                            Details: $"{ctx.Request.Method} {ctx.Request.Path} — {ctx.Exception.GetType().Name}: {ctx.Exception.Message}"));
+                            Details: ctx.Exception.GetType().Name,
+                            RequestMethod: ctx.Request.Method,
+                            RequestPath: ctx.Request.Path));
 
                         return Task.CompletedTask;
                     },
@@ -101,7 +106,9 @@ public static class OidcAuthenticationExtensions
                             audit.Log(new SecurityAuditEvent(
                                 SecurityAuditEventType.LoginFailure,
                                 IpAddress: ctx.HttpContext.Connection.RemoteIpAddress?.ToString(),
-                                Details: $"{ctx.Request.Method} {ctx.Request.Path} — no bearer token"));
+                                Details: "No bearer token",
+                                RequestMethod: ctx.Request.Method,
+                                RequestPath: ctx.Request.Path));
                         }
 
                         return Task.CompletedTask;
@@ -119,7 +126,9 @@ public static class OidcAuthenticationExtensions
                             SecurityAuditEventType.AuthorizationDenied,
                             UserId: userId,
                             IpAddress: ctx.HttpContext.Connection.RemoteIpAddress?.ToString(),
-                            Details: $"{ctx.Request.Method} {ctx.Request.Path} — 403 Forbidden"));
+                            Details: "403 Forbidden",
+                            RequestMethod: ctx.Request.Method,
+                            RequestPath: ctx.Request.Path));
 
                         return Task.CompletedTask;
                     },

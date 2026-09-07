@@ -7,11 +7,15 @@ Binding conventions for log output across all OrderSphere services. Companion to
 ## Pipeline
 
 `Microsoft.Extensions.Logging` with the OpenTelemetry logger provider. There is no Serilog and
-none is planned: the OTel provider is already the single export path to the Aspire dashboard and
-Azure Monitor, and it attaches `trace_id` / `span_id` to every record.
+none is planned: the OTel provider is already the single export path to every sink — the Aspire
+dashboard and Seq locally, Azure Monitor in production — and it attaches `trace_id` / `span_id`
+to every record. Adding a sink means adding an exporter, not a second logging pipeline
+(see [Viewing logs locally](#viewing-logs-locally)).
 
 Two extensions sit on top, both wired centrally in
-`src/Hosting/OrderSphere.ServiceDefaults/Extensions.cs` and therefore active in all 22 hosts:
+`src/Hosting/OrderSphere.ServiceDefaults/Extensions.cs` and therefore active in all 16 hosts that
+call `AddServiceDefaults()` (the Blazor WASM client is not one of them — see
+[Browser logs](#browser-logs)):
 
 | Concern | Package | Entry point |
 |---|---|---|
@@ -32,15 +36,37 @@ Every record carries these without the call site doing anything:
 | `service.name`, `service.version`, `deployment.environment` | OTel `Resource` | all |
 | `trace_id`, `span_id` | OTel logger provider | all (when a trace is active) |
 | `service_instance_id`, `build_version` | `OrderSphereStaticLogEnricher` | all |
-| `tenant_id` | `AmbientTenantContext` via `OrderSphereLogEnricher` | when a tenant scope is open |
-| `correlation_id` | `AmbientCorrelationContext` via `OrderSphereLogEnricher` | requests and message loops |
+| `tenant_id` | `AmbientTenantContext` via `OrderSphereLogEnricher` | requests with an `org_id` claim, and message loops |
+| `correlation_id` | `AmbientCorrelationContext` via `OrderSphereLogEnricher` | requests, message loops and background loops |
 | `user_id` | `IHttpContextAccessor` (`sub` claim) via `OrderSphereLogEnricher` | authenticated HTTP requests |
 | `client_ip_hash` | `RequestContextEnrichmentMiddleware` | HTTP requests |
 | `message_id`, `event_type`, `queue` | `MessageProcessingScope` | Service Bus message loops |
 
 The enricher reads `AsyncLocal` slots rather than `HttpContext`. That is the whole reason worker
 records carry the same fields as API records: the message loop opens the ambient scopes and the
-same singleton enricher picks them up, with no worker code aware of logging infrastructure.
+same singleton enricher picks them up, with no worker code aware of logging infrastructure. The
+one exception is records written after the ambient scopes have unwound but while the request is
+still being handled — see *Unhandled exceptions correlate too* under Correlation.
+
+Three scopes fill those slots, one per kind of work:
+
+| Opened by | Covers | Tenant source |
+|---|---|---|
+| `RequestContextEnrichmentMiddleware` | HTTP requests, after authentication | `org_id` claim (ADR 0012) |
+| `MessageProcessingScope` | Service Bus message loops | `TenantId` on the inbound event |
+| `BackgroundOperationScope` | one iteration of a timer-driven loop | none — background work is cross-tenant |
+
+`tenant_id` is **absent**, not `Guid.Empty`, when a request carries no `org_id` (anonymous
+traffic, or a deployment with Auth0 Organizations not enabled) and on background loops. An
+all-zero GUID would be indistinguishable from a real single-organisation tenant, so the field is
+omitted instead. `ITenantContext` still resolves `TenantId.Default` for persistence, so EF
+stamping and the tenant query filter are unaffected by that choice.
+
+The request scope is not only a logging concern: `ITenantContext`, EF audit stamping, the tenant
+query filter and `IntegrationEvent.TenantId`'s default all read the same slot. That is why a
+command handler never assigns `TenantId` on an event it stages — the middleware's scope is open
+for the whole of endpoint execution, so the default is already correct. An explicit assignment is
+a smell.
 
 ### Naming
 
@@ -57,19 +83,46 @@ One value, end to end:
    (`ApiGateway/Program.cs`). Client-visible id, `correlation_id` and `trace_id` are the same
    string.
 2. `RequestContextEnrichmentMiddleware` opens `AmbientCorrelationContext` from that header and
-   echoes it on the response.
+   echoes it on the response. It also stashes the id on `HttpContext.Items`; see the note on
+   unhandled exceptions below.
 3. `CorrelationPropagationHandler`, registered on `ConfigureHttpClientDefaults`, puts it on every
    outgoing service-to-service call.
 4. `EventBusDiagnostics.Inject` writes it onto the Service Bus message as `x-request-id`.
 5. `MessageProcessingScope` reads it back on the consuming side, falling back to the message's
    `traceparent` trace id and finally to the message id.
-6. Across the outbox — where only `traceparent` is persisted on the row —
-   `EventBusDiagnostics.RestorePublishParent` reopens the correlation scope from the restored
-   trace id. Because step 1 seeds from the trace id, this is the same value; no outbox column and
-   no schema change were needed.
+6. Across the outbox, the row persists the correlation id in its own `CorrelationId` column
+   alongside `TraceParent`, and `EventBusDiagnostics.RestorePublishParent` reopens the scope from
+   it.
+7. Timer-driven work has nothing to inherit, so `BackgroundOperationScope` starts a fresh trace
+   per iteration and seeds the correlation id from it — the same shape as step 1.
+
+Step 6 used to derive the correlation id from the restored trace id instead, on the grounds that
+step 1 seeds one from the other. That equality does not hold: the gateway honours a
+client-supplied `X-Request-Id`, and step 5 falls back to the message id — after either, the
+derivation silently substituted a different id at the outbox boundary and split the chain in two.
+The column is nullable, and rows written before it existed still fall back to the trace id, which
+is what they were correlated by.
 
 `IntegrationEvent.CorrelationId` is unrelated: it is a business idempotency key. Where it is
-logged it is named `EventCorrelationId` to keep the two apart.
+logged it is named `EventCorrelationId` to keep the two apart. `OutboxMessage.CorrelationId` is
+the log-correlation id described above.
+
+Two consequences worth stating, because both were gaps until recently:
+
+- **A client may choose the correlation id.** It is caller-controlled input that ends up in a
+  structured log field, so it is length-capped when persisted. Do not render it as markup.
+- **Background loops correlate too.** The outbox dispatcher's own failure records, the webhook
+  delivery loop, the scheduled jobs and the DLQ monitor each open a scope per iteration. Without
+  it, the records most wanted when a flow has stalled were the ones a `correlation_id` query could
+  not return.
+- **Unhandled exceptions correlate too.** `UseExceptionHandler()` must sit outside
+  `UseOrderSphereRequestLogging()` — it can only catch what runs inside it — so an exception has
+  already unwound past the enrichment middleware, disposing both ambient scopes, by the time
+  `ExceptionHandlerMiddleware` logs it. The `HttpContext` outlives the scopes and is the same
+  instance in both, so `OrderSphereLogEnricher` falls back to `HttpContext.Items` for records
+  written after the unwind. Without that fallback the unhandled 500 — the record an operator
+  reaches for first — was the single record on the request path with no `correlation_id`.
+  `tests/OrderSphere.IntegrationTests/Logging/LogEnrichmentTests.cs` pins this.
 
 ## Levels
 
@@ -126,7 +179,20 @@ them.
 
 The HMAC key comes from `Logging:Redaction:HmacKey`. It is per-deployment: two environments
 produce unrelated hashes. Without configuration a process-lifetime random key is generated —
-redaction still holds, only cross-restart correlation is lost.
+redaction still holds, only cross-restart correlation is lost, and each replica hashes the same
+input differently, so the grouping the HMAC redactor was chosen for stops working across a scaled
+deployment.
+
+The AppHost injects it into every project as the `logging-redaction-hmac-key` parameter. Deployed
+environments take the value from `infra.parameters` in `.github/workflows/release-deploy.yml`;
+locally it comes from user-secrets on the AppHost, like every other secret parameter (see
+*Secret rotation* in
+[architecture.md](architecture.md#internal-service-to-service-authentication)). Set it once per
+clone — any stable value will do, the point is only that it does not change between restarts:
+
+```bash
+dotnet user-secrets set "Parameters:logging-redaction-hmac-key" "$(openssl rand -base64 32)" --project src/Hosting/OrderSphere.AppHost
+```
 
 Two identifiers stay readable by design:
 
@@ -196,6 +262,96 @@ Service-specific overrides (`Yarp`, `Microsoft.EntityFrameworkCore`,
 Both matter: configuration is culture-invariant, but a plain `double.TryParse` uses the host
 culture, where `"1.0"` on a de-DE machine parses as `10` and crashes the sampler at startup.
 Lower the ratio (0.1–0.2) in production to control cost.
+
+## Viewing logs locally
+
+Two sinks receive every record in local development. Both are fed from the same OpenTelemetry
+pipeline; adding Seq did not change or replace the dashboard export.
+
+| Sink | Wiring | Use it for |
+|---|---|---|
+| Aspire dashboard | `OTEL_EXPORTER_OTLP_ENDPOINT`, injected by the AppHost | resource state, metrics, a quick look at one service |
+| Seq (`http://localhost:<port>`) | `AddSeq` in the AppHost, `AddSeqEndpoint` in ServiceDefaults | querying and filtering logs and traces |
+
+The dashboard has no query language and discards its data when the AppHost restarts. Seq indexes
+every property, including the enrichment fields, and `WithDataVolume()` keeps the data across
+restarts. Reach it from the resource list in the dashboard.
+
+Because the enrichment tags are real log-record attributes rather than text in the message, they
+are directly queryable:
+
+```
+correlation_id = '0af7651916cd43dd8448eb211c80319c'
+tenant_id = '...' and @Level in ['Warning', 'Error']
+event_type like 'Order%' and @Exception is not null
+queue = 'payment-requested' and @Level = 'Error'
+```
+
+The first of those is the point of the correlation chain above: one expression returns the log
+records of a whole checkout across the gateway, the APIs, the outbox and the workers.
+
+Two names in the field table above do **not** work verbatim as Seq filters, because Seq separates
+OTLP resource attributes and trace identifiers from the event's own properties. Both forms fail by
+returning zero rows rather than an error, which is the failure mode worth knowing about:
+
+| Field table name | In a Seq filter |
+|---|---|
+| `service.name`, `service.version`, `deployment.environment` | `@Resource.service.name`, and so on |
+| `trace_id`, `span_id` | `TraceId`, `SpanId` |
+
+Everything the enrichers add — `correlation_id`, `tenant_id`, `user_id`, `client_ip_hash`,
+`build_version`, `service_instance_id` and the `MessageProcessingScope` fields — is a plain event
+property and is queried under exactly the name in the table.
+
+Wiring notes:
+
+- The Seq resource is added in **run mode only**. Production telemetry goes to Application
+  Insights; a developer-tool container has no place in the published manifest.
+- `AddSeqEndpoint` registers an *additional* OTLP exporter (logs and traces) rather than
+  replacing `UseOtlpExporter()`. It activates only when the `seq` connection string is present,
+  so tests and production are unaffected.
+- Its health check is switched off deliberately. A developer-tooling sink must never be able to
+  report a service as unready and stall the Aspire `WaitFor` chains.
+- Seq takes logs and traces over OTLP, **not metrics** — those stay in the Aspire dashboard.
+
+### Querying Seq from an agent
+
+Seq 2026.1 ships a first-party MCP server, delivered through the `seqcli` client rather than
+built into the server. It gives an agent read access to the same queries a developer would run.
+
+```bash
+dotnet tool install --global seqcli
+seqcli mcp install --agent <agent>
+```
+
+It reads `SEQCLI_CONNECTION_SERVERURL` and `SEQCLI_CONNECTION_APIKEY`. The local Seq container
+runs with `SEQ_FIRSTRUN_NOAUTHENTICATION`, so no API key is needed against it; a hosted instance
+needs one with Read permission. `seqcli mcp install --help` lists the supported agents.
+
+The AppHost pins the image to `2026.1` for this reason — Aspire 13.5.3 still defaults to
+`datalust/seq:2025.2`, which predates the MCP release.
+
+### OrderSphere dashboard
+
+[`docs/seq/create-ordersphere-dashboard.ps1`](seq/create-ordersphere-dashboard.ps1) builds an
+"OrderSphere" dashboard covering the fields above: request/error/warning/exception counts,
+events and warnings by service, Service Bus queue and integration-event volume, tenant and
+correlation-chain breakdowns, and a live feed of recent warnings and errors. Seq's data volume
+persists it across AppHost restarts, so this is a one-time setup per environment (or after a
+volume reset):
+
+```powershell
+./docs/seq/create-ordersphere-dashboard.ps1 -ServerUrl http://localhost:<seq-port>
+```
+
+The port comes from the `seq` resource's http endpoint in the Aspire dashboard. Re-running the
+script updates the existing dashboard in place rather than creating a duplicate. Every chart
+query is a plain Seq query and can be run standalone with `seqcli query -q "..."` — see the
+script's comments for the two rough edges this ran into: `ChartQuery.SignalExpression` 500s on
+`POST /api/dashboards/` on this Seq build (worked around by inlining the built-in signals'
+filter text instead), and a nested OTel resource attribute like `service.name` must be grouped
+by as `@Resource.service.name` (dot path) — `@ra['service.name']` parses but silently returns
+null.
 
 ## Browser logs
 

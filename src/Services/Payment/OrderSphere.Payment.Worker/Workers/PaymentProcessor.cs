@@ -51,7 +51,6 @@ public sealed class PaymentProcessor(
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
         using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
-        var messageId = args.Message.MessageId;
         logger.MessageReceived();
 
         try
@@ -75,7 +74,7 @@ public sealed class PaymentProcessor(
 
             if (await inboxStore.HasBeenProcessedAsync(evt.Id))
             {
-                logger.LogInformation("Event {EventId} already processed. Completing message.", evt.Id);
+                logger.DuplicateMessageIgnored();
                 await args.CompleteMessageAsync(args.Message);
                 return;
             }
@@ -100,7 +99,7 @@ public sealed class PaymentProcessor(
 
             await args.CompleteMessageAsync(args.Message);
             logger.LogInformation("Payment message processed. OrderId: {OrderId}, Succeeded: {Succeeded}",
-                messageId, evt.OrderId, succeeded);
+                evt.OrderId, succeeded);
         }
         catch (Exception ex)
         {
@@ -202,9 +201,8 @@ public sealed class PaymentProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
+
         return Task.CompletedTask;
     }
 

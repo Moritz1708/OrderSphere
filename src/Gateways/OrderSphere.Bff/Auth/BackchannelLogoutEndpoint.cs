@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using OrderSphere.Bff.Logging;
 using OrderSphere.BuildingBlocks.Security;
 
 namespace OrderSphere.Bff.Auth;
@@ -99,17 +100,18 @@ public static class BackchannelLogoutEndpoint
             logger.LogWarning(ex, "logout_token signature validation threw an exception.");
             auditLogger.Log(new SecurityAuditEvent(
                 SecurityAuditEventType.TokenValidationFailed,
-                Details: "Back-channel logout token validation exception: " + ex.Message));
+                Details: "Back-channel logout token validation threw"));
             return Results.BadRequest("Invalid logout_token.");
         }
 
         if (!validationResult.IsValid)
         {
-            logger.LogWarning("logout_token failed validation: {Reason}",
-                validationResult.Exception?.Message ?? "unknown");
+            // Pass the exception rather than its Message: the type and stack trace name the
+            // failure mode, and a validation Message can echo token content into the log.
+            logger.LogWarning(validationResult.Exception, "logout_token failed validation.");
             auditLogger.Log(new SecurityAuditEvent(
                 SecurityAuditEventType.TokenValidationFailed,
-                Details: "logout_token invalid: " + validationResult.Exception?.Message));
+                Details: "logout_token invalid"));
             return Results.BadRequest("Invalid logout_token.");
         }
 
@@ -156,8 +158,7 @@ public static class BackchannelLogoutEndpoint
         var sessionKey = await redisStore.FindKeyBySessionIdAsync(sid);
         if (sessionKey is null)
         {
-            logger.LogInformation(
-                "Back-channel logout: no active session found for sid={Sid} (already expired or logged out).", sid);
+            logger.BackchannelLogoutNoActiveSession(sid);
             return Results.Ok();
         }
 
@@ -167,10 +168,9 @@ public static class BackchannelLogoutEndpoint
             SecurityAuditEventType.BackchannelLogoutRevoked,
             UserId: sub,
             SessionId: sid,
-            Details: $"Session key {sessionKey} removed from Redis."));
+            Details: "Session removed from Redis"));
 
-        logger.LogInformation(
-            "Back-channel logout: session revoked for sid={Sid}, key={Key}.", sid, sessionKey);
+        logger.BackchannelLogoutSessionRevoked(sid, sessionKey);
 
         return Results.Ok();
     }

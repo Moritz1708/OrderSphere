@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
+using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.Webhooks.Domain.Entities;
 using OrderSphere.Webhooks.Domain.Enums;
 using OrderSphere.Webhooks.Infrastructure.Persistence;
@@ -35,17 +36,18 @@ public sealed class WebhookEventProcessor(
         _processor.ProcessErrorAsync += ProcessErrorAsync;
 
         await _processor.StartProcessingAsync(stoppingToken);
+        logger.ProcessorStarted(nameof(WebhookEventProcessor), QueueName);
 
         // Keep the service alive until shutdown is requested.
         await Task.Delay(Timeout.Infinite, stoppingToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         await _processor.StopProcessingAsync();
+        logger.ProcessorStopped(nameof(WebhookEventProcessor));
     }
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
         using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
-        var messageId = args.Message.MessageId;
         logger.MessageReceived();
 
         using var scope = scopeFactory.CreateScope();
@@ -75,8 +77,7 @@ public sealed class WebhookEventProcessor(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex,
-                    "Message body could not be deserialized. Dead-lettering.");
+                logger.MessageUndeserializable(ex);
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: ex.Message,
@@ -84,10 +85,15 @@ public sealed class WebhookEventProcessor(
                 return;
             }
 
+            // Must be set before the Subscriptions query below: the tenant query filter reads
+            // ITenantContext at query-execution time, so resolving the DbContext earlier is fine,
+            // but executing a query before this line would scope it to the wrong tenant.
+            messageScope.SetTenant(ExtractTenantId(body));
+
             // Inbox check — idempotent processing.
             if (await inboxStore.HasBeenProcessedAsync(eventId, args.CancellationToken))
             {
-                logger.LogInformation("Event {EventId} already processed (inbox). Completing message.", eventId);
+                logger.DuplicateMessageIgnored();
                 await args.CompleteMessageAsync(args.Message, args.CancellationToken);
                 return;
             }
@@ -98,7 +104,7 @@ public sealed class WebhookEventProcessor(
             {
                 logger.LogWarning(
                     "Message has event type '{EventType}' with no webhook mapping. Dead-lettering.",
-                    messageId, eventType);
+                    eventType);
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "UnknownEventType",
                     deadLetterErrorDescription: $"No webhook mapping for event type '{eventType}'.",
@@ -117,14 +123,11 @@ public sealed class WebhookEventProcessor(
                 .Where(s => s.ListensTo(webhookEventType.Value))
                 .ToList();
 
-            if (matchingSubscriptions.Count == 0)
-            {
-                logger.LogDebug("No active subscriptions for event type {EventType}.", eventTypeName);
-                await inboxStore.MarkAsProcessedAsync(eventId, eventType, args.CancellationToken);
-                await args.CompleteMessageAsync(args.Message, args.CancellationToken);
-                return;
-            }
-
+            // "No subscriber" is a normal outcome, not a special case: it takes the same path and
+            // produces the same Information record with Count = 0. Previously it returned early
+            // with only a Debug line, which made a completed message indistinguishable from a
+            // processor that never ran — see docs/logging.md, one Information record per message.
+            //
             // Create a delivery record for each matching subscription.
             foreach (var sub in matchingSubscriptions)
             {
@@ -154,9 +157,8 @@ public sealed class WebhookEventProcessor(
 
     private Task ProcessErrorAsync(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
+
         return Task.CompletedTask;
     }
 
@@ -184,6 +186,32 @@ public sealed class WebhookEventProcessor(
             return idProp.GetGuid();
 
         return Guid.NewGuid();
+    }
+
+    /// <summary>
+    /// Reads the tenant off the raw event body. This processor never deserializes a typed event
+    /// (it dispatches on the event type string), but every <c>IntegrationEvent</c> serializes
+    /// <c>TenantId</c> from the base record, so the value is present on the wire.
+    /// <para>
+    /// Falls back to <c>TenantId.Default</c> rather than throwing: messages published before the
+    /// tenant was propagated carry no usable value, and dead-lettering those would turn a
+    /// diagnostics improvement into dropped webhook deliveries.
+    /// </para>
+    /// </summary>
+    private static Guid ExtractTenantId(string body)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("TenantId", out var prop)
+                && prop.TryGetGuid(out var tenantId))
+            {
+                return tenantId;
+            }
+        }
+        catch { /* Body already validated as JSON by ExtractEventId; be defensive anyway. */ }
+
+        return TenantId.Default;
     }
 
     private static WebhookEventType? MapToWebhookEventType(string eventType) => eventType switch

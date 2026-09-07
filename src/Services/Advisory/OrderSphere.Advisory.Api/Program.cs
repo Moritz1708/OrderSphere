@@ -8,6 +8,8 @@ using OrderSphere.Advisory.Api.Workers;
 using OrderSphere.Advisory.Infrastructure;
 using OrderSphere.Advisory.Infrastructure.Persistence;
 using OrderSphere.BuildingBlocks.Auditing;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
+using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Inbox;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Scheduling;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
@@ -48,6 +50,11 @@ builder.AddAdvisoryInfrastructure();
 builder.AddAzureServiceBusClient("azure-service-bus");
 builder.Services.AddScoped<IInboxStore, EfInboxStore<AdvisoryDbContext>>();
 builder.Services.AddHostedService<CustomerErasureProcessor>();
+
+// erasure-advisory is a GDPR erasure queue: a dead-lettered message here is an unfulfilled
+// deletion request, so it needs the same depth gauge and replay surface as its three sibling
+// erasure queues in Ordering, Payment and Invoicing.
+builder.Services.AddDlqAdmin("erasure-advisory");
 
 // Retention cleanup: processed inbox rows and audit log entries past their retention window.
 builder.Services.AddScheduledJob<InboxCleanupJob<AdvisoryDbContext>>();
@@ -109,5 +116,6 @@ app.MapAdvisorEndpoints();
 
 // Admin audit-log surface — the gateway forwards /api/v1/admin/advisory/audit-log/** here.
 app.MapAuditLogAdminEndpoints("api/v1/admin/advisory/audit-log", "AdminPolicy");
+app.MapDlqAdminEndpoints("api/v1/admin/advisory/dlq", "AdminPolicy");
 
 app.Run();

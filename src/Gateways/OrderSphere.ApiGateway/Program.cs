@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using OrderSphere.ApiGateway.Authentication;
+using OrderSphere.BuildingBlocks.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,12 +109,30 @@ app.Use(async (context, next) =>
     if (!context.Request.Headers.ContainsKey("X-Request-Id"))
     {
         // Seeded from the trace id so the client-visible id, the log correlation_id and the
-        // trace are one and the same value — including across the outbox, where only the trace
-        // context is persisted. Same 32-char lowercase hex shape as the previous Guid("N").
+        // trace are one and the same value. A client may still supply its own id, which is why
+        // the outbox persists the correlation id in its own column rather than deriving it from
+        // the trace. Same 32-char lowercase hex shape as the previous Guid("N").
         context.Request.Headers["X-Request-Id"] =
             Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
     }
-    context.Response.Headers["X-Request-Id"] = context.Request.Headers["X-Request-Id"].ToString();
+
+    var correlationId = context.Request.Headers["X-Request-Id"].ToString();
+
+    // On OnStarting rather than assigned here: MapReverseProxy copies the proxied service's
+    // response headers over this one, and that service echoes the same id, so a plain assignment
+    // would reach the client as "id,id". OnStarting runs after the copy, just before the flush.
+    context.Response.OnStarting(() =>
+    {
+        context.Response.Headers["X-Request-Id"] = correlationId;
+        return Task.CompletedTask;
+    });
+
+    // Opened here, not left to UseOrderSphereRequestLogging further down the pipeline: the
+    // authentication and rate-limiting middleware between the two emit the 401/403 audit records
+    // and the 429s, and those were the gateway's only records with no correlation_id — despite
+    // the id already sitting in the request headers at that point.
+    using var correlationScope = AmbientCorrelationContext.BeginScope(correlationId);
+
     await next();
 });
 

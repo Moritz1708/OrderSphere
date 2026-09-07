@@ -76,10 +76,9 @@ public sealed class OrderProcessor(
             if (result.IsSuccess)
             {
                 await args.CompleteMessageAsync(args.Message);
-                // CorrelationId here is the business idempotency key on the event, distinct
-                // from the log correlation_id supplied by enrichment.
-                logger.LogInformation("Message processed. Event correlation {EventCorrelationId}",
-                    evt.CorrelationId);
+                // The event's business idempotency key is already on the "Order ... created"
+                // record below; message_id, event_type and queue come from the scope.
+                logger.MessageProcessed();
             }
             else
             {
@@ -264,9 +263,7 @@ public sealed class OrderProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
         return Task.CompletedTask;
     }
 

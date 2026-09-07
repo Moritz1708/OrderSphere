@@ -71,7 +71,7 @@ public sealed class CustomerErasureProcessor(
 
             if (await inboxStore.HasBeenProcessedAsync(evt.Id, args.CancellationToken))
             {
-                logger.LogInformation("Duplicate erasure-advisory event {EventId} — skipping.", evt.Id);
+                logger.DuplicateMessageIgnored();
                 await args.CompleteMessageAsync(args.Message);
                 return;
             }
@@ -98,9 +98,7 @@ public sealed class CustomerErasureProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
         return Task.CompletedTask;
     }
 

@@ -22,7 +22,7 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching product {ProductId} from Catalog", productId);
+            logger.LogWarning(ex, "Error fetching product {ProductId} from Catalog", productId);
             return Result<CatalogProductInfo>.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }
@@ -48,7 +48,11 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching product names from Catalog");
+            // Product names are presentational only, so an unreachable Catalog degrades to
+            // "no names" rather than failing the caller — hence Success with an empty map.
+            // The log record is the only trace of the degradation, which is why it is a
+            // Warning and not swallowed silently.
+            logger.LogWarning(ex, "Error fetching product names from Catalog. Continuing without names.");
             return Result<IReadOnlyDictionary<Guid, string>>.Success(new Dictionary<Guid, string>());
         }
     }
@@ -67,7 +71,7 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error decrementing stock for product {ProductId}", productId);
+            logger.LogWarning(ex, "Error decrementing stock for product {ProductId}", productId);
             return Result.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }
@@ -86,7 +90,7 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error restoring stock for product {ProductId}", productId);
+            logger.LogWarning(ex, "Error restoring stock for product {ProductId}", productId);
             return Result.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }
@@ -113,7 +117,7 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error reserving stock for correlation {CorrelationId}", correlationId);
+            logger.LogWarning(ex, "Error reserving stock for correlation {CorrelationId}", correlationId);
             return Result.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }
@@ -136,7 +140,7 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error confirming reservation for correlation {CorrelationId}", correlationId);
+            logger.LogWarning(ex, "Error confirming reservation for correlation {CorrelationId}", correlationId);
             return Result.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }
@@ -152,7 +156,7 @@ public sealed class HttpCatalogClient(HttpClient httpClient, ILogger<HttpCatalog
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error releasing reservation for correlation {CorrelationId}", correlationId);
+            logger.LogWarning(ex, "Error releasing reservation for correlation {CorrelationId}", correlationId);
             return Result.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }

@@ -58,6 +58,8 @@ public sealed class NotificationProcessor(
                 return;
             }
 
+            messageScope.SetTenant(evt.TenantId);
+
             await using var scope = scopeFactory.CreateAsyncScope();
             var inboxStore = scope.ServiceProvider.GetRequiredService<IInboxStore>();
             var channels = scope.ServiceProvider.GetRequiredService<IEnumerable<INotificationChannel>>();
@@ -83,7 +85,7 @@ public sealed class NotificationProcessor(
         // Idempotency check — guard against ASB at-least-once redelivery.
         if (await inboxStore.HasBeenProcessedAsync(evt.Id, ct))
         {
-            logger.LogInformation("Duplicate notification event {EventId} — skipping.", evt.Id);
+            logger.DuplicateMessageIgnored();
             return;
         }
 
@@ -117,9 +119,7 @@ public sealed class NotificationProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
         return Task.CompletedTask;
     }
 

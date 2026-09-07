@@ -36,6 +36,8 @@ internal sealed partial class SecurityAuditLogger(ILogger<SecurityAuditLogger> l
             evt.SessionId ?? "-",
             evt.IpAddress ?? "-",
             evt.Details ?? "-",
+            evt.RequestMethod ?? "-",
+            evt.RequestPath ?? "-",
             evt.OccurredAt);
     }
 
@@ -50,7 +52,11 @@ internal sealed partial class SecurityAuditLogger(ILogger<SecurityAuditLogger> l
     /// </para>
     /// <para>
     /// <c>details</c> is written by OrderSphere code, never by request input; it must not be
-    /// used to carry user-supplied text.
+    /// used to carry user-supplied text. It is therefore deliberately unclassified — classifying
+    /// it would erase the one field whose whole purpose is to say what happened. Request context
+    /// has its own fields (<c>auditRequestMethod</c>, <c>auditRequestPath</c>) so callers are not
+    /// tempted to interpolate it into <c>details</c>; the path is a route, not a query string,
+    /// and carries no caller-supplied values.
     /// </para>
     /// </summary>
     [LoggerMessage(
@@ -64,6 +70,8 @@ internal sealed partial class SecurityAuditLogger(ILogger<SecurityAuditLogger> l
         [PseudonymousId] string auditSessionId,
         [PseudonymousId] string auditIpAddress,
         string auditDetails,
+        string auditRequestMethod,
+        string auditRequestPath,
         DateTimeOffset auditOccurredAt);
 }
 

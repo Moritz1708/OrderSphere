@@ -43,7 +43,7 @@ public sealed class RealtimeNotificationProcessor(
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
         using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
-        var messageId = args.Message.MessageId;
+        logger.MessageReceived();
 
         try
         {
@@ -56,6 +56,8 @@ public sealed class RealtimeNotificationProcessor(
                     deadLetterErrorDescription: "Body was not a valid RealtimeNotificationEvent.");
                 return;
             }
+
+            messageScope.SetTenant(evt.TenantId);
 
             await hubContext.Clients.Group(evt.UserId).SendAsync(
                 "ReceiveNotification",
@@ -71,7 +73,7 @@ public sealed class RealtimeNotificationProcessor(
 
             logger.LogInformation(
                 "Pushed {Type} notification to user {UserId}.",
-                evt.Type, evt.UserId, messageId);
+                evt.Type, evt.UserId);
 
             await args.CompleteMessageAsync(args.Message);
         }
@@ -84,9 +86,8 @@ public sealed class RealtimeNotificationProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
+
         return Task.CompletedTask;
     }
 

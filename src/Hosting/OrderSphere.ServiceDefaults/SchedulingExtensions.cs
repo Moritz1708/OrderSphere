@@ -39,7 +39,20 @@ public sealed class ScheduledJobRunner<TJob>(
     ILogger<ScheduledJobRunner<TJob>> logger) : BackgroundService
     where TJob : class, IScheduledJob
 {
-    private static readonly string JobName = typeof(TJob).Name;
+    // Trimmed of the CLR arity marker: typeof(InboxCleanupJob<OrderingDbContext>).Name is
+    // "InboxCleanupJob`1", and every job registered here is generic over its DbContext. The
+    // backtick would otherwise reach the span name, the "job" metric dimension and the failure
+    // log alike, where it has to be escaped in every query that filters on it.
+    private static readonly string JobName = TrimArity(typeof(TJob).Name);
+
+    // Constant per closed generic type, so it is a span name and not a per-iteration value.
+    private static readonly string OperationName = $"scheduled-job:{JobName}";
+
+    private static string TrimArity(string typeName)
+    {
+        var arity = typeName.IndexOf('`');
+        return arity < 0 ? typeName : typeName[..arity];
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -47,17 +60,22 @@ public sealed class ScheduledJobRunner<TJob>(
 
         do
         {
-            try
+            // Opened around the try rather than inside RunOnceAsync so the failure record below
+            // carries the same correlation id as whatever the job logged before it threw.
+            using (BackgroundOperationScope.Begin(OperationName))
             {
-                await RunOnceAsync(stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Scheduled job {Job} failed.", JobName);
+                try
+                {
+                    await RunOnceAsync(stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Scheduled job {Job} failed.", JobName);
+                }
             }
         }
         while (await SafeWaitAsync(timer, stoppingToken));

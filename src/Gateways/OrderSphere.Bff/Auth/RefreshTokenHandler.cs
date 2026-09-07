@@ -101,7 +101,8 @@ public sealed class RefreshTokenHandler : CookieAuthenticationEvents
                 SecurityAuditEventType.RefreshTokenRevoked,
                 UserId: sub,
                 IpAddress: context.HttpContext.Connection.RemoteIpAddress?.ToString(),
-                Details: "Unhandled exception: " + ex.Message));
+                // The exception itself is on the LogError above, with type and stack trace.
+                Details: "Unhandled exception during refresh token rotation"));
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }

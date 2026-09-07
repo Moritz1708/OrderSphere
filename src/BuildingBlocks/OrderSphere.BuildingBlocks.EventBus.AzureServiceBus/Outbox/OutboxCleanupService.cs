@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OrderSphere.BuildingBlocks.Diagnostics;
 using OrderSphere.BuildingBlocks.EventBus.Outbox;
 using OrderSphere.BuildingBlocks.Locking;
 
@@ -33,6 +34,8 @@ public sealed class OutboxCleanupService<TContext>(
         await using var handle = await distributedLock.TryAcquireAsync(lockKey, TimeSpan.FromMinutes(5), ct);
         if (handle is null)
             return;
+
+        using var operation = BackgroundOperationScope.Begin("outbox-cleanup");
 
         try
         {

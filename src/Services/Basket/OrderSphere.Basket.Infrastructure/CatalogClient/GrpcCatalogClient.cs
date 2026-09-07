@@ -29,7 +29,7 @@ public sealed class GrpcCatalogClient(
         }
         catch (RpcException ex)
         {
-            logger.LogError(ex, "gRPC error fetching product {ProductId} from Catalog", productId);
+            logger.LogWarning(ex, "gRPC error fetching product {ProductId} from Catalog", productId);
             return Result<CatalogProductInfo>.Failure(new Error("Catalog.Unavailable", "Catalog service unavailable."));
         }
     }
@@ -59,7 +59,7 @@ public sealed class GrpcCatalogClient(
         {
             // Cart enrichment degrades gracefully: an unreachable Catalog yields an empty map,
             // so the cart still renders (names/prices fall back to placeholders).
-            logger.LogError(ex, "gRPC error fetching product infos from Catalog");
+            logger.LogWarning(ex, "gRPC error fetching product infos from Catalog. Continuing without enrichment.");
             return Result<IReadOnlyDictionary<Guid, CatalogProductInfo>>.Success(
                 new Dictionary<Guid, CatalogProductInfo>());
         }

@@ -1,4 +1,7 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -49,6 +52,12 @@ public sealed class LogEnrichmentTests
         tags.Should().Contain("OrderId", "42");
     }
 
+    /// <summary>
+    /// This is the canonical encoding of a deliberate decision, not just an absence check:
+    /// anonymous traffic and background work open no tenant scope, so <c>tenant_id</c> is absent
+    /// rather than stamped with <c>TenantId.Default</c>. An all-zero GUID on every anonymous
+    /// request would be indistinguishable from a genuine single-organisation tenant.
+    /// </summary>
     [Fact]
     public void Record_omits_tenant_and_correlation_when_no_scope_is_open()
     {
@@ -61,6 +70,43 @@ public sealed class LogEnrichmentTests
 
         tags.Should().NotContainKey("tenant_id");
         tags.Should().NotContainKey("correlation_id");
+    }
+
+    /// <summary>
+    /// The record an operator reaches for first — an unhandled 500 — is the one the ambient scopes
+    /// cannot cover. <c>UseExceptionHandler()</c> has to sit outside <c>UseOrderSphereRequestLogging()</c>
+    /// to catch anything at all (every host registers them in that order), so by the time it logs,
+    /// the exception has already unwound past the enrichment middleware and disposed both scopes.
+    /// This pins the <c>HttpContext.Items</c> fallback that closes the gap; it fails against a
+    /// build where the enricher only reads the <c>AsyncLocal</c> slots.
+    /// </summary>
+    [Fact]
+    public async Task Unhandled_exception_record_carries_the_correlation_id_after_the_scope_unwound()
+    {
+        const string correlationId = "corr-survives-unwind";
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.AddServiceDefaults();
+        builder.Services.AddOrderSphereRequestLogging();
+        builder.Services.AddProblemDetails();
+        builder.Logging.AddFakeLogging();
+
+        await using var app = builder.Build();
+        app.UseExceptionHandler();
+        app.UseOrderSphereRequestLogging();
+        app.MapGet("/boom", void () => throw new InvalidOperationException("deliberate"));
+
+        await app.StartAsync();
+
+        using var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Request-Id", correlationId);
+        await client.GetAsync("/boom");
+
+        var errorRecord = app.Services.GetFakeLogCollector().GetSnapshot()
+            .Should().ContainSingle(r => r.Level == LogLevel.Error).Subject;
+
+        TagsOf(errorRecord).Should().Contain("correlation_id", correlationId);
     }
 
     [Fact]

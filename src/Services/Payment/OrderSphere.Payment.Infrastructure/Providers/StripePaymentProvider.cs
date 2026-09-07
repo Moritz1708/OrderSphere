@@ -49,8 +49,7 @@ internal sealed class StripePaymentProvider(
         }
         catch (StripeException ex)
         {
-            logger.LogWarning(ex, "Stripe authorization failed for order {OrderId}: {Message}",
-                request.OrderId, ex.Message);
+            logger.LogWarning(ex, "Stripe authorization failed for order {OrderId}.", request.OrderId);
             return Result<PaymentProviderResult>.Failure(PaymentErrors.AuthorizationFailed);
         }
     }
@@ -67,7 +66,7 @@ internal sealed class StripePaymentProvider(
         }
         catch (StripeException ex)
         {
-            logger.LogWarning(ex, "Stripe capture failed for intent {IntentId}: {Message}", transactionId, ex.Message);
+            logger.LogWarning(ex, "Stripe capture failed for intent {IntentId}.", transactionId);
             return Result<PaymentProviderResult>.Failure(PaymentErrors.CaptureFailed);
         }
     }
@@ -87,7 +86,7 @@ internal sealed class StripePaymentProvider(
         }
         catch (StripeException ex)
         {
-            logger.LogWarning(ex, "Stripe refund failed for intent {IntentId}: {Message}", transactionId, ex.Message);
+            logger.LogWarning(ex, "Stripe refund failed for intent {IntentId}.", transactionId);
             return Result.Failure(PaymentErrors.RefundFailed);
         }
     }

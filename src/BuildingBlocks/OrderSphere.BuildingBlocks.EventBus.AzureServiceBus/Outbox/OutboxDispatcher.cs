@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OrderSphere.BuildingBlocks.Diagnostics;
 using OrderSphere.BuildingBlocks.EventBus.Outbox;
 using OrderSphere.BuildingBlocks.Locking;
 
@@ -31,6 +32,12 @@ public sealed class OutboxDispatcher<TContext>(
         await using var handle = await distributedLock.TryAcquireAsync(lockKey, LockTtl, ct);
         if (handle is null)
             return;
+
+        // Wraps the whole batch, not just the dispatch of one row: the poison-count warning, the
+        // per-message retry/permanent-failure records and the transient loop error below all sit
+        // outside RestorePublishParent, and they are precisely the records wanted when a flow has
+        // stalled. Per-row context nests inside this scope in DispatchAsync.
+        using var operation = BackgroundOperationScope.Begin("outbox-dispatch");
 
         try
         {
@@ -108,9 +115,10 @@ public sealed class OutboxDispatcher<TContext>(
                 $"No handler registered for outbox event type '{message.Type}'. " +
                 $"Registered types: {string.Join(", ", handlers.Keys)}");
 
-        // Restore the originating trace context so the publish (which happens here, on the
-        // dispatcher's timer) joins the trace that produced the outbox row.
-        using (EventBusDiagnostics.RestorePublishParent(message.TraceParent))
+        // Restore the originating trace context and correlation id so the publish (which happens
+        // here, on the dispatcher's timer) rejoins both the trace and the correlation chain that
+        // produced the outbox row.
+        using (EventBusDiagnostics.RestorePublishParent(message.TraceParent, message.CorrelationId))
         {
             await handler.HandleAsync(message.Content, ct);
         }

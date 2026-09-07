@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
+using OrderSphere.Bff.Logging;
 
 namespace OrderSphere.Bff.Auth;
 
@@ -53,10 +54,10 @@ public sealed class RedisTicketStore : ITicketStore
                 sidOptions.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(8);
 
             await _cache.SetStringAsync(SidPrefix + sid, key, sidOptions);
-            _logger.LogDebug("SID index written: sid={Sid} -> {Key}", sid, key);
+            _logger.SidIndexWritten(sid, key);
         }
 
-        _logger.LogDebug("Session ticket stored: {Key}", key);
+        _logger.SessionTicketStored(key);
         return key;
     }
 
@@ -94,14 +95,14 @@ public sealed class RedisTicketStore : ITicketStore
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to unprotect session ticket {Key}. Treating as missing.", key);
+            _logger.SessionTicketUnprotectFailed(ex, key);
             return null;
         }
     }
 
     public Task RemoveAsync(string key)
     {
-        _logger.LogDebug("Session ticket removed: {Key}", key);
+        _logger.SessionTicketRemoved(key);
         return _cache.RemoveAsync(key);
     }
 }

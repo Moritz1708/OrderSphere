@@ -149,7 +149,10 @@ public sealed class CheckoutCartCommandHandler(
                 var releaseResult = await catalogClient.ReleaseReservationAsync(correlationId, CancellationToken.None);
                 if (releaseResult.IsFailure)
                 {
-                    logger.LogError(
+                    // Warning, not Error: this is a handled outcome with a designed fallback —
+                    // the Catalog TTL sweeper reclaims the hold. Nothing is lost and no one
+                    // needs to act.
+                    logger.LogWarning(
                         "COMPENSATION: immediate reservation release failed for CorrelationId {CorrelationId}; TTL sweeper will reclaim it.",
                         correlationId);
                 }

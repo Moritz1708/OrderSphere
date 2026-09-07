@@ -37,6 +37,17 @@ public static partial class ProcessorLog
         Message = "Message could not be deserialized. Dead-lettering.")]
     public static partial void MessageUndeserializable(this ILogger logger);
 
+    /// <summary>
+    /// Same condition as <see cref="MessageUndeserializable"/>, for the call sites where
+    /// deserialization threw rather than returning null. Separate EventId because the
+    /// <c>[LoggerMessage]</c> generator rejects two methods sharing one (SYSLIB1006).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 1109,
+        Level = LogLevel.Error,
+        Message = "Message could not be deserialized. Dead-lettering.")]
+    public static partial void MessageUndeserializable(this ILogger logger, Exception exception);
+
     [LoggerMessage(
         EventId = 1104,
         Level = LogLevel.Debug,

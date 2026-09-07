@@ -335,16 +335,23 @@ customMetrics
 ### Dead-letter admin: inspection and replay
 
 Each message-consuming host (Ordering.Worker, Payment.Worker, Notification.Worker, Webhooks.Worker,
-Invoicing.Api) exposes an admin-protected dead-letter surface for the queues it owns, fronted by the
-API Gateway under `/api/v1/admin/{slug}/dlq`:
+Invoicing.Api, Advisory.Api) exposes an admin-protected dead-letter surface for the queues it owns,
+fronted by the API Gateway under `/api/v1/admin/{slug}/dlq`. The owned queues are the arguments to
+each host's `AddDlqAdmin(...)` call:
 
 | Slug | Host | Owned queues |
 |---|---|---|
-| `ordering` | ordersphere-ordering-worker | orders, payment-results, payment-refunds, order-history |
-| `payment` | ordersphere-payment-worker | payment-requests, order-confirmation-failed, refund-requested |
+| `ordering` | ordersphere-ordering-worker | orders, payment-results, payment-refunds, order-history, erasure-ordering |
+| `payment` | ordersphere-payment-worker | payment-requests, order-confirmation-failed, refund-requested, erasure-payment |
 | `notification` | ordersphere-notification-worker | notification-orders, invoice-ready |
 | `webhooks` | ordersphere-webhooks-worker | webhook-events |
-| `invoicing` | ordersphere-invoicing | invoice-generation |
+| `invoicing` | ordersphere-invoicing | invoice-generation, erasure-invoicing |
+| `advisory` | ordersphere-advisory | erasure-advisory |
+
+The `erasure-*` queues are the GDPR erasure fan-out (D1): `UserProfile` stages one
+`CustomerErasureRequestedIntegrationEvent`, and each PII-holding service consumes it from its own
+queue. A message dead-lettered there means one service did not complete an erasure request, so it
+is the set to check first when an erasure is reported as incomplete.
 
 Endpoints (all require a bearer token with the `admin` role):
 

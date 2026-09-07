@@ -31,26 +31,42 @@ public static class EventBusDiagnostics
     private const string CorrelationIdProperty = "x-request-id";
 
     // The OutboxDispatcher publishes on a timer, long after the originating request/consume
-    // completed, so the original context is no longer on Activity.Current. It is persisted on the
-    // outbox row and restored here as an ambient parent for the publish span.
+    // completed, so the original context is no longer on Activity.Current. Both the trace context
+    // and the log-correlation id are persisted on the outbox row and restored here — the trace as
+    // an ambient parent for the publish span, the correlation id as an ambient scope.
     private static readonly AsyncLocal<ActivityContext?> AmbientPublishParent = new();
 
     /// <summary>
-    /// Restores the originating trace context (captured when the outbox row was written) so the
-    /// publish span and everything downstream join the original trace. Dispose to clear it.
+    /// Restores the originating trace context and log-correlation id (both captured when the
+    /// outbox row was written) so the publish span and everything downstream rejoin the original
+    /// trace <em>and</em> the original <c>correlation_id</c>. Dispose to clear both.
     /// </summary>
-    public static IDisposable RestorePublishParent(string? traceParent)
+    /// <param name="correlationId">
+    /// The persisted log-correlation id. Pass <see langword="null"/> only for rows written before
+    /// the column existed; the trace id is then used, which is what those rows were correlated by.
+    /// </param>
+    public static IDisposable RestorePublishParent(string? traceParent, string? correlationId)
     {
         var previous = AmbientPublishParent.Value;
         var parsed = ActivityContext.TryParse(traceParent, null, isRemote: true, out var ctx);
         AmbientPublishParent.Value = parsed ? ctx : null;
 
-        // The log-correlation id equals the trace id of the originating operation (the API
-        // Gateway seeds X-Request-Id from it), so restoring the trace context also restores
-        // correlation across the outbox boundary — no extra outbox column needed.
-        var correlationScope = parsed
-            ? AmbientCorrelationContext.BeginScope(ctx.TraceId.ToString())
-            : null;
+        // Prefer the id that was actually ambient when the row was written. Deriving it from the
+        // trace id is only correct while correlation_id == trace_id, which the gateway breaks by
+        // honouring a client-supplied X-Request-Id and a consumer breaks by falling back to the
+        // message id — so the derivation is now the legacy fallback, not the rule.
+        //
+        // This also opens a scope when there is no usable trace context at all, which the
+        // previous version did not: without it Inject() below omitted x-request-id entirely, the
+        // consumer fell through to the message id, and that value was then persisted on the next
+        // outbox hop — permanently severing the chain.
+        var resolved = correlationId is { Length: > 0 }
+            ? correlationId
+            : parsed ? ctx.TraceId.ToString() : null;
+
+        var correlationScope = resolved is null
+            ? null
+            : AmbientCorrelationContext.BeginScope(resolved);
 
         return new ParentScope(previous, correlationScope);
     }
@@ -80,8 +96,14 @@ public static class EventBusDiagnostics
     }
 
     /// <summary>
-    /// Reads the log-correlation id carried on an inbound message, falling back to the message's
-    /// trace id so that a message published before this property existed still correlates.
+    /// Reads the log-correlation id carried on an inbound message.
+    /// <para>
+    /// The two fallbacks are for messages that predate the correlation property, not statements
+    /// that the values are equivalent: the trace id correlates such a message to its originating
+    /// operation, and the message id is a last resort that at least keeps the records of one
+    /// message together. A message published by current code always carries the property, because
+    /// every publishing path now has an ambient correlation id to inject.
+    /// </para>
     /// </summary>
     public static string ReadCorrelationId(ServiceBusReceivedMessage message)
     {

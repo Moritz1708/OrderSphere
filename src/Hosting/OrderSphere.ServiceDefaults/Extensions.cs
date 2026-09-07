@@ -135,6 +135,10 @@ public static class Extensions
                     .AddSource("OrderSphere.EventBus")
                     // Per-request (MediatR/CQRS handler) spans from the LoggingBehavior.
                     .AddSource("OrderSphere.Application")
+                    // One span per iteration of a timer-driven loop (outbox dispatch, webhook
+                    // delivery, scheduled jobs, DLQ monitoring) — see BackgroundOperationScope.
+                    // Without this registration those loops get no trace and no correlation id.
+                    .AddSource("OrderSphere.Background")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>
@@ -234,6 +238,17 @@ public static class Extensions
         if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
         {
             builder.Services.AddOpenTelemetry().UseAzureMonitor();
+        }
+
+        // Local development: the AppHost adds Seq as a container in run mode and injects
+        // ConnectionStrings__seq. AddSeqEndpoint registers an additional OTLP exporter for
+        // logs and traces — the dashboard exporter above stays untouched and keeps receiving
+        // everything. Absent the connection string (tests, production) this is a no-op.
+        if (!string.IsNullOrWhiteSpace(builder.Configuration["ConnectionStrings:seq"]))
+        {
+            // The health check is deliberately off: a developer-tooling sink must never be
+            // able to report a service as unready and stall the Aspire WaitFor chains.
+            builder.AddSeqEndpoint("seq", settings => settings.DisableHealthChecks = true);
         }
 
         return builder;

@@ -91,7 +91,7 @@ public sealed class PaymentRefundProcessor(
     {
         if (await inboxStore.HasBeenProcessedAsync(evt.Id, ct))
         {
-            logger.LogInformation("Event {EventId} already processed.", evt.Id);
+            logger.DuplicateMessageIgnored();
             return;
         }
 
@@ -153,9 +153,7 @@ public sealed class PaymentRefundProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
         return Task.CompletedTask;
     }
 

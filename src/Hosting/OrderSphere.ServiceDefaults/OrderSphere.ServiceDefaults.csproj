@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -32,6 +32,10 @@
          by the OpenTelemetry logger provider. See docs/logging.md. -->
     <PackageReference Include="Microsoft.Extensions.Telemetry" />
     <PackageReference Include="Microsoft.Extensions.Compliance.Redaction" />
+    <!-- Local-development log/trace sink. AddSeqEndpoint registers an additional OTLP
+         exporter next to the dashboard one; it stays inactive wherever no "seq"
+         connection string is injected (tests, production). -->
+    <PackageReference Include="Aspire.Seq" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <!-- JwtBearer is part of Microsoft.AspNetCore.App but must be explicitly
          referenced from non-Web SDK projects to make the types visible. -->

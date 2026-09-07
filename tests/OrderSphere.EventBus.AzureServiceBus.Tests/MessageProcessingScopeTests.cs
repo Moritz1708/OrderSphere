@@ -35,8 +35,12 @@ public sealed class MessageProcessingScopeTests
     [Fact]
     public void Begin_falls_back_to_the_trace_id_when_no_correlation_property_is_present()
     {
-        // Messages published through the outbox carry only traceparent; the trace id is the
-        // correlation id by construction (the gateway seeds X-Request-Id from it).
+        // Legacy path: messages published before the correlation property existed carry only
+        // traceparent, and the trace id is the best available correlation id for them. This is
+        // not a claim that the two values are equivalent — they are not, which is why the outbox
+        // now persists the correlation id in its own column (see EventBusDiagnosticsTests).
+        // Current publishers always set x-request-id, so this branch covers in-flight messages
+        // across a deploy, not steady state.
         var traceId = ActivityTraceId.CreateRandom().ToString();
         var spanId = ActivitySpanId.CreateRandom().ToString();
         var message = Message(properties: new Dictionary<string, object>
