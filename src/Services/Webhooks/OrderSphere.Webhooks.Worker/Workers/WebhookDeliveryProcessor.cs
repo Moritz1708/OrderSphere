@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using OrderSphere.BuildingBlocks.Diagnostics;
 using OrderSphere.BuildingBlocks.Locking;
 using OrderSphere.Webhooks.Domain.Enums;
 using OrderSphere.Webhooks.Infrastructure.Persistence;
@@ -36,16 +37,24 @@ public sealed class WebhookDeliveryProcessor(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
+            // Covers the whole batch, including the outbound HTTP calls. Beyond grouping this
+            // iteration's records, it gives CorrelationPropagationHandler an ambient id to put on
+            // the "WebhookDelivery" client — the handler was already registered but never fired
+            // here, because nothing had opened a correlation scope, so a partner's failed
+            // delivery carried no id linking it back to the event that produced it.
+            using (BackgroundOperationScope.Begin("webhook-delivery"))
             {
-                var delivered = await ProcessPendingDeliveriesAsync(stoppingToken);
-                if (delivered == 0)
+                try
+                {
+                    var delivered = await ProcessPendingDeliveriesAsync(stoppingToken);
+                    if (delivered == 0)
+                        await Task.Delay(PollInterval, stoppingToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.LogError(ex, "Unhandled error in webhook delivery loop.");
                     await Task.Delay(PollInterval, stoppingToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Unhandled error in webhook delivery loop.");
-                await Task.Delay(PollInterval, stoppingToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+                }
             }
         }
     }

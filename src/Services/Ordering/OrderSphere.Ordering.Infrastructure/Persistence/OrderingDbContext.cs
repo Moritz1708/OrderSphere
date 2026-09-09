@@ -36,13 +36,7 @@ public sealed class OrderingDbContext(
     internal DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
 
     public void AddOutboxMessage(string type, string content)
-        => OutboxMessages.Add(new OutboxMessage
-        {
-            Type = type,
-            Content = content,
-            // Capture the current trace context so the asynchronous dispatch joins this trace.
-            TraceParent = Activity.Current?.Id
-        });
+        => OutboxMessages.Add(OutboxMessage.Create(type, content));
     internal DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
 
     private IDbContextTransaction? _transaction;

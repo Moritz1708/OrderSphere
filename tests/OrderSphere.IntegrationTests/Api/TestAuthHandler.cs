@@ -11,6 +11,11 @@ namespace OrderSphere.IntegrationTests.Api;
 /// when it carries an <c>X-Test-Sub</c> header (the OIDC <c>sub</c> claim); roles are supplied via a
 /// comma-separated <c>X-Test-Roles</c> header. A request with no <c>X-Test-Sub</c> stays anonymous,
 /// so endpoints guarded by <c>RequireAuthorization()</c> challenge with 401 exactly as in production.
+/// <para>
+/// An optional <c>X-Test-Org</c> header emits the Auth0 Organizations <c>org_id</c> claim
+/// (ADR 0012). It is opt-in so that existing tests keep resolving <c>TenantId.Default</c> and are
+/// unaffected by tenant scoping.
+/// </para>
 /// </summary>
 internal sealed class TestAuthHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -26,6 +31,9 @@ internal sealed class TestAuthHandler(
     public const string SubHeader = "X-Test-Sub";
     public const string RolesHeader = "X-Test-Roles";
 
+    /// <summary>Supplies the Auth0 <c>org_id</c> claim; omitted means no tenant (ADR 0012).</summary>
+    public const string OrgHeader = "X-Test-Org";
+
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue(SubHeader, out var sub) || string.IsNullOrWhiteSpace(sub))
@@ -37,6 +45,11 @@ internal sealed class TestAuthHandler(
             new("name", "Test User"),
             new("email", "test-user@example.com"),
         };
+
+        if (Request.Headers.TryGetValue(OrgHeader, out var org) && !string.IsNullOrWhiteSpace(org))
+        {
+            claims.Add(new Claim("org_id", org!));
+        }
 
         if (Request.Headers.TryGetValue(RolesHeader, out var roles))
         {

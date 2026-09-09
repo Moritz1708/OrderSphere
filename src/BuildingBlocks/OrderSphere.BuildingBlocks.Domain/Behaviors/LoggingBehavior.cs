@@ -6,7 +6,7 @@ using OrderSphere.BuildingBlocks.Primitives;
 
 namespace OrderSphere.BuildingBlocks.Behaviors;
 
-public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+public sealed partial class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
@@ -14,7 +14,7 @@ public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior
     {
         var requestName = typeof(TRequest).Name;
 
-        logger.LogDebug("Handling {RequestName}", requestName);
+        RequestStarting(logger, requestName);
 
         using var activity = ApplicationDiagnostics.ActivitySource.StartActivity(requestName);
         var sw = Stopwatch.StartNew();
@@ -29,13 +29,11 @@ public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior
                 outcome = "failure";
                 activity?.SetTag("request.outcome", outcome);
                 activity?.SetTag("error.code", failure.Error.Code);
-                logger.LogWarning(
-                    "{RequestName} failed in {ElapsedMs}ms — [{ErrorCode}] {ErrorDescription}",
-                    requestName, sw.ElapsedMilliseconds, failure.Error.Code, failure.Error.Description);
+                RequestFailed(logger, requestName, sw.ElapsedMilliseconds, failure.Error.Code, failure.Error.Description);
             }
             else
             {
-                logger.LogInformation("{RequestName} completed in {ElapsedMs}ms", requestName, sw.ElapsedMilliseconds);
+                RequestCompleted(logger, requestName, sw.ElapsedMilliseconds);
             }
 
             return response;
@@ -45,7 +43,7 @@ public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior
             sw.Stop();
             outcome = "exception";
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            logger.LogError(ex, "{RequestName} threw after {ElapsedMs}ms", requestName, sw.ElapsedMilliseconds);
+            RequestThrew(logger, ex, requestName, sw.ElapsedMilliseconds);
             throw;
         }
         finally
@@ -56,4 +54,26 @@ public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior
                 new KeyValuePair<string, object?>("outcome", outcome));
         }
     }
+
+    // EventId range 1000-1099 (BuildingBlocks, see docs/logging.md).
+
+    [LoggerMessage(EventId = 1001, Level = LogLevel.Debug, Message = "Handling {requestName}.")]
+    private static partial void RequestStarting(ILogger logger, string requestName);
+
+    // Debug, not Information: this fires for every query on every API, and the duration it
+    // reports is already carried by the request span and the ordersphere.mediatr.request.duration
+    // histogram. An Information record per read would be pure duplication at the highest volume
+    // point in the system. Failures below stay at Warning/Error, where the level is the signal.
+    [LoggerMessage(EventId = 1002, Level = LogLevel.Debug, Message = "{requestName} completed in {elapsedMs}ms.")]
+    private static partial void RequestCompleted(ILogger logger, string requestName, long elapsedMs);
+
+    [LoggerMessage(
+        EventId = 1003,
+        Level = LogLevel.Warning,
+        Message = "{requestName} failed in {elapsedMs}ms: [{errorCode}] {errorDescription}")]
+    private static partial void RequestFailed(
+        ILogger logger, string requestName, long elapsedMs, string errorCode, string errorDescription);
+
+    [LoggerMessage(EventId = 1004, Level = LogLevel.Error, Message = "{requestName} threw after {elapsedMs}ms.")]
+    private static partial void RequestThrew(ILogger logger, Exception exception, string requestName, long elapsedMs);
 }

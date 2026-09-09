@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using OrderSphere.BuildingBlocks.Contracts.Events;
 using OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 using OrderSphere.BuildingBlocks.EventBus.Inbox;
-using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.Payment.Domain.Enums;
 using OrderSphere.Payment.Infrastructure.Persistence;
@@ -40,7 +39,7 @@ public sealed class OrderConfirmationFailedProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("OrderConfirmationFailedProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(OrderConfirmationFailedProcessor), QueueName);
 
         try
         {
@@ -50,29 +49,28 @@ public sealed class OrderConfirmationFailedProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("OrderConfirmationFailedProcessor stopped.");
+            logger.ProcessorStopped(nameof(OrderConfirmationFailedProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
-        logger.LogInformation("Received order-confirmation-failed message {MessageId}", messageId);
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<OrderConfirmationFailedIntegrationEvent>();
             if (evt is null)
             {
-                logger.LogError("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid OrderConfirmationFailedIntegrationEvent.");
                 return;
             }
 
-            using var tenantScope = AmbientTenantContext.BeginScope(evt.TenantId);
+            messageScope.SetTenant(evt.TenantId);
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
@@ -85,7 +83,7 @@ public sealed class OrderConfirmationFailedProcessor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception processing order-confirmation-failed {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }
@@ -99,7 +97,7 @@ public sealed class OrderConfirmationFailedProcessor(
     {
         if (await inboxStore.HasBeenProcessedAsync(evt.Id, ct))
         {
-            logger.LogInformation("Event {EventId} already processed.", evt.Id);
+            logger.DuplicateMessageIgnored();
             return;
         }
 
@@ -109,7 +107,7 @@ public sealed class OrderConfirmationFailedProcessor(
         if (payment is null)
         {
             // No capture to reverse — nothing to refund. Mark processed to avoid endless retry.
-            logger.LogError("No payment found for order {OrderId} on confirmation failure; cannot refund.", evt.OrderId);
+            logger.LogWarning("No payment found for order {OrderId} on confirmation failure; nothing to refund.", evt.OrderId);
             await inboxStore.MarkAsProcessedAsync(evt.Id, nameof(OrderConfirmationFailedIntegrationEvent), ct);
             return;
         }
@@ -161,9 +159,7 @@ public sealed class OrderConfirmationFailedProcessor(
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
         return Task.CompletedTask;
     }
 

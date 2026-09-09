@@ -253,7 +253,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogCritical(ex.Message);
+            Logger.LogWarning(ex, "Advisor chat request failed; showing the fallback reply.");
             reply.Text = "Entschuldigung, der Berater ist gerade nicht erreichbar.";
         }
         finally

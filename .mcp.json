@@ -2,15 +2,31 @@
   "mcpServers": {
     "aspire": {
       "command": "aspire",
-      "args": ["agent", "mcp"]
+      "args": [
+        "agent",
+        "mcp"
+      ]
     },
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     },
     "postgres": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "${ORDERSPHERE_PG_READONLY}"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${ORDERSPHERE_PG_READONLY}"
+      ]
+    },
+    "seq": {
+      "command": "seqcli",
+      "args": [
+        "mcp",
+        "run"
+      ]
     }
   }
 }

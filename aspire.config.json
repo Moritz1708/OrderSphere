@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "src/Hosting/OrderSphere.AppHost/OrderSphere.AppHost.csproj"
+  }
+}

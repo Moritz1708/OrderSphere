@@ -86,6 +86,10 @@ using (var scope = app.Services.CreateScope())
 app.UseAuthentication();
 app.UseAuthorization();
 
+// DLQ admin endpoints are a real HTTP surface; log them like any other.
+// Placed after auth so the log scope carries the authenticated user.
+app.UseOrderSphereRequestLogging();
+
 // Admin DLQ surface — the gateway forwards /api/v1/admin/notification/dlq/** here.
 app.MapDlqAdminEndpoints("api/v1/admin/notification/dlq", "AdminPolicy");
 

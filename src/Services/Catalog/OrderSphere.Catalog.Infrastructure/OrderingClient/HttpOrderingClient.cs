@@ -24,8 +24,10 @@ public sealed class HttpOrderingClient(HttpClient httpClient, ILogger<HttpOrderi
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
-                "Error verifying purchase of product {ProductId} by customer {CustomerId}",
+            // Verification failing closed (false) is the safe outcome, not an incident:
+            // the caller simply does not grant the purchase-gated capability.
+            logger.LogWarning(ex,
+                "Error verifying purchase of product {ProductId} by customer {CustomerId}. Treating as not purchased.",
                 productId, customerId);
             return false;
         }

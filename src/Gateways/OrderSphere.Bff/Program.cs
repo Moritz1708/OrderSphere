@@ -194,7 +194,9 @@ app.Use(async (ctx, next) =>
                 OrderSphere.BuildingBlocks.Security.SecurityAuditEventType.AntiforgeryValidationFailed,
                 UserId: ctx.User.FindFirst("sub")?.Value,
                 IpAddress: ctx.Connection.RemoteIpAddress?.ToString(),
-                Details: $"{ctx.Request.Method} {ctx.Request.Path}"));
+                Details: "Antiforgery token missing or invalid",
+                RequestMethod: ctx.Request.Method,
+                RequestPath: ctx.Request.Path));
 
             ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
             await ctx.Response.WriteAsJsonAsync(new

@@ -32,11 +32,11 @@ public sealed class NotificationEmailService(
                 });
 
             await mailClient.SendAsync(WaitUntil.Completed, message, ct);
-            logger.LogInformation("Invoice-ready email sent for invoice {InvoiceNumber} to {Email}.", evt.InvoiceNumber, evt.CustomerEmail);
+            logger.InvoiceReadyEmailSent(evt.InvoiceNumber, evt.CustomerEmail);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to send invoice-ready email for invoice {InvoiceNumber}.", evt.InvoiceNumber);
+            logger.InvoiceReadyEmailFailed(ex, evt.InvoiceNumber);
             throw;
         }
     }
@@ -58,11 +58,11 @@ public sealed class NotificationEmailService(
                 });
 
             await mailClient.SendAsync(WaitUntil.Completed, message, ct);
-            logger.LogInformation("Confirmation email sent for order {OrderId} to {Email}.", evt.OrderId, evt.CustomerEmail);
+            logger.OrderConfirmationEmailSent(evt.OrderId, evt.CustomerEmail);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to send confirmation email for order {OrderId}.", evt.OrderId);
+            logger.OrderConfirmationEmailFailed(ex, evt.OrderId);
             throw;
         }
     }

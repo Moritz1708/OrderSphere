@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Azure.Messaging.ServiceBus;
+using OrderSphere.BuildingBlocks.Security;
 
 namespace OrderSphere.BuildingBlocks.EventBus.AzureServiceBus;
 
@@ -22,21 +23,52 @@ public static class EventBusDiagnostics
     /// <summary>W3C trace-context header carried as a Service Bus application property.</summary>
     private const string TraceParentProperty = "traceparent";
 
+    /// <summary>
+    /// Log-correlation id carried alongside the trace context. Distinct from the trace id: it
+    /// survives sampling and is the value operators quote from a client-facing error. Distinct
+    /// also from <c>IntegrationEvent.CorrelationId</c>, which is a business idempotency key.
+    /// </summary>
+    private const string CorrelationIdProperty = "x-request-id";
+
     // The OutboxDispatcher publishes on a timer, long after the originating request/consume
-    // completed, so the original context is no longer on Activity.Current. It is persisted on the
-    // outbox row and restored here as an ambient parent for the publish span.
+    // completed, so the original context is no longer on Activity.Current. Both the trace context
+    // and the log-correlation id are persisted on the outbox row and restored here — the trace as
+    // an ambient parent for the publish span, the correlation id as an ambient scope.
     private static readonly AsyncLocal<ActivityContext?> AmbientPublishParent = new();
 
     /// <summary>
-    /// Restores the originating trace context (captured when the outbox row was written) so the
-    /// publish span and everything downstream join the original trace. Dispose to clear it.
+    /// Restores the originating trace context and log-correlation id (both captured when the
+    /// outbox row was written) so the publish span and everything downstream rejoin the original
+    /// trace <em>and</em> the original <c>correlation_id</c>. Dispose to clear both.
     /// </summary>
-    public static IDisposable RestorePublishParent(string? traceParent)
+    /// <param name="correlationId">
+    /// The persisted log-correlation id. Pass <see langword="null"/> only for rows written before
+    /// the column existed; the trace id is then used, which is what those rows were correlated by.
+    /// </param>
+    public static IDisposable RestorePublishParent(string? traceParent, string? correlationId)
     {
         var previous = AmbientPublishParent.Value;
-        AmbientPublishParent.Value =
-            ActivityContext.TryParse(traceParent, null, isRemote: true, out var ctx) ? ctx : null;
-        return new ParentScope(previous);
+        var parsed = ActivityContext.TryParse(traceParent, null, isRemote: true, out var ctx);
+        AmbientPublishParent.Value = parsed ? ctx : null;
+
+        // Prefer the id that was actually ambient when the row was written. Deriving it from the
+        // trace id is only correct while correlation_id == trace_id, which the gateway breaks by
+        // honouring a client-supplied X-Request-Id and a consumer breaks by falling back to the
+        // message id — so the derivation is now the legacy fallback, not the rule.
+        //
+        // This also opens a scope when there is no usable trace context at all, which the
+        // previous version did not: without it Inject() below omitted x-request-id entirely, the
+        // consumer fell through to the message id, and that value was then persisted on the next
+        // outbox hop — permanently severing the chain.
+        var resolved = correlationId is { Length: > 0 }
+            ? correlationId
+            : parsed ? ctx.TraceId.ToString() : null;
+
+        var correlationScope = resolved is null
+            ? null
+            : AmbientCorrelationContext.BeginScope(resolved);
+
+        return new ParentScope(previous, correlationScope);
     }
 
     /// <summary>Starts a producer span for a publish to <paramref name="destination"/>.</summary>
@@ -58,6 +90,38 @@ public static class EventBusDiagnostics
         var traceParent = Activity.Current?.Id ?? FormatTraceParent(AmbientPublishParent.Value);
         if (traceParent is not null)
             message.ApplicationProperties[TraceParentProperty] = traceParent;
+
+        if (AmbientCorrelationContext.Ambient is { Length: > 0 } correlationId)
+            message.ApplicationProperties[CorrelationIdProperty] = correlationId;
+    }
+
+    /// <summary>
+    /// Reads the log-correlation id carried on an inbound message.
+    /// <para>
+    /// The two fallbacks are for messages that predate the correlation property, not statements
+    /// that the values are equivalent: the trace id correlates such a message to its originating
+    /// operation, and the message id is a last resort that at least keeps the records of one
+    /// message together. A message published by current code always carries the property, because
+    /// every publishing path now has an ambient correlation id to inject.
+    /// </para>
+    /// </summary>
+    public static string ReadCorrelationId(ServiceBusReceivedMessage message)
+    {
+        if (message.ApplicationProperties.TryGetValue(CorrelationIdProperty, out var raw)
+            && raw is string correlationId
+            && correlationId.Length > 0)
+        {
+            return correlationId;
+        }
+
+        if (message.ApplicationProperties.TryGetValue(TraceParentProperty, out var rawTrace)
+            && rawTrace is string traceParent
+            && ActivityContext.TryParse(traceParent, null, isRemote: true, out var ctx))
+        {
+            return ctx.TraceId.ToString();
+        }
+
+        return message.MessageId;
     }
 
     /// <summary>Starts a consumer span linked to the producer context carried by the message.</summary>
@@ -95,8 +159,12 @@ public static class EventBusDiagnostics
         return $"00-{ctx.TraceId}-{ctx.SpanId}-{sampled}";
     }
 
-    private sealed class ParentScope(ActivityContext? previous) : IDisposable
+    private sealed class ParentScope(ActivityContext? previous, IDisposable? correlationScope) : IDisposable
     {
-        public void Dispose() => AmbientPublishParent.Value = previous;
+        public void Dispose()
+        {
+            correlationScope?.Dispose();
+            AmbientPublishParent.Value = previous;
+        }
     }
 }

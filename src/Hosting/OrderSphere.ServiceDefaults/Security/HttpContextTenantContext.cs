@@ -14,15 +14,23 @@ internal sealed class HttpContextTenantContext : ITenantContext
 
     public HttpContextTenantContext(IHttpContextAccessor httpContextAccessor)
     {
-        var orgId = httpContextAccessor.HttpContext?.User.FindFirst("org_id")?.Value;
-        _claimTenantId = orgId is null ? null : TenantIdHelper.FromOrgId(orgId);
+        _claimTenantId = TenantClaimResolver.Resolve(httpContextAccessor.HttpContext?.User);
     }
 
     /// <summary>
-    /// Ambient scope (set explicitly by worker message loops, see <see cref="AmbientTenantContext"/>)
-    /// takes precedence over the request claim so the same registration serves both API requests
-    /// and background message processing within the same process (e.g. Invoicing.Api's embedded
-    /// consumer).
+    /// The ambient scope wins. It is opened by
+    /// <c>RequestContextEnrichmentMiddleware</c> on the HTTP path and by
+    /// <c>MessageProcessingScope.SetTenant</c> on the worker path, so one registration serves
+    /// requests and background message processing alike (e.g. Invoicing.Api's embedded consumer).
+    /// <para>
+    /// On any request that reaches the middleware the ambient value and
+    /// <c>_claimTenantId</c> are derived from the same claim by the same function and are
+    /// therefore equal; the claim fallback stays as defence in depth for paths that bypass the
+    /// enrichment branch (<c>/health</c>, <c>/alive</c>, <c>/version</c>). Removing it would make
+    /// tenant isolation depend on middleware ordering in every host's <c>Program.cs</c>, where
+    /// the failure mode — everything silently reading and writing the default tenant — is
+    /// invisible until data has already crossed a boundary.
+    /// </para>
     /// </summary>
     public Guid TenantId => AmbientTenantContext.Ambient ?? _claimTenantId ?? TenantIdHelper.Default;
 }

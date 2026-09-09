@@ -2,7 +2,8 @@
 
 How to observe and operate OrderSphere. The cross-cutting wiring lives in
 `src/Hosting/OrderSphere.ServiceDefaults` (`Extensions.cs`), applied by every service and gateway.
-Deployment is covered separately in [deploy-ordersphere.md](deploy-ordersphere.md).
+Deployment is covered separately in [deploy-ordersphere.md](deploy-ordersphere.md); the log
+schema, level policy and PII enforcement in [logging.md](logging.md).
 
 ## Endpoints exposed by every service
 
@@ -55,9 +56,17 @@ to `10`–`20` depending on volume and cost targets.
 
 Log messages must not include personally identifiable information. Enforced by:
 
+- **Redaction on classified log parameters.** `Microsoft.Extensions.Compliance.Redaction` is
+  active in every host; a `[LoggerMessage]` parameter marked `[DirectPii]`, `[PseudonymousId]` or
+  `[FreeText]` is replaced before it reaches any sink. This is the primary control — see
+  [logging.md](logging.md#pii) for the tier-to-redactor mapping and for the important limitation
+  that redaction does *not* apply to plain `logger.LogX(...)` calls.
 - `DomainEventLoggingHandler` — logs event type only, never the event payload.
-- `LoggingNotificationEmailService` — masks email addresses (`a***@domain.com`).
+- `RequestContextEnrichmentMiddleware` — logs `client_ip_hash`, never the raw client IP.
 - All new log statements must follow the same rule: log IDs and types, not customer data.
+
+The regression guard is `tests/OrderSphere.Notification.Tests/Logging/LogRedactionTests.cs`,
+which asserts a customer email address never reaches a sink in plaintext.
 
 ### Where telemetry goes
 
@@ -326,16 +335,23 @@ customMetrics
 ### Dead-letter admin: inspection and replay
 
 Each message-consuming host (Ordering.Worker, Payment.Worker, Notification.Worker, Webhooks.Worker,
-Invoicing.Api) exposes an admin-protected dead-letter surface for the queues it owns, fronted by the
-API Gateway under `/api/v1/admin/{slug}/dlq`:
+Invoicing.Api, Advisory.Api) exposes an admin-protected dead-letter surface for the queues it owns,
+fronted by the API Gateway under `/api/v1/admin/{slug}/dlq`. The owned queues are the arguments to
+each host's `AddDlqAdmin(...)` call:
 
 | Slug | Host | Owned queues |
 |---|---|---|
-| `ordering` | ordersphere-ordering-worker | orders, payment-results, payment-refunds, order-history |
-| `payment` | ordersphere-payment-worker | payment-requests, order-confirmation-failed, refund-requested |
+| `ordering` | ordersphere-ordering-worker | orders, payment-results, payment-refunds, order-history, erasure-ordering |
+| `payment` | ordersphere-payment-worker | payment-requests, order-confirmation-failed, refund-requested, erasure-payment |
 | `notification` | ordersphere-notification-worker | notification-orders, invoice-ready |
 | `webhooks` | ordersphere-webhooks-worker | webhook-events |
-| `invoicing` | ordersphere-invoicing | invoice-generation |
+| `invoicing` | ordersphere-invoicing | invoice-generation, erasure-invoicing |
+| `advisory` | ordersphere-advisory | erasure-advisory |
+
+The `erasure-*` queues are the GDPR erasure fan-out (D1): `UserProfile` stages one
+`CustomerErasureRequestedIntegrationEvent`, and each PII-holding service consumes it from its own
+queue. A message dead-lettered there means one service did not complete an erasure request, so it
+is the set to check first when an erasure is reported as incomplete.
 
 Endpoints (all require a bearer token with the `admin` role):
 

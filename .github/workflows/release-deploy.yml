@@ -151,14 +151,20 @@ jobs:
           ORDERING_WORKER_SECRET: ${{ secrets.ORDERING_WORKER_SECRET }}
           NOTIFICATION_WORKER_SECRET: ${{ secrets.NOTIFICATION_WORKER_SECRET }}
           PAYMENT_WORKER_SECRET: ${{ secrets.PAYMENT_WORKER_SECRET }}
+          LOGGING_REDACTION_HMAC_KEY: ${{ secrets.LOGGING_REDACTION_HMAC_KEY }}
         run: |
           azd env new "$AZURE_ENV_NAME" \
             --location "$AZURE_LOCATION" \
             --subscription "$AZURE_SUBSCRIPTION_ID"
           azd env set AZURE_RESOURCE_GROUP "$AZURE_RESOURCE_GROUP"
-          # Seed the infra parameters azd would otherwise prompt for. The 4 client
+          # Seed the infra parameters azd would otherwise prompt for. The client
           # secrets come from GitHub secrets (ephemeral, masked in logs); the two
           # non-secret parameters are fixed for DEV. Underscore key form matches azd.
+          #
+          # logging_redaction_hmac_key must stay STABLE across deployments of the same
+          # environment: rotating it re-hashes every classified log value, so records
+          # written before the rotation no longer group with records written after
+          # (see docs/logging.md § PII). Rotate deliberately, not per release.
           jq -n \
             --arg oidc "https://ordersphere-dev.eu.auth0.com/" \
             --arg bypass "true" \
@@ -166,13 +172,15 @@ jobs:
             --arg ordering "$ORDERING_WORKER_SECRET" \
             --arg notification "$NOTIFICATION_WORKER_SECRET" \
             --arg payment "$PAYMENT_WORKER_SECRET" \
+            --arg hmac "$LOGGING_REDACTION_HMAC_KEY" \
             '{infra:{parameters:{
               oidc_authority:$oidc,
               payment_bypass_providers:$bypass,
               bff_client_secret:$bff,
               ordering_worker_secret:$ordering,
               notification_worker_secret:$notification,
-              payment_worker_secret:$payment
+              payment_worker_secret:$payment,
+              logging_redaction_hmac_key:$hmac
             }}}' > ".azure/$AZURE_ENV_NAME/config.json"
 
       - name: Provision infrastructure

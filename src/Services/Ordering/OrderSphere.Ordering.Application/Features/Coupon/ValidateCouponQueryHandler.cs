@@ -25,7 +25,9 @@ public sealed class ValidateCouponQueryHandler(
 
         if (coupon is null)
         {
-            logger.LogInformation("Coupon code not found: {Code}", request.Code);
+            // Warning, matching AddToCartCommandHandler: both are lookup misses driven by
+            // client input that are returned as a Result failure (see docs/logging.md).
+            logger.LogWarning("Coupon code not found: {Code}", request.Code);
             return Result<CouponValidationDto>.Failure(CouponErrors.InvalidCode);
         }
 

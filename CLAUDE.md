@@ -34,6 +34,12 @@ These are the rules that are not derivable by reading existing code. For everyth
 - Soft-delete is enforced by a global query filter, not per-query: every `AuditableEntity` gets `builder.HasQueryFilter(x => !x.IsDeleted)` in its EF configuration, so queries inherit the filter automatically — do not repeat `!x.IsDeleted` in handlers. Use `IgnoreQueryFilters()` only where deleted rows must be read deliberately.
 - All I/O is `async`/`await`. No `.Result`, no `.Wait()`, no `.GetAwaiter().GetResult()`.
 - Nullable reference types are enabled. Treat warnings as real.
+- Log messages use constant templates with named placeholders — never interpolation or concatenation. `tenant_id`, `correlation_id`, `user_id` and `trace_id` are added by enrichment in ServiceDefaults; do not pass them as template arguments. A `Result` failure logs at `Warning`, not `Error`.
+- Personal data may only be logged through a `[LoggerMessage]` method whose parameter carries a classification attribute (`[DirectPii]`, `[PseudonymousId]`, `[FreeText]`) — redaction does not apply to plain `logger.LogX(...)` calls.
+
+## Logging
+
+Log schema, field names, level policy, EventId ranges and PII enforcement live in [`docs/logging.md`](docs/logging.md). Read it before adding a log statement in a hot path or one that touches customer data.
 
 ## UI and styling
 

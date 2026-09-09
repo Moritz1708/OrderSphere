@@ -15,6 +15,8 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(x => x.RetryCount).HasDefaultValue(0);
         // W3C traceparent is a fixed 55-char string ("00-" + 32 + "-" + 16 + "-" + 2).
         builder.Property(x => x.TraceParent).HasMaxLength(55);
+        // Not 55: unlike traceparent this can carry a client-supplied X-Request-Id.
+        builder.Property(x => x.CorrelationId).HasMaxLength(OutboxMessage.MaxCorrelationIdLength);
         // Composite index optimises the dispatcher query: WHERE ProcessedAt IS NULL ORDER BY OccurredAt
         builder.HasIndex(x => new { x.ProcessedAt, x.OccurredAt });
         builder.HasIndex(x => x.RetryCount);

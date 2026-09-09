@@ -18,6 +18,7 @@
     <PackageReference Include="Aspire.Hosting.Azure.Storage" />
     <PackageReference Include="Aspire.Hosting.Azure.ServiceBus" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.Seq" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.Tools">

@@ -15,7 +15,9 @@ public sealed class LoggingHandler(ILogger<LoggingHandler> logger) : DelegatingH
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        var path = request.RequestUri?.PathAndQuery;
+        // AbsolutePath, not PathAndQuery: the query string can carry identifiers or filter
+        // values that are personal data, and it adds nothing to a client-side diagnosis.
+        var path = request.RequestUri?.AbsolutePath;
         var sw = Stopwatch.StartNew();
         try
         {
@@ -24,13 +26,19 @@ public sealed class LoggingHandler(ILogger<LoggingHandler> logger) : DelegatingH
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning("HTTP {Method} {Path} -> {Status} in {Elapsed}ms",
-                    request.Method, path, (int)response.StatusCode, sw.ElapsedMilliseconds);
+                // The gateway echoes X-Request-Id, which is the trace id and the correlation_id
+                // on every server-side record for this call. Surfacing it here is what lets a
+                // user-reported browser error be traced to the server logs, given that WASM logs
+                // themselves never leave the browser (see docs/logging.md).
+                logger.LogWarning("HTTP {Method} {Path} -> {Status} in {Elapsed}ms [correlation {CorrelationId}]",
+                    request.Method, path, (int)response.StatusCode, sw.ElapsedMilliseconds,
+                    ReadCorrelationId(response));
             }
             else if (sw.ElapsedMilliseconds > SlowThresholdMs)
             {
-                logger.LogInformation("Slow HTTP {Method} {Path} -> {Status} in {Elapsed}ms",
-                    request.Method, path, (int)response.StatusCode, sw.ElapsedMilliseconds);
+                logger.LogInformation("Slow HTTP {Method} {Path} -> {Status} in {Elapsed}ms [correlation {CorrelationId}]",
+                    request.Method, path, (int)response.StatusCode, sw.ElapsedMilliseconds,
+                    ReadCorrelationId(response));
             }
 
             return response;
@@ -48,4 +56,9 @@ public sealed class LoggingHandler(ILogger<LoggingHandler> logger) : DelegatingH
             throw;
         }
     }
+
+    private static string ReadCorrelationId(HttpResponseMessage response) =>
+        response.Headers.TryGetValues("X-Request-Id", out var values)
+            ? values.FirstOrDefault() ?? "-"
+            : "-";
 }

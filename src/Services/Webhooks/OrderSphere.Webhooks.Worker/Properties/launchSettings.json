@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OrderSphere.Webhooks.Worker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

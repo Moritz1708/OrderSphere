@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OrderSphere.BuildingBlocks.Diagnostics;
 
 namespace OrderSphere.BuildingBlocks.EventBus.AzureServiceBus.Dlq;
 
@@ -20,6 +21,8 @@ internal sealed class DlqDepthMonitor(
 
         do
         {
+            using var operation = BackgroundOperationScope.Begin("dlq-depth-poll");
+
             try
             {
                 var depths = await admin.GetDepthsAsync(stoppingToken);

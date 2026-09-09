@@ -26,7 +26,7 @@ public sealed class RealtimeNotificationProcessor(
         _processor.ProcessErrorAsync += OnError;
 
         await _processor.StartProcessingAsync(stoppingToken);
-        logger.LogInformation("RealtimeNotificationProcessor started, listening on queue '{Queue}'.", QueueName);
+        logger.ProcessorStarted(nameof(RealtimeNotificationProcessor), QueueName);
 
         try
         {
@@ -36,26 +36,28 @@ public sealed class RealtimeNotificationProcessor(
         finally
         {
             await _processor.StopProcessingAsync(CancellationToken.None);
-            logger.LogInformation("RealtimeNotificationProcessor stopped.");
+            logger.ProcessorStopped(nameof(RealtimeNotificationProcessor));
         }
     }
 
     private async Task OnMessageReceived(ProcessMessageEventArgs args)
     {
-        using var activity = EventBusDiagnostics.StartProcess(args.Message, QueueName);
-        var messageId = args.Message.MessageId;
+        using var messageScope = MessageProcessingScope.Begin(logger, args.Message, QueueName);
+        logger.MessageReceived();
 
         try
         {
             var evt = args.Message.Body.ToObjectFromJson<RealtimeNotificationEvent>();
             if (evt is null)
             {
-                logger.LogWarning("Message {MessageId} could not be deserialized. Dead-lettering.", messageId);
+                logger.MessageUndeserializable();
                 await args.DeadLetterMessageAsync(args.Message,
                     deadLetterReason: "DeserializationFailed",
                     deadLetterErrorDescription: "Body was not a valid RealtimeNotificationEvent.");
                 return;
             }
+
+            messageScope.SetTenant(evt.TenantId);
 
             await hubContext.Clients.Group(evt.UserId).SendAsync(
                 "ReceiveNotification",
@@ -70,23 +72,22 @@ public sealed class RealtimeNotificationProcessor(
                 args.CancellationToken);
 
             logger.LogInformation(
-                "Pushed {Type} notification to user {UserId}. MessageId: {MessageId}",
-                evt.Type, evt.UserId, messageId);
+                "Pushed {Type} notification to user {UserId}.",
+                evt.Type, evt.UserId);
 
             await args.CompleteMessageAsync(args.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing realtime notification {MessageId}. Abandoning.", messageId);
+            logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message);
         }
     }
 
     private Task OnError(ProcessErrorEventArgs args)
     {
-        logger.LogError(args.Exception,
-            "Service Bus processor error. Source: {Source}, Entity: {Entity}",
-            args.ErrorSource, args.EntityPath);
+        logger.ProcessorError(args.Exception, args.EntityPath, args.ErrorSource.ToString());
+
         return Task.CompletedTask;
     }
 

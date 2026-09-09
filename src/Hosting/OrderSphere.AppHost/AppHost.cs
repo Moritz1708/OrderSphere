@@ -527,21 +527,49 @@ var bff = builder.AddProject<Projects.OrderSphere_Bff>("ordersphere-bff")
 if (builder.ExecutionContext.IsPublishMode)
 {
     var appInsights = builder.AddAzureApplicationInsights("appinsights");
-    catalog.WithReference(appInsights);
-    basket.WithReference(appInsights);
-    ordering.WithReference(appInsights);
-    orderingWorker.WithReference(appInsights);
-    notificationWorker.WithReference(appInsights);
-    payment.WithReference(appInsights);
-    paymentWorker.WithReference(appInsights);
-    userProfile.WithReference(appInsights);
-    webhooks.WithReference(appInsights);
-    webhooksWorker.WithReference(appInsights);
-    partners.WithReference(appInsights);
-    apiGateway.WithReference(appInsights);
-    mcpServer.WithReference(appInsights);
-    advisory.WithReference(appInsights);
-    bff.WithReference(appInsights);
+
+    // Log-redaction key material. Every service must use the SAME key: the HMAC redactor was
+    // chosen over erasure so that all log records for one customer still group together, and
+    // that only holds if replicas and restarts hash a value identically. Without this,
+    // ServiceDefaults falls back to a per-process random key (see ConfigureLogRedaction) —
+    // acceptable locally, but in Azure it silently reduces the redactor to erasure with extra
+    // steps. Declared publish-mode only so local runs keep the random fallback instead of
+    // blocking startup on an unresolved parameter.
+    var redactionHmacKey = builder.AddParameter("logging-redaction-hmac-key", secret: true);
+
+    // Applied across the project resources rather than listed per service. The hand-maintained
+    // Application Insights list this replaced had drifted: Invoicing was missing, so it
+    // exported no telemetry to Azure at all. A service added later is now covered without
+    // touching this block.
+    foreach (var project in builder.Resources.OfType<ProjectResource>().ToList())
+    {
+        builder.CreateResourceBuilder(project)
+            .WithReference(appInsights)
+            .WithEnvironment("Logging__Redaction__HmacKey", redactionHmacKey);
+    }
+}
+
+// Local-development log and trace sink. The Aspire dashboard carries no query language and
+// discards its data on restart; Seq indexes every enrichment property, so a whole checkout
+// chain is one expression: correlation_id = '...'. AddSeqEndpoint in ServiceDefaults adds an
+// exporter next to the dashboard's OTLP one, so both receive every record.
+//
+// Run mode only: production telemetry goes to Application Insights (above), and a
+// developer-tool container has no place in the published manifest.
+if (builder.ExecutionContext.IsRunMode)
+{
+    // Aspire 13.5.3 pins datalust/seq:2025.2. Raised to 2026.1, the release the
+    // first-party MCP server (via seqcli) ships with — see docs/logging.md.
+    var seq = builder.AddSeq("seq")
+        .WithImageTag("2026.1")
+        .WithDataVolume();
+
+    // Applied across the project resources instead of listed per service, so a service added
+    // later is covered without touching this block.
+    foreach (var project in builder.Resources.OfType<ProjectResource>().ToList())
+    {
+        builder.CreateResourceBuilder(project).WithReference(seq);
+    }
 }
 
 builder.Build().Run();

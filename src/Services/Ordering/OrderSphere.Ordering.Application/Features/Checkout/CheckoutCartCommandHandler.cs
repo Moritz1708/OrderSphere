@@ -49,7 +49,9 @@ public sealed class CheckoutCartCommandHandler(
             var cartResult = await basketClient.GetCartAsync(request.CustomerId.Value, cancellationToken);
             if (cartResult.IsFailure)
             {
-                logger.LogError("Cart not found for customer {CustomerId} via Basket service", request.CustomerId);
+                // An empty or expired cart is a normal user outcome, returned as a Result
+                // failure — not an error condition for the service.
+                logger.LogWarning("Cart not found for customer {CustomerId} via Basket service", request.CustomerId);
                 return Result<Guid>.Failure(CheckoutCartErrors.CartNotFoundError);
             }
 
@@ -147,7 +149,10 @@ public sealed class CheckoutCartCommandHandler(
                 var releaseResult = await catalogClient.ReleaseReservationAsync(correlationId, CancellationToken.None);
                 if (releaseResult.IsFailure)
                 {
-                    logger.LogError(
+                    // Warning, not Error: this is a handled outcome with a designed fallback —
+                    // the Catalog TTL sweeper reclaims the hold. Nothing is lost and no one
+                    // needs to act.
+                    logger.LogWarning(
                         "COMPENSATION: immediate reservation release failed for CorrelationId {CorrelationId}; TTL sweeper will reclaim it.",
                         correlationId);
                 }
