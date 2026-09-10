@@ -144,6 +144,50 @@ else
             }
         </OsRevealGroup>
     </OsSection>
+
+    @* Page-level patterns. They live on pages behind a sign-in, so this is the only
+       place their styling can be reviewed without a session. *@
+    <OsSection Padding="OsSection.SectionPadding.Sm" Tone="OsSection.SectionTone.Sunk">
+        <OsEyebrow Text="10 / Numbered steps" Class="mb-4" />
+        <div class="pg-checkout__steps">
+            <section class="pg-step">
+                <span class="pg-step__num os-mono" aria-hidden="true">01</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h3" Size="OsDisplay.DisplaySize.D3">Delivery address</OsDisplay>
+                    <p class="pg-step__hint">Where should the order go?</p>
+                    <MudTextField T="string" Label="Street" Variant="Variant.Outlined" ShrinkLabel="true" />
+                </div>
+            </section>
+            <section class="pg-step">
+                <span class="pg-step__num os-mono" aria-hidden="true">02</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h3" Size="OsDisplay.DisplaySize.D3">Payment</OsDisplay>
+                    <p class="pg-step__hint">How would you like to pay?</p>
+                </div>
+            </section>
+        </div>
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsEyebrow Text="11 / Timeline rail" Class="mb-4" />
+        <ol class="pg-timeline">
+            <li class="pg-timeline__item">
+                <span class="pg-timeline__dot" aria-hidden="true"></span>
+                <span class="pg-timeline__label">Placed</span>
+                <span class="pg-timeline__time os-mono">12.03.2026, 09:14</span>
+            </li>
+            <li class="pg-timeline__item">
+                <span class="pg-timeline__dot os-tone-success" aria-hidden="true"></span>
+                <span class="pg-timeline__label">Paid</span>
+                <span class="pg-timeline__time os-mono">12.03.2026, 09:15</span>
+            </li>
+            <li class="pg-timeline__item is-current">
+                <span class="pg-timeline__dot" aria-hidden="true"></span>
+                <span class="pg-timeline__label">Shipped</span>
+                <span class="pg-timeline__time os-mono">13.03.2026, 07:02</span>
+            </li>
+        </ol>
+    </OsSection>
 }
 
 @code {

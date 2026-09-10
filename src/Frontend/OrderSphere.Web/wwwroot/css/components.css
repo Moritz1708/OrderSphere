@@ -1137,6 +1137,9 @@
     .os-form-grid > .os-form-grid__two-thirds { grid-column: span 6; }
   }
 
+  /* A plain vertical rhythm container; replaces MudStack in page markup. */
+  .os-stack { display: flex; flex-direction: column; gap: var(--os-space-5); }
+
   .os-actionbar {
     position: sticky;
     bottom: 0;

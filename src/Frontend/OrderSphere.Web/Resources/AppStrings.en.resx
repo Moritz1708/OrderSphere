@@ -1492,4 +1492,37 @@
   <data name="ProductDetails.Availability" xml:space="preserve">
     <value>Availability</value>
   </data>
+  <data name="Checkout.AddressHint" xml:space="preserve">
+    <value>Where should the order go?</value>
+  </data>
+  <data name="Checkout.PaymentHint" xml:space="preserve">
+    <value>How would you like to pay?</value>
+  </data>
+  <data name="Checkout.ReviewTitle" xml:space="preserve">
+    <value>Review</value>
+  </data>
+  <data name="Checkout.ReviewHint" xml:space="preserve">
+    <value>One last look before the order goes out.</value>
+  </data>
+  <data name="Checkout.ReviewItems" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="Checkout.ReviewShipTo" xml:space="preserve">
+    <value>Ship to</value>
+  </data>
+  <data name="Checkout.ReviewShipToPending" xml:space="preserve">
+    <value>Not filled in yet</value>
+  </data>
+  <data name="CheckoutSuccess.Confirming" xml:space="preserve">
+    <value>Confirming your order …</value>
+  </data>
+  <data name="CheckoutSuccess.StillProcessing" xml:space="preserve">
+    <value>Your order is still being processed. It will appear under My orders shortly.</value>
+  </data>
+  <data name="Onboarding.DisplayNameHint" xml:space="preserve">
+    <value>How we will address you.</value>
+  </data>
+  <data name="Onboarding.FirstAddressHint" xml:space="preserve">
+    <value>Your default address for delivery and invoicing.</value>
+  </data>
 </root>

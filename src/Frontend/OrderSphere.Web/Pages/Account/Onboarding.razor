@@ -3,6 +3,7 @@
 @inject IUserProfileClient UserProfile
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
+@inject IMotionService Motion
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Onboarding.PageTitle"]</PageTitle>
@@ -16,27 +17,38 @@
     }
     else
     {
-        <MudStack Spacing="4">
-            <OsCard Padding="OsCard.CardPadding.Lg">
-                <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-5">@L["Onboarding.DisplayName"]</OsDisplay>
-                <MudForm @ref="_nameForm">
-                    <MudTextField T="string" @bind-Value="_displayName"
-                                  Label="@L["Onboarding.DisplayNameLabel"]"
-                                  Variant="Variant.Outlined" ShrinkLabel="true"
-                                  Required="true" RequiredError="@L["Validation.Required"]"
-                                  autocomplete="nickname" />
-                </MudForm>
-            </OsCard>
+        <div class="pg-checkout__steps pg-onboarding">
+            <section class="pg-step" aria-labelledby="ob-name">
+                <span class="pg-step__num os-mono" aria-hidden="true">01</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="ob-name">@L["Onboarding.DisplayName"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Onboarding.DisplayNameHint"]</p>
+                    <MudForm @ref="_nameForm">
+                        <MudTextField T="string" @bind-Value="_displayName"
+                                      Label="@L["Onboarding.DisplayNameLabel"]"
+                                      Variant="Variant.Outlined" ShrinkLabel="true"
+                                      Required="true" RequiredError="@L["Validation.Required"]"
+                                      autocomplete="nickname" />
+                    </MudForm>
+                </div>
+            </section>
 
-            <OsCard Padding="OsCard.CardPadding.Lg">
-                <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-5">@L["Onboarding.FirstAddress"]</OsDisplay>
-                <AddressForm @ref="_addressForm" Model="_address" />
-            </OsCard>
+            <section class="pg-step" aria-labelledby="ob-address">
+                <span class="pg-step__num os-mono" aria-hidden="true">02</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="ob-address">@L["Onboarding.FirstAddress"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Onboarding.FirstAddressHint"]</p>
+                    <AddressForm @ref="_addressForm" Model="_address" />
+                </div>
+            </section>
 
-            <OsButton Size="OsButton.ButtonSize.Lg" FullWidth="true" Loading="_saving" OnClick="SubmitAsync">
-                @L["Onboarding.Submit"]
-            </OsButton>
-        </MudStack>
+            @* Sticky on a phone so the way forward is always one tap away. *@
+            <div class="os-actionbar">
+                <OsButton Size="OsButton.ButtonSize.Lg" FullWidth="true" Loading="_saving" OnClick="SubmitAsync">
+                    @L["Onboarding.Submit"]
+                </OsButton>
+            </div>
+        </div>
     }
 </OsSection>
 
@@ -76,7 +88,10 @@
     {
         await _nameForm.ValidateAsync();
         if (!_nameForm.IsValid)
+        {
+            await Motion.FocusFirstInvalidAsync();
             return;
+        }
 
         // The address is optional, but once the user has started one it has to be complete.
         if (_address.IsTouched && !await _addressForm.ValidateAsync())

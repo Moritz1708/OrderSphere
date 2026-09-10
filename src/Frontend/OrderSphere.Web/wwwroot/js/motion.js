@@ -121,6 +121,23 @@ export function prefersReducedMotion() {
     return prefersReduced();
 }
 
+/**
+ * Moves focus to the first field a form has marked invalid. MudBlazor validates
+ * the whole form at once and leaves focus where it was, so a long checkout could
+ * report errors the reader never scrolls to.
+ */
+export function focusFirstInvalid(root) {
+    const scope = root || document;
+    const field = scope.querySelector(
+        '.mud-input-error input, .mud-input-error textarea, [aria-invalid="true"]'
+    );
+    if (!field) return false;
+
+    field.scrollIntoView({ block: 'center', behavior: prefersReduced() ? 'auto' : 'smooth' });
+    field.focus({ preventScroll: true });
+    return true;
+}
+
 /** Keeps the scroll-lock gutter honest instead of Mud's hard-coded 8px. */
 function measureScrollbar() {
     const width = window.innerWidth - document.documentElement.clientWidth;

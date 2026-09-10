@@ -26,9 +26,8 @@
     }
     else
     {
-        <MudGrid Spacing="4">
-            <MudItem xs="12" lg="8">
-                <div class="os-rows">
+        <div class="pg-cart">
+            <div class="os-rows pg-cart__lines">
                     @foreach (var item in _items)
                     {
                         <div class="os-row pg-cart__row" @key="item.ProductId">
@@ -56,10 +55,9 @@
                             </div>
                         </div>
                     }
-                </div>
-            </MudItem>
+            </div>
 
-            <MudItem xs="12" lg="4">
+            <div class="pg-cart__aside">
                 <OrderSummary Title="@L["Cart.Summary"]" Subtotal="Subtotal">
                     <Actions>
                         <OsButton Href="/checkout"
@@ -73,8 +71,8 @@
                         </OsButton>
                     </Actions>
                 </OrderSummary>
-            </MudItem>
-        </MudGrid>
+            </div>
+        </div>
     }
 </OsSection>
 

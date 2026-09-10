@@ -18,6 +18,8 @@
         <p class="pg-success__total os-mono">@L["CheckoutSuccess.Total", Formatting.Currency(_totalAmount.Value)]</p>
     }
 
+    @* The order is written by a Service Bus worker, so the number arrives a moment
+       after this page does. Say so instead of showing a bare spinner. *@
     @if (_order is not null)
     {
         <OsCard Surface="OsCard.CardSurface.Sunk" Class="pg-success__order">
@@ -27,10 +29,27 @@
     }
     else if (_polling)
     {
-        <OsSkeletonGroup Class="pg-success__order">
-            <OsSkeleton Width="140px" Height="10px" />
-            <OsSkeleton Width="200px" Height="28px" Class="mt-2" />
-        </OsSkeletonGroup>
+        <OsCard Surface="OsCard.CardSurface.Sunk" Class="pg-success__order" role="status" aria-live="polite">
+            <OsEyebrow Text="@L["CheckoutSuccess.OrderNumber"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+            <span class="pg-success__pending">
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+                <span>@L["CheckoutSuccess.Confirming"]</span>
+                <span class="os-mono os-muted pg-success__attempt">@_attempt/@MaxAttempts</span>
+            </span>
+        </OsCard>
+    }
+    else if (_timedOut)
+    {
+        <OsCard Surface="OsCard.CardSurface.Sunk" Class="pg-success__order" role="status" aria-live="polite">
+            <OsEyebrow Text="@L["CheckoutSuccess.OrderNumber"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+            <p class="pg-success__pending-note">@L["CheckoutSuccess.StillProcessing"]</p>
+            <OsButton Variant="OsButton.ButtonVariant.Secondary"
+                      Size="OsButton.ButtonSize.Sm"
+                      StartIcon="@Icons.Material.Outlined.Refresh"
+                      OnClick="PollAsync">
+                @L["Common.Retry"]
+            </OsButton>
+        </OsCard>
     }
 
     <div class="pg-success__actions">
@@ -45,9 +64,13 @@
     [SupplyParameterFromQuery] private Guid? CorrelationId { get; set; }
     [SupplyParameterFromQuery] private string? Total { get; set; }
 
+    private const int MaxAttempts = 6;
+
     private OrderDto? _order;
     private decimal? _totalAmount;
     private bool _polling;
+    private bool _timedOut;
+    private int _attempt;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,19 +80,31 @@
             _totalAmount = parsed;
         }
 
+        await PollAsync();
+    }
+
+    private async Task PollAsync()
+    {
         if (CorrelationId is null) return;
 
-        // Poll for the order (Service Bus processing may take a moment).
         // Ownership is enforced server-side via the JWT token.
         _polling = true;
+        _timedOut = false;
+        _attempt = 0;
         try
         {
-            for (var i = 0; i < 6; i++)
+            for (var i = 1; i <= MaxAttempts; i++)
             {
+                _attempt = i;
+                StateHasChanged();
+
                 _order = await Ordering.GetOrderByCorrelationIdAsync(CorrelationId.Value);
-                if (_order is not null) break;
+                if (_order is not null) return;
+
                 await Task.Delay(2000);
             }
+
+            _timedOut = true;
         }
         finally
         {

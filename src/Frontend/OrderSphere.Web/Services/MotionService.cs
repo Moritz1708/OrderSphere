@@ -22,6 +22,9 @@ public interface IMotionService
 
     ValueTask LockScrollAsync(bool locked);
 
+    /// <summary>Focuses the first field the browser marked invalid, if there is one.</summary>
+    ValueTask FocusFirstInvalidAsync();
+
     ValueTask<bool> PrefersReducedMotionAsync();
 }
 
@@ -47,6 +50,8 @@ public sealed class MotionService(IJSRuntime js) : IMotionService, IAsyncDisposa
     public async ValueTask SetThemeAsync(bool isDark) => await InvokeAsync("setTheme", isDark);
 
     public async ValueTask LockScrollAsync(bool locked) => await InvokeAsync("lockScroll", locked);
+
+    public async ValueTask FocusFirstInvalidAsync() => await InvokeAsync("focusFirstInvalid", null);
 
     public async ValueTask<bool> PrefersReducedMotionAsync()
     {

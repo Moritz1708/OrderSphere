@@ -22,6 +22,7 @@ public sealed class MotionServiceTests : BunitContext
         await sut.LockScrollAsync(true);
         await sut.ObserveAsync(default(ElementReference));
         await sut.UnobserveAsync(default(ElementReference));
+        await sut.FocusFirstInvalidAsync();
         var reduced = await sut.PrefersReducedMotionAsync();
 
         reduced.Should().BeFalse("the safe default is to animate");

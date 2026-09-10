@@ -40,7 +40,14 @@
                     <OsProductImage Seed="item.ProductId" Name="@item.ProductName" Ratio="1/1" Class="os-cart__thumb" />
                     <div class="os-row__main">
                         <span class="os-row__title os-truncate">@item.ProductName</span>
-                        <span class="os-row__meta os-num">@item.Quantity × @Formatting.Currency(item.Price)</span>
+                        <span class="os-row__meta os-num">@Formatting.Currency(item.Price)</span>
+                        <OsQuantityStepper Value="item.Quantity"
+                                           ValueChanged="newValue => ChangeQuantityAsync(item, newValue)"
+                                           Min="1"
+                                           Disabled="_busy"
+                                           Size="OsQuantityStepper.StepperSize.Sm"
+                                           Label="@item.ProductName"
+                                           Class="mt-2" />
                     </div>
                     <div class="os-row__end">
                         <OsPrice Value="item.Quantity * item.Price" Size="OsPrice.PriceSize.Sm" />
@@ -77,6 +84,7 @@
 
     private List<CartItemDto> _items = [];
     private decimal _total;
+    private bool _busy;
 
     protected override void OnInitialized()
     {
@@ -89,6 +97,27 @@
         _items = CartState.Cart?.Items ?? [];
         _total = _items.Sum(i => i.Quantity * i.Price);
         InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ChangeQuantityAsync(CartItemDto item, int newValue)
+    {
+        if (_busy) return;
+        _busy = true;
+        try
+        {
+            var result = newValue > item.Quantity
+                ? await Ordering.AddToCartAsync(item.ProductId, 1)
+                : await Ordering.DecreaseCartItemAsync(item.ProductId);
+
+            if (!result.IsSuccess)
+                Snackbar.ShowApiError(result.Error);
+
+            await CartState.RefreshAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task RemoveAsync(Guid productId)

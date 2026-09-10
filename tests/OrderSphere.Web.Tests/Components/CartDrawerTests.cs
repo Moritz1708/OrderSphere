@@ -89,4 +89,34 @@ public sealed class CartDrawerTests : BunitBase
         nav.Uri.Should().EndWith("/checkout");
         isOpenChangedTo.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task Stepper_Increase_AddsOneOfTheSameProduct()
+    {
+        var item = new CartItemDto(Guid.NewGuid(), "Widget", 10m, 2);
+        var client = SetupCart(new CartDto(Guid.NewGuid(), [item]));
+        client.AddToCartAsync(Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(ApiResult.Ok());
+        await Services.GetRequiredService<CartState>().RefreshAsync();
+
+        var cut = Render<CartDrawer>(p => p.Add(c => c.IsOpen, true));
+        await cut.FindAll(".os-qty__btn")[1].ClickAsync(new());
+
+        await client.Received(1).AddToCartAsync(item.ProductId, 1, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Stepper_Decrease_DecrementsTheLine()
+    {
+        var item = new CartItemDto(Guid.NewGuid(), "Widget", 10m, 2);
+        var client = SetupCart(new CartDto(Guid.NewGuid(), [item]));
+        client.DecreaseCartItemAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(ApiResult.Ok());
+        await Services.GetRequiredService<CartState>().RefreshAsync();
+
+        var cut = Render<CartDrawer>(p => p.Add(c => c.IsOpen, true));
+        await cut.FindAll(".os-qty__btn")[0].ClickAsync(new());
+
+        await client.Received(1).DecreaseCartItemAsync(item.ProductId, Arg.Any<CancellationToken>());
+    }
 }

@@ -37,8 +37,8 @@ else
     </OsPageHeader>
 
     <OsSection Padding="OsSection.SectionPadding.Sm">
-        <MudGrid Spacing="4">
-            <MudItem xs="12" md="8">
+        <div class="pg-order">
+            <div class="pg-order__main">
                 <OsCard Padding="OsCard.CardPadding.Lg">
                     <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-4">@L["OrderDetail.Items"]</OsDisplay>
 
@@ -89,81 +89,84 @@ else
                 {
                     <OsCard Padding="OsCard.CardPadding.Lg" Class="mt-4">
                         <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-4">@L["OrderDetail.Timeline"]</OsDisplay>
-                        <MudTimeline TimelinePosition="TimelinePosition.Start">
-                            @foreach (var entry in history)
+                        @* An editorial rail rather than MudTimeline: one hairline, a dot
+                           per step, mono timestamps. The newest entry is the emphasised one. *@
+                        <ol class="pg-timeline">
+                            @foreach (var (entry, index) in history.Select((e, i) => (e, i)))
                             {
-                                <MudTimelineItem Color="@StatusPresentation.OrderTone(entry.Status).ToMudColor()" Size="Size.Small">
-                                    <strong>@L[StatusPresentation.OrderLabelKey(entry.Status)]</strong>
-                                    <span class="os-row__meta os-mono d-block">@Formatting.DateTime(entry.OccurredAt.ToLocalTime())</span>
-                                </MudTimelineItem>
+                                <li class="pg-timeline__item @(index == history.Count - 1 ? "is-current" : null)">
+                                    <span class="pg-timeline__dot os-tone-@StatusPresentation.OrderTone(entry.Status).ToString().ToLowerInvariant()" aria-hidden="true"></span>
+                                    <span class="pg-timeline__label">@L[StatusPresentation.OrderLabelKey(entry.Status)]</span>
+                                    <time class="pg-timeline__time os-mono" datetime="@entry.OccurredAt.ToString("o")">
+                                        @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
+                                    </time>
+                                </li>
                             }
-                        </MudTimeline>
+                        </ol>
                     </OsCard>
                 }
-            </MudItem>
+            </div>
 
-            <MudItem xs="12" md="4">
-                <MudStack Spacing="4">
+            <aside class="pg-order__aside">
+                <OsCard>
+                    <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.ShippingAddress"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                    <address class="pg-order__address">
+                        @_order.ShippingAddress.FirstName @_order.ShippingAddress.LastName<br />
+                        @_order.ShippingAddress.Street<br />
+                        @_order.ShippingAddress.PostalCode @_order.ShippingAddress.City<br />
+                        @_order.ShippingAddress.Country
+                    </address>
+                </OsCard>
+
+                @if (!string.IsNullOrWhiteSpace(_order.TrackingNumber))
+                {
                     <OsCard>
-                        <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.ShippingAddress"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
-                        <address class="pg-order__address">
-                            @_order.ShippingAddress.FirstName @_order.ShippingAddress.LastName<br />
-                            @_order.ShippingAddress.Street<br />
-                            @_order.ShippingAddress.PostalCode @_order.ShippingAddress.City<br />
-                            @_order.ShippingAddress.Country
-                        </address>
+                        <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Tracking"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                        <span class="pg-order__tracking os-mono">
+                            <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Size="Size.Small" />
+                            @_order.TrackingNumber
+                        </span>
                     </OsCard>
+                }
 
-                    @if (!string.IsNullOrWhiteSpace(_order.TrackingNumber))
+                <OsCard>
+                    <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Details"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                    <dl class="os-kv">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["OrderDetail.OrderDate"]</dt>
+                            <dd class="os-kv__val">@Formatting.DateTime(_order.CreatedAt.ToLocalTime())</dd>
+                        </div>
+                    </dl>
+                </OsCard>
+
+                <OsCard>
+                    <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Invoice"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                    @if (_invoice is not null)
                     {
-                        <OsCard>
-                            <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Tracking"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
-                            <span class="pg-order__tracking os-mono">
-                                <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Size="Size.Small" />
-                                @_order.TrackingNumber
-                            </span>
-                        </OsCard>
-                    }
-
-                    <OsCard>
-                        <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Details"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
-                        <dl class="os-kv">
+                        <dl class="os-kv mb-4">
                             <div class="os-kv__row">
-                                <dt class="os-kv__key">@L["OrderDetail.OrderDate"]</dt>
-                                <dd class="os-kv__val">@Formatting.DateTime(_order.CreatedAt.ToLocalTime())</dd>
+                                <dt class="os-kv__key">@L["OrderDetail.InvoiceNumber"]</dt>
+                                <dd class="os-kv__val">@_invoice.InvoiceNumber</dd>
                             </div>
                         </dl>
-                    </OsCard>
-
-                    <OsCard>
-                        <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Invoice"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
-                        @if (_invoice is not null)
-                        {
-                            <dl class="os-kv mb-4">
-                                <div class="os-kv__row">
-                                    <dt class="os-kv__key">@L["OrderDetail.InvoiceNumber"]</dt>
-                                    <dd class="os-kv__val">@_invoice.InvoiceNumber</dd>
-                                </div>
-                            </dl>
-                            <OsButton Href="@Invoicing.GetPdfUrl(_order.Id)" Target="_blank" FullWidth="true"
-                                      StartIcon="@Icons.Material.Outlined.PictureAsPdf">
-                                @L["OrderDetail.ViewInvoice"]
-                            </OsButton>
-                            <OsButton Href="@Invoicing.GetDownloadUrl(_order.Id)" FullWidth="true"
-                                      Variant="OsButton.ButtonVariant.Secondary"
-                                      StartIcon="@Icons.Material.Outlined.Download"
-                                      Class="mt-2">
-                                @L["OrderDetail.DownloadInvoice"]
-                            </OsButton>
-                        }
-                        else
-                        {
-                            <p class="os-muted">@L["OrderDetail.InvoicePending"]</p>
-                        }
-                    </OsCard>
-                </MudStack>
-            </MudItem>
-        </MudGrid>
+                        <OsButton Href="@Invoicing.GetPdfUrl(_order.Id)" Target="_blank" FullWidth="true"
+                                  StartIcon="@Icons.Material.Outlined.PictureAsPdf">
+                            @L["OrderDetail.ViewInvoice"]
+                        </OsButton>
+                        <OsButton Href="@Invoicing.GetDownloadUrl(_order.Id)" FullWidth="true"
+                                  Variant="OsButton.ButtonVariant.Secondary"
+                                  StartIcon="@Icons.Material.Outlined.Download"
+                                  Class="mt-2">
+                            @L["OrderDetail.DownloadInvoice"]
+                        </OsButton>
+                    }
+                    else
+                    {
+                        <p class="os-muted">@L["OrderDetail.InvoicePending"]</p>
+                    }
+                </OsCard>
+                </aside>
+        </div>
     </OsSection>
 }
 

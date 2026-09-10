@@ -3,6 +3,7 @@
 @inject IOrderingClient Ordering
 @inject CartState CartState
 @inject ISnackbar Snackbar
+@inject IMotionService Motion
 @inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
@@ -11,22 +12,60 @@
 <OsPageHeader Eyebrow="@L["Checkout.Eyebrow"]"
               Title="@L["Checkout.Title"]"
               Subtitle="@L["Checkout.Subtitle"]"
-              Size="OsDisplay.DisplaySize.D3" />
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm" />
 
 <OsSection Padding="OsSection.SectionPadding.Sm">
-    <MudGrid Spacing="4">
-        <MudItem xs="12" lg="8">
-            <MudStack Spacing="4">
-                <OsCard Padding="OsCard.CardPadding.Lg">
-                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-5">@L["Address.Title"]</OsDisplay>
+    <div class="pg-checkout">
+        <div class="pg-checkout__steps">
+            @* 01 — where it goes *@
+            <section class="pg-step" aria-labelledby="step-address">
+                <span class="pg-step__num os-mono" aria-hidden="true">01</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="step-address">@L["Address.Title"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Checkout.AddressHint"]</p>
                     <AddressForm @ref="_addressForm" Model="_model.Address" ShowEmail="true" />
-                </OsCard>
+                </div>
+            </section>
 
-                <CheckoutPaymentForm Model="_model" />
-            </MudStack>
-        </MudItem>
+            @* 02 — how it is paid *@
+            <section class="pg-step" aria-labelledby="step-payment">
+                <span class="pg-step__num os-mono" aria-hidden="true">02</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="step-payment">@L["Payment.Title"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Checkout.PaymentHint"]</p>
+                    <CheckoutPaymentForm Model="_model" />
+                </div>
+            </section>
 
-        <MudItem xs="12" lg="4">
+            @* 03 — what is being ordered *@
+            <section class="pg-step" aria-labelledby="step-review">
+                <span class="pg-step__num os-mono" aria-hidden="true">03</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="step-review">@L["Checkout.ReviewTitle"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Checkout.ReviewHint"]</p>
+
+                    <dl class="os-kv pg-checkout__review">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Checkout.ReviewItems"]</dt>
+                            <dd class="os-kv__val os-num">@_cartItems.Sum(i => i.Quantity)</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Checkout.ReviewShipTo"]</dt>
+                            <dd class="os-kv__val">@ShipTo</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Payment.Title"]</dt>
+                            <dd class="os-kv__val">@L[PaymentLabelKey]</dd>
+                        </div>
+                    </dl>
+
+                    <p class="pg-step__note">@L["Checkout.TermsNote"]</p>
+                </div>
+            </section>
+        </div>
+
+        <div class="pg-checkout__aside">
             <OrderSummary Title="@L["Checkout.Summary"]"
                           ShowLineItems="true"
                           Items="_cartItems"
@@ -68,15 +107,15 @@
                     <OsButton FullWidth="true"
                               Size="OsButton.ButtonSize.Lg"
                               Loading="_submitting"
+                              Disabled="@(_cartItems.Count == 0)"
                               OnClick="SubmitAsync"
                               Class="mt-4">
                         @L["Checkout.Submit"]
                     </OsButton>
-                    <p class="os-summary__note">@L["Checkout.TermsNote"]</p>
                 </Actions>
             </OrderSummary>
-        </MudItem>
-    </MudGrid>
+        </div>
+    </div>
 </OsSection>
 
 @code {
@@ -102,6 +141,25 @@
 
     // Estimate; the worker recomputes shipping authoritatively from the (pre-discount) subtotal.
     private decimal Shipping => ShippingEstimate.For(Subtotal);
+
+    private string PaymentLabelKey => _model.PaymentMethod switch
+    {
+        1 => "Payment.PayPal",
+        2 => "Payment.Invoice",
+        _ => "Payment.CreditCard",
+    };
+
+    private string ShipTo
+    {
+        get
+        {
+            var a = _model.Address;
+            var name = $"{a.FirstName} {a.LastName}".Trim();
+            var place = string.Join(" ", new[] { a.PostalCode, a.City }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            var parts = new[] { name, a.Street, place }.Where(s => !string.IsNullOrWhiteSpace(s));
+            return parts.Any() ? string.Join(", ", parts) : L["Checkout.ReviewShipToPending"];
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -156,8 +214,12 @@
     private async Task SubmitAsync()
     {
         // Field-level errors come from the form itself; a toast would only repeat them.
+        // The summary can sit far from the address step, so move focus to the first problem.
         if (!await _addressForm.ValidateAsync())
+        {
+            await Motion.FocusFirstInvalidAsync();
             return;
+        }
 
         _submitting = true;
         try
