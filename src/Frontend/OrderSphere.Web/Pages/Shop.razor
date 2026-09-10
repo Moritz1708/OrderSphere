@@ -1,6 +1,5 @@
 @page "/shop"
 @page "/shop/category/{Category}"
-@attribute [Authorize]
 @inject ICatalogClient Catalog
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
@@ -236,5 +235,13 @@
     private void OpenDetails(ProductDto product)
         => Navigation.NavigateTo($"/shop/{Uri.EscapeDataString(product.CategoryName)}/{Uri.EscapeDataString(product.Slug)}");
 
-    private Task AddToCartAsync(ProductDto product) => AddToCartDialog.ShowAsync(Dialogs, product);
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private async Task AddToCartAsync(ProductDto product)
+    {
+        if (!await LoginRedirect.EnsureSignedInAsync(AuthState, Navigation))
+            return;
+
+        await AddToCartDialog.ShowAsync(Dialogs, product);
+    }
 }

@@ -52,7 +52,7 @@
                 </OsButton>
             </Authorized>
             <NotAuthorized>
-                <OsButton Href="/bff/login" FullWidth="true">@L["Auth.SignIn"]</OsButton>
+                <OsButton OnClick="() => LoginRedirect.Go(Navigation)" FullWidth="true">@L["Auth.SignIn"]</OsButton>
             </NotAuthorized>
         </AuthorizeView>
     </div>

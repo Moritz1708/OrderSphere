@@ -1459,4 +1459,10 @@
   <data name="ProductDetails.Sku" xml:space="preserve">
     <value>Artikelnummer</value>
   </data>
+  <data name="Auth.SignInToBuy" xml:space="preserve">
+    <value>Anmelden, um zu kaufen</value>
+  </data>
+  <data name="Reviews.SignInHint" xml:space="preserve">
+    <value>Melde dich an, um eine Bewertung zu schreiben.</value>
+  </data>
 </root>

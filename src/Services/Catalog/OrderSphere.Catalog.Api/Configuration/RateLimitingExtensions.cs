@@ -17,9 +17,12 @@ public static class RateLimitingExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            // One service-wide bucket, not per caller: it is a protective ceiling for the
+            // database, and the per-IP / per-user limits live on the gateway. Sized for
+            // anonymous browsing, where a product page costs three calls.
             options.AddPolicy(PublicPolicy, _ =>
                 RedisRateLimitPartition.GetRedisFixedWindowLimiter(
-                    PublicPolicy, multiplexer, permitLimit: 100, window: TimeSpan.FromSeconds(60)));
+                    PublicPolicy, multiplexer, permitLimit: 600, window: TimeSpan.FromSeconds(60)));
 
             options.AddPolicy(AdminPolicy, _ =>
                 RedisRateLimitPartition.GetRedisFixedWindowLimiter(

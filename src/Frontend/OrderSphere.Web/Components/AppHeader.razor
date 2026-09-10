@@ -1,3 +1,4 @@
+@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <MudAppBar Elevation="0" Fixed="true" Class="os-header">
@@ -45,7 +46,7 @@
                              IsAdmin="@context.User.IsInRole("admin")" />
             </Authorized>
             <NotAuthorized>
-                <OsButton Href="/bff/login"
+                <OsButton OnClick="() => LoginRedirect.Go(Navigation)"
                           Variant="OsButton.ButtonVariant.Secondary"
                           Size="OsButton.ButtonSize.Sm">
                     @L["Auth.SignIn"]

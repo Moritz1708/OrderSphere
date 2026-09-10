@@ -230,10 +230,17 @@ public sealed class CatalogAdminApiTests : IClassFixture<CatalogApiFactory>
         (await anon.GetAsync($"api/v1/products/{slug}")).StatusCode.Should().Be(HttpStatusCode.OK);
         (await anon.GetAsync($"api/v1/products/batch?ids={productId}")).StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var decrement = await anon.PostAsJsonAsync($"api/v1/products/{productId}/stock/decrement", new { quantity = 5 });
+        // Stock adjustment is an admin operation: anonymous callers are refused, a signed-in
+        // customer is forbidden, and only the catalog admin role goes through.
+        (await anon.PostAsJsonAsync($"api/v1/products/{productId}/stock/decrement", new { quantity = 5 }))
+            .StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        (await Customer("auth0|shopper").PostAsJsonAsync($"api/v1/products/{productId}/stock/decrement", new { quantity = 5 }))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        var decrement = await admin.PostAsJsonAsync($"api/v1/products/{productId}/stock/decrement", new { quantity = 5 });
         decrement.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var restore = await anon.PostAsJsonAsync($"api/v1/products/{productId}/stock/restore", new { quantity = 5 });
+        var restore = await admin.PostAsJsonAsync($"api/v1/products/{productId}/stock/restore", new { quantity = 5 });
         restore.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 

@@ -1,5 +1,4 @@
 @page "/search"
-@attribute [Authorize]
 @inject ICatalogClient Catalog
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
@@ -136,7 +135,15 @@
         => Navigation.NavigateTo($"/shop/{Uri.EscapeDataString(product.CategoryName)}/{Uri.EscapeDataString(product.Slug)}");
 
     // The old page passed an empty callback here, so the add button did nothing.
-    private Task AddToCartAsync(ProductDto product) => AddToCartDialog.ShowAsync(Dialogs, product);
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private async Task AddToCartAsync(ProductDto product)
+    {
+        if (!await LoginRedirect.EnsureSignedInAsync(AuthState, Navigation))
+            return;
+
+        await AddToCartDialog.ShowAsync(Dialogs, product);
+    }
 
     private void OnSearchSubmit(string term)
     {

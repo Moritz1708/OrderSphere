@@ -1,10 +1,10 @@
 @page "/shop/{Category}/{Slug}"
 @page "/p/{Slug}"
-@attribute [Authorize]
 @inject ICatalogClient Catalog
 @inject IOrderingClient Ordering
 @inject CartState CartState
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@(_product?.Name ?? L["ProductDetails.PageFallback"]) – OrderSphere</PageTitle>
@@ -52,6 +52,8 @@ else
                 <p class="pg-pdp__desc">@_product.Description</p>
 
                 <div class="pg-pdp__cta">
+                    <AuthorizeView Context="auth">
+                    <Authorized>
                     <OsQuantityStepper @bind-Value="_quantity"
                                        Min="1"
                                        Max="@Math.Max(1, _product.Stock)"
@@ -64,6 +66,15 @@ else
                               OnClick="AddToCartAsync">
                         @L["Common.AddToCart"]
                     </OsButton>
+                    </Authorized>
+                    <NotAuthorized>
+                    <OsButton Size="OsButton.ButtonSize.Lg"
+                              StartIcon="@Icons.Material.Outlined.Login"
+                              OnClick="() => LoginRedirect.Go(Navigation)">
+                        @L["Auth.SignInToBuy"]
+                    </OsButton>
+                    </NotAuthorized>
+                    </AuthorizeView>
                 </div>
 
                 <dl class="os-kv pg-pdp__meta">
@@ -80,6 +91,15 @@ else
         <div class="pg-pdp__reviews">
             <div class="pg-pdp__review-form">
                 <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Reviews.WriteTitle"]</OsDisplay>
+                <AuthorizeView Context="auth">
+                <NotAuthorized>
+                <OsEmptyState Icon="@Icons.Material.Outlined.Login"
+                              Title="@L["Reviews.SignInHint"]"
+                              ActionText="@L["Auth.SignIn"]"
+                              OnAction="() => LoginRedirect.Go(Navigation)"
+                              Compact="true" />
+                </NotAuthorized>
+                <Authorized>
                 <p class="os-muted">@L["Reviews.WriteHint"]</p>
 
                 <div class="pg-pdp__rating">
@@ -95,6 +115,8 @@ else
                           OnClick="SubmitReviewAsync">
                     @L["Reviews.Submit"]
                 </OsButton>
+                </Authorized>
+                </AuthorizeView>
             </div>
 
             <div class="pg-pdp__review-list">

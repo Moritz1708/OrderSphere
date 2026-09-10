@@ -65,7 +65,7 @@ user who effectively holds `requires-mfa` (see [MFA](#mfa)).
 
 | Policy | Definition | Applied to |
 |---|---|---|
-| `BffUserPolicy` | `RequireAuthenticatedUser()` | All `/api/**` reverse-proxy routes |
+| `BffUserPolicy` | `RequireAuthenticatedUser()` | All `/api/**` reverse-proxy routes, except the anonymous catalog read routes (`GET`/`HEAD` on `/api/v1/products`, `/categories`, `/brands`, `/reviews`) declared with `AuthorizationPolicy: anonymous` in `appsettings*.json`. Writes on those paths fall through to the catch-all and stay authenticated |
 
 ---
 

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
+using OrderSphere.Catalog.Api.Configuration;
 using OrderSphere.Catalog.Application.Abstractions;
 using OrderSphere.Catalog.Application.Features.Products.Public.GetProductBySlug;
 using OrderSphere.Catalog.Application.Features.Products.Public.GetProducts;
@@ -30,13 +31,17 @@ public static class ProductEndpoints
             .WithName("GetSimilarProducts")
             .WithTags("Products");
 
+        // Stock mutations share the public route prefix for historical reasons but are an
+        // admin/system operation. Anonymous browsing made the previous open access visible.
         group.MapPost("/{id:guid}/stock/decrement", DecrementStock)
             .WithName("DecrementStock")
-            .WithTags("Products");
+            .WithTags("Products")
+            .RequireAuthorization(AuthorizationExtensions.CatalogAdminPolicy);
 
         group.MapPost("/{id:guid}/stock/restore", RestoreStock)
             .WithName("RestoreStock")
-            .WithTags("Products");
+            .WithTags("Products")
+            .RequireAuthorization(AuthorizationExtensions.CatalogAdminPolicy);
     }
 
     private static async Task<IResult> GetProducts(

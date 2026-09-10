@@ -67,7 +67,8 @@ builder.Services.AddRateLimiter(options =>
     // Global limiter runs after UseAuthentication() so the sub/partner claims are available.
     // Authenticated users are partitioned per user-id (120 req/min) to prevent a
     // compromised token from consuming the IP quota of other users on shared egress
-    // (NAT, corporate proxies). Anonymous callers fall back to per-IP (30 req/min).
+    // (NAT, corporate proxies). Anonymous callers fall back to per-IP (120 req/min):
+    // the catalogue is browsable without a session and a product page costs three calls.
     // B6 — partners (X-API-Key) are partitioned per partner-id instead, with a quota that
     // depends on their tier (Standard/Premium) rather than the flat per-user limit.
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -90,7 +91,7 @@ builder.Services.AddRateLimiter(options =>
 
         var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         return RedisRateLimitPartition.GetRedisFixedWindowLimiter(
-            $"ip:{clientIp}", redisMultiplexer, permitLimit: 30, window: TimeSpan.FromMinutes(1));
+            $"ip:{clientIp}", redisMultiplexer, permitLimit: 120, window: TimeSpan.FromMinutes(1));
     });
 });
 

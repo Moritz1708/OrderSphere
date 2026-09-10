@@ -1,6 +1,8 @@
+using NSubstitute;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 using OrderSphere.Catalog.Application.Features.Products.Public.GetProductBySlug;
+using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Catalog.Tests.Helpers;
 
 namespace OrderSphere.Catalog.Tests.Features.Products;
@@ -24,7 +26,7 @@ public sealed class GetProductBySlugQueryHandlerTests
         ctx.Products.Add(product);
         await ctx.SaveChangesAsync();
 
-        var result = await new GetProductBySlugQueryHandler(ctx, NewCache())
+        var result = await new GetProductBySlugQueryHandler(ctx, NewCache(), Substitute.For<ITenantContext>())
             .Handle(new(product.Slug), default);
 
         result.IsSuccess.Should().BeTrue();
@@ -37,7 +39,7 @@ public sealed class GetProductBySlugQueryHandlerTests
     {
         await using var ctx = CatalogDbContextFactory.Create();
 
-        var result = await new GetProductBySlugQueryHandler(ctx, NewCache())
+        var result = await new GetProductBySlugQueryHandler(ctx, NewCache(), Substitute.For<ITenantContext>())
             .Handle(new("does-not-exist"), default);
 
         result.IsFailure.Should().BeTrue();
@@ -55,7 +57,7 @@ public sealed class GetProductBySlugQueryHandlerTests
         ctx.Products.Add(product);
         await ctx.SaveChangesAsync();
 
-        var result = await new GetProductBySlugQueryHandler(ctx, NewCache())
+        var result = await new GetProductBySlugQueryHandler(ctx, NewCache(), Substitute.For<ITenantContext>())
             .Handle(new(product.Slug), default);
 
         result.IsFailure.Should().BeTrue();

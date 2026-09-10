@@ -1459,4 +1459,10 @@
   <data name="ProductDetails.Sku" xml:space="preserve">
     <value>SKU</value>
   </data>
+  <data name="Auth.SignInToBuy" xml:space="preserve">
+    <value>Sign in to buy</value>
+  </data>
+  <data name="Reviews.SignInHint" xml:space="preserve">
+    <value>Sign in to write a review.</value>
+  </data>
 </root>
