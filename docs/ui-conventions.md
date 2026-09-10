@@ -117,6 +117,11 @@ Because MudBlazor's stylesheet is layered beneath ours, **every OrderSphere rule
 alone**. Write overrides at their natural specificity. `!important` is banned outside the
 reduced-motion block in `motion.css`.
 
+One exception to know about: MudBlazor's colour utilities (`.mud-primary-text` and friends) are
+declared `!important`, and an important declaration in a lower layer still beats a normal one in a
+higher layer. Do not fight them from CSS — avoid the utility at the call site: a plain `<a>` instead
+of `MudLink`, `Color.Inherit` instead of `Color.Primary`.
+
 | File | Layer | Holds |
 |---|---|---|
 | `tokens.css` | tokens | `:root` (light) and `:root[data-theme="dark"]` |

@@ -1,0 +1,15 @@
+@* Count badge. Re-keyed on the value so the pop animation replays on every change. *@
+
+@if (Count > 0)
+{
+    <span class="os-badge" @key="Count" aria-hidden="true">@Display</span>
+}
+
+@code {
+    [Parameter] public int Count { get; set; }
+
+    /// <summary>Counts above this render as "N+".</summary>
+    [Parameter] public int Max { get; set; } = 99;
+
+    private string Display => Count > Max ? $"{Max}+" : Count.ToString();
+}

@@ -1,19 +1,41 @@
 @inject IStringLocalizer<AppStrings> L
 
-<footer style="padding: 48px 0; border-top: 1px solid var(--mud-palette-divider); margin-top: auto;">
-    <MudContainer MaxWidth="MaxWidth.Large">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Spacing="4">
-            <MudStack Spacing="1">
-                <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">OrderSphere</MudText>
-                <MudText Typo="Typo.caption" Class="text-muted">
-                    @L["Footer.Rights", DateTime.UtcNow.Year]
-                </MudText>
-            </MudStack>
-            <MudStack Row="true" Spacing="4">
-                <MudLink Href="/legal/privacy" Typo="Typo.caption" Class="text-muted">@L["Footer.Privacy"]</MudLink>
-                <MudLink Href="/legal/imprint" Typo="Typo.caption" Class="text-muted">@L["Footer.Imprint"]</MudLink>
-                <MudLink Href="/faq" Typo="Typo.caption" Class="text-muted">@L["Footer.Faq"]</MudLink>
-            </MudStack>
-        </MudStack>
-    </MudContainer>
+@* Four editorial columns. The old footer linked /legal/privacy and /legal/imprint,
+   which are not the registered routes — both 404'd. *@
+<footer class="os-footer">
+    <div class="os-footer__inner">
+
+        <div class="os-footer__brand">
+            <span class="os-logo-mark" aria-hidden="true">○</span>
+            <span class="os-footer__wordmark">OrderSphere</span>
+            <p class="os-footer__tagline">@L["Footer.Tagline"]</p>
+        </div>
+
+        <nav class="os-footer__col" aria-label="@L["Footer.Shop"]">
+            <span class="os-eyebrow">@L["Footer.Shop"]</span>
+            <a href="/shop">@L["Nav.Shop"]</a>
+            <a href="/categories">@L["Nav.Categories"]</a>
+            <a href="/search">@L["Nav.Search"]</a>
+        </nav>
+
+        <nav class="os-footer__col" aria-label="@L["Footer.Service"]">
+            <span class="os-eyebrow">@L["Footer.Service"]</span>
+            <a href="/faq">@L["Footer.Faq"]</a>
+            <a href="/contact">@L["Footer.Contact"]</a>
+            <a href="/returns">@L["Footer.Returns"]</a>
+        </nav>
+
+        <nav class="os-footer__col" aria-label="@L["Footer.Legal"]">
+            <span class="os-eyebrow">@L["Footer.Legal"]</span>
+            <a href="/imprint">@L["Footer.Imprint"]</a>
+            <a href="/privacy">@L["Footer.Privacy"]</a>
+            <a href="/terms">@L["Footer.Terms"]</a>
+            <a href="/cookies">@L["Footer.Cookies"]</a>
+        </nav>
+
+    </div>
+
+    <div class="os-footer__bottom">
+        <span class="os-mono">@L["Footer.Rights", DateTime.UtcNow.Year]</span>
+    </div>
 </footer>

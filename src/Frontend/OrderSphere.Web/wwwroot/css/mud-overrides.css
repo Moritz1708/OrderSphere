@@ -1,6 +1,12 @@
 /* MudBlazor restyling. MudBlazor.min.css is imported into @layer mud (app.css),
    so every rule here wins on layer order alone — no !important, no specificity
-   escalation. Keep selectors at their natural specificity. */
+   escalation. Keep selectors at their natural specificity.
+
+   One exception to know about: MudBlazor's colour utilities (.mud-primary-text,
+   .mud-secondary-text, …) are declared !important, and an important declaration
+   in a lower layer still beats a normal one in a higher layer. Do not fight them
+   from here — avoid the utility at the call site instead (a plain <a> rather than
+   a MudLink, Color.Inherit rather than Color.Primary). */
 @layer overrides {
 
   /* ---- Surfaces: no Material elevation anywhere ---- */

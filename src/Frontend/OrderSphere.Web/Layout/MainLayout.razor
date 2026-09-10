@@ -10,16 +10,21 @@
 
 <MudLayout>
     <AppHeader OnCartToggle="ToggleCart"
+               OnMobileNavToggle="ToggleMobileNav"
                CartItemCount="@_cartItemCount"
                IsCartOpen="@_cartOpen" />
 
     <MudMainContent>
         <CascadingValue Value="this">
             <AppErrorBoundary>
-                @Body
+                <PageTransition>
+                    @Body
+                </PageTransition>
             </AppErrorBoundary>
         </CascadingValue>
     </MudMainContent>
+
+    <MobileNavDrawer Open="@_mobileNavOpen" OpenChanged="val => _mobileNavOpen = val" />
 
     <CartDrawer IsOpen="@_cartOpen" IsOpenChanged="val => _cartOpen = val" />
 
@@ -49,6 +54,7 @@
     [Inject] private IUserProfileClient UserProfile { get; set; } = default!;
 
     private bool _cartOpen;
+    private bool _mobileNavOpen;
     private bool _advisorOpen;
     private int _cartItemCount;
     private bool _onboardingPromptShown;
@@ -132,6 +138,8 @@
     }
 
     private void ToggleCart() => _cartOpen = !_cartOpen;
+
+    private void ToggleMobileNav() => _mobileNavOpen = !_mobileNavOpen;
 
     private void ToggleAdvisor() => _advisorOpen = !_advisorOpen;
 

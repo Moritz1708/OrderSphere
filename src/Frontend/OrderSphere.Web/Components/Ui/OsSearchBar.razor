@@ -1,0 +1,69 @@
+@inject NavigationManager Nav
+@inject IStringLocalizer<AppStrings> L
+
+@* One search control for the header and the search page. A real <form> so Enter
+   submits and assistive technology announces the landmark. *@
+<form class="@CssClass" role="search" @onsubmit="SubmitAsync" @onsubmit:preventDefault="true">
+    <MudIcon Icon="@Icons.Material.Outlined.Search" Class="os-search__icon" />
+
+    <input type="search"
+           class="os-search__input"
+           value="@Value"
+           @oninput="e => Value = e.Value?.ToString() ?? string.Empty"
+           placeholder="@(Placeholder ?? L["Search.Placeholder"])"
+           aria-label="@(Placeholder ?? L["Search.Placeholder"])"
+           autocomplete="off"
+           autofocus="@AutoFocus" />
+
+    @if (Size == SearchSize.Hero)
+    {
+        <OsButton Type="submit" Size="OsButton.ButtonSize.Md">@L["Search.Submit"]</OsButton>
+    }
+    else
+    {
+        <button type="submit" class="os-search__submit" aria-label="@L["Search.Submit"]">
+            <MudIcon Icon="@Icons.Material.Outlined.ArrowForward" />
+        </button>
+    }
+</form>
+
+@code {
+    public enum SearchSize { Header, Hero }
+
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public SearchSize Size { get; set; } = SearchSize.Header;
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// Handles the submitted term. When unset the bar navigates to /search itself,
+    /// which is what the header instance wants.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnSubmit { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-search",
+            $"os-search--{Size.ToString().ToLowerInvariant()}",
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private async Task SubmitAsync()
+    {
+        var term = Value?.Trim() ?? string.Empty;
+        if (term.Length == 0)
+            return;
+
+        await ValueChanged.InvokeAsync(term);
+
+        if (OnSubmit.HasDelegate)
+            await OnSubmit.InvokeAsync(term);
+        else
+            Nav.NavigateTo($"/search?q={Uri.EscapeDataString(term)}");
+    }
+}

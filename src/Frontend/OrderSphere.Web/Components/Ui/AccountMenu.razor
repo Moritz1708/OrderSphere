@@ -1,0 +1,63 @@
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IStringLocalizer<AppStrings> L
+
+<MudMenu AnchorOrigin="Origin.BottomRight"
+         TransformOrigin="Origin.TopRight"
+         Dense="true">
+    <ActivatorContent>
+        <OsIconButton Icon="@Icons.Material.Outlined.AccountCircle"
+                      AriaLabel="@L["Account.MenuAriaLabel"]" />
+    </ActivatorContent>
+    <ChildContent>
+        <div class="os-account-head">
+            <span class="os-account-name">@Name</span>
+            @if (!string.IsNullOrWhiteSpace(Email))
+            {
+                <span class="os-account-mail os-mono">@Email</span>
+            }
+        </div>
+
+        <MudMenuItem Icon="@Icons.Material.Outlined.ShoppingBag" Href="/account/orders">
+            @L["Account.MyOrders"]
+        </MudMenuItem>
+        <MudMenuItem Icon="@Icons.Material.Outlined.Person" Href="/account/profile">
+            @L["Account.MyProfile"]
+        </MudMenuItem>
+
+        @if (IsAdmin)
+        {
+            <MudMenuItem Icon="@Icons.Material.Outlined.AdminPanelSettings" Href="/admin">
+                @L["Account.Admin"]
+            </MudMenuItem>
+        }
+
+        <MudDivider />
+
+        <MudMenuItem Icon="@Icons.Material.Outlined.Logout"
+                     IconColor="Color.Error"
+                     OnClick="HandleLogoutAsync"
+                     Disabled="_isLoggingOut">
+            <span class="os-account-logout">@L["Account.Logout"]</span>
+        </MudMenuItem>
+    </ChildContent>
+</MudMenu>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string? Email { get; set; }
+    [Parameter] public bool IsAdmin { get; set; }
+
+    private bool _isLoggingOut;
+
+    private async Task HandleLogoutAsync()
+    {
+        _isLoggingOut = true;
+
+        // Best-effort: even if the call fails, a forced reload drops the client state
+        // and the next /bff/user probe resolves the real session.
+        try { await Http.PostAsync("/bff/logout", content: null); } catch { }
+
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

@@ -63,7 +63,9 @@
 
     <MudMainContent>
         <AppErrorBoundary>
-            @Body
+            <PageTransition>
+                @Body
+            </PageTransition>
         </AppErrorBoundary>
     </MudMainContent>
 </MudLayout>

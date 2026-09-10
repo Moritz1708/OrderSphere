@@ -11,25 +11,6 @@
   .os-mono { font-family: var(--os-font-mono); font-variant-numeric: tabular-nums; }
   .os-display { font-family: var(--os-font-display); }
 
-  .os-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--os-space-3);
-    font-family: var(--os-font-mono);
-    font-size: var(--os-eyebrow-size);
-    font-weight: 500;
-    letter-spacing: var(--os-eyebrow-tracking);
-    text-transform: uppercase;
-    color: var(--os-accent-ink);
-  }
-
-  .os-eyebrow::before {
-    content: "";
-    width: 24px;
-    height: 1px;
-    background: currentColor;
-  }
-
   /* ---- Sections ---- */
   .page-section { padding-block: var(--os-space-8); }
   .section-white { background: var(--os-paper); padding-block: var(--os-space-8); }
@@ -46,9 +27,6 @@
 
   .section-hero { padding-block: var(--os-space-9); }
   .section-hero-sm { padding-block: var(--os-space-7); }
-
-  .section-hero .os-eyebrow,
-  .section-hero-sm .os-eyebrow { color: var(--os-accent); }
 
   .hero-title,
   .hero-title-lg {
@@ -181,25 +159,6 @@
     background: var(--os-accent);
     border-color: var(--os-accent);
     color: var(--os-on-accent);
-  }
-
-  /* ---- Header ---- */
-  .header-appbar {
-    background: color-mix(in srgb, var(--os-canvas) 88%, transparent);
-    color: var(--os-ink);
-  }
-
-  .os-logo-mark {
-    display: grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--os-radius-control);
-    background: var(--os-accent);
-    color: var(--os-on-accent);
-    font-family: var(--os-font-display);
-    font-size: 1rem;
-    line-height: 1;
   }
 
   /* ---- Status & misc ---- */

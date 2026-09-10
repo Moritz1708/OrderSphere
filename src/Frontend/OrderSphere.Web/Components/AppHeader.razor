@@ -1,109 +1,64 @@
-@inject CartState CartState
-@inject NavigationManager Navigation
-@inject HttpClient Http
 @inject IStringLocalizer<AppStrings> L
 
-<MudAppBar Elevation="0" Fixed="true" Class="header-appbar">
+<MudAppBar Elevation="0" Fixed="true" Class="os-header">
 
-    <MudLink Href="/" Underline="Underline.None" Class="d-flex align-center gap-2 text-decoration-none">
-        <div class="os-logo-mark">○</div>
-        <MudText Typo="Typo.h6" Class="os-display"
-                 Style="color: var(--mud-palette-text-primary); font-weight: 600; letter-spacing: -0.02em;">
-            OrderSphere
-        </MudText>
-    </MudLink>
+    @* Below md the links collapse into the drawer, so the trigger comes first. *@
+    <OsIconButton Icon="@Icons.Material.Outlined.Menu"
+                  AriaLabel="@L["Nav.MenuOpen"]"
+                  Class="os-header__burger"
+                  OnClick="() => OnMobileNavToggle.InvokeAsync()" />
+
+    @* A plain anchor, not MudLink: Mud's colour utilities (mud-primary-text) are
+       declared !important, which outranks our layer regardless of cascade order. *@
+    <a href="/" class="os-header__brand">
+        <span class="os-logo-mark" aria-hidden="true">○</span>
+        <span class="os-header__wordmark">OrderSphere</span>
+    </a>
+
+    <nav class="os-header__nav" aria-label="@L["Nav.Primary"]">
+        <NavLink href="/shop" class="os-header__link" ActiveClass="is-active">@L["Nav.Shop"]</NavLink>
+        <NavLink href="/categories" class="os-header__link" ActiveClass="is-active">@L["Nav.Categories"]</NavLink>
+    </nav>
+
+    <div class="os-header__search">
+        <OsSearchBar />
+    </div>
 
     <MudSpacer />
 
-    <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudButton Variant="Variant.Text" Href="/shop" Color="Color.Default">@L["Nav.Shop"]</MudButton>
-        <MudButton Variant="Variant.Text" Href="/categories" Color="Color.Default">@L["Nav.Categories"]</MudButton>
-    </MudHidden>
+    <div class="os-header__actions">
+        <LocaleMenu />
+        <ThemeToggle />
 
-    <MudSpacer />
+        <span class="os-header__cart">
+            <OsIconButton Icon="@Icons.Material.Outlined.ShoppingCart"
+                          AriaLabel="@L["Cart.AriaLabel", CartItemCount]"
+                          Pressed="IsCartOpen"
+                          OnClick="OnCartToggle" />
+            <OsBadge Count="CartItemCount" />
+        </span>
 
-    <CultureSwitcher />
-    <CurrencySwitcher />
-    <ThemeToggle />
-
-    <MudBadge Content="@CartItemCount" Color="Color.Primary" Overlap="true" Visible="@(CartItemCount > 0)">
-        <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart"
-                       OnClick="OnCartToggle"
-                       aria-label="@L["Cart.AriaLabel", CartItemCount]"
-                       Color="Color.Default" />
-    </MudBadge>
-
-    <AuthorizeView>
-        <Authorized>
-            <MudMenu Icon="@Icons.Material.Outlined.AccountCircle"
-                     Color="Color.Default"
-                     Variant="Variant.Text"
-                     AnchorOrigin="Origin.BottomRight"
-                     TransformOrigin="Origin.TopRight"
-                     aria-label="@L["Account.MenuAriaLabel"]"
-                     Dense="true">
-
-                <div class="pa-4" style="border-bottom: 1px solid var(--mud-palette-divider); min-width: 220px;">
-                    <MudText Typo="Typo.body1" Style="font-weight: 600;">
-                        @context.User.Identity?.Name
-                    </MudText>
-                    <MudText Typo="Typo.caption" Class="text-muted">
-                        @context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
-                    </MudText>
-                </div>
-
-                <MudMenuItem Icon="@Icons.Material.Outlined.ShoppingBag" Href="/account/orders">
-                    @L["Account.MyOrders"]
-                </MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Outlined.Person" Href="/account/profile">
-                    @L["Account.MyProfile"]
-                </MudMenuItem>
-
-                <AuthorizeView Roles="admin" Context="adminCtx">
-                    <MudMenuItem Icon="@Icons.Material.Outlined.AdminPanelSettings" Href="/admin">
-                        @L["Account.Admin"]
-                    </MudMenuItem>
-                </AuthorizeView>
-
-                <MudDivider />
-
-                <MudMenuItem Icon="@Icons.Material.Outlined.Logout"
-                             IconColor="Color.Error"
-                             OnClick="HandleLogout"
-                             Disabled="_isLoggingOut">
-                    <MudText Color="Color.Error">
-                        @if (_isLoggingOut)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
-                        }
-                        @L["Account.Logout"]
-                    </MudText>
-                </MudMenuItem>
-            </MudMenu>
-        </Authorized>
-        <NotAuthorized>
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Primary"
-                       Href="/bff/login"
-                       Class="ml-2">
-                @L["Auth.SignIn"]
-            </MudButton>
-        </NotAuthorized>
-    </AuthorizeView>
+        <AuthorizeView>
+            <Authorized>
+                <AccountMenu Name="@context.User.Identity?.Name"
+                             Email="@context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value"
+                             IsAdmin="@context.User.IsInRole("admin")" />
+            </Authorized>
+            <NotAuthorized>
+                <OsButton Href="/bff/login"
+                          Variant="OsButton.ButtonVariant.Secondary"
+                          Size="OsButton.ButtonSize.Sm">
+                    @L["Auth.SignIn"]
+                </OsButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
 
 </MudAppBar>
 
 @code {
     [Parameter] public EventCallback OnCartToggle { get; set; }
+    [Parameter] public EventCallback OnMobileNavToggle { get; set; }
     [Parameter] public int CartItemCount { get; set; }
     [Parameter] public bool IsCartOpen { get; set; }
-
-    private bool _isLoggingOut;
-
-    private async Task HandleLogout()
-    {
-        _isLoggingOut = true;
-        try { await Http.PostAsync("/bff/logout", content: null); } catch { }
-        Navigation.NavigateTo("/", forceLoad: true);
-    }
 }

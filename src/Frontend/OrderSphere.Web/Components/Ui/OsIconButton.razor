@@ -1,0 +1,62 @@
+@* Icon-only control. Always labelled: an icon alone is not an accessible name. *@
+
+@if (Href is not null)
+{
+    <a href="@(Disabled ? null : Href)"
+       class="@CssClass"
+       aria-label="@AriaLabel"
+       title="@(Title ?? AriaLabel)"
+       aria-disabled="@(Disabled ? "true" : null)"
+       tabindex="@(Disabled ? "-1" : null)"
+       @attributes="AdditionalAttributes">
+        <MudIcon Icon="@Icon" />
+    </a>
+}
+else
+{
+    <button type="button"
+            class="@CssClass"
+            aria-label="@AriaLabel"
+            title="@(Title ?? AriaLabel)"
+            aria-pressed="@(Pressed?.ToString().ToLowerInvariant())"
+            disabled="@Disabled"
+            @onclick="OnClick"
+            @attributes="AdditionalAttributes">
+        <MudIcon Icon="@Icon" />
+    </button>
+}
+
+@code {
+    public enum IconButtonVariant { Ghost, Secondary }
+
+    public enum IconButtonSize { Sm, Md, Lg }
+
+    [Parameter, EditorRequired] public string Icon { get; set; } = default!;
+
+    /// <summary>The accessible name. Required — there is no visible label to fall back on.</summary>
+    [Parameter, EditorRequired] public string AriaLabel { get; set; } = default!;
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public IconButtonVariant Variant { get; set; } = IconButtonVariant.Ghost;
+    [Parameter] public IconButtonSize Size { get; set; } = IconButtonSize.Md;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Renders aria-pressed for toggle buttons.</summary>
+    [Parameter] public bool? Pressed { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-iconbtn",
+            $"os-iconbtn--{Variant.ToString().ToLowerInvariant()}",
+            $"os-iconbtn--{Size.ToString().ToLowerInvariant()}",
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+}

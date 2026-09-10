@@ -28,6 +28,10 @@ it is the source of truth and this file only restates its load-bearing rules.
   `pages.css` prefixed `pg-<route>-`, MudBlazor restyling in `mud-overrides.css`. MudBlazor is
   imported into the lowest cascade layer, so overrides win on layer order — write them at natural
   specificity. **`!important` is banned** outside the reduced-motion block in `motion.css`.
+- MudBlazor's colour utilities (`.mud-primary-text` and friends) are `!important`, and an important
+  declaration in a lower layer beats a normal one in a higher layer. Do not fight them from CSS —
+  avoid the utility at the call site (a plain `<a>` instead of `MudLink`, `Color.Inherit` instead of
+  `Color.Primary`).
 - `wwwroot/css/legacy.css` is transitional. Read from it to understand a not-yet-migrated page;
   never add to it. Migrating a page means deleting its rules from that file.
 - Never link an external font or stylesheet. The production CSP is `style-src 'self'` and

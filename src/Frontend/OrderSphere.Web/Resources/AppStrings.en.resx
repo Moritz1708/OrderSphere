@@ -1351,4 +1351,49 @@
   <data name="NotFound.GoHome" xml:space="preserve">
     <value>Back to home</value>
   </data>
+  <data name="Nav.Primary" xml:space="preserve">
+    <value>Main navigation</value>
+  </data>
+  <data name="Nav.Menu" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="Nav.MenuOpen" xml:space="preserve">
+    <value>Open menu</value>
+  </data>
+  <data name="Nav.MenuClose" xml:space="preserve">
+    <value>Close menu</value>
+  </data>
+  <data name="Nav.Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Search.Submit" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Locale.Label" xml:space="preserve">
+    <value>Language and currency</value>
+  </data>
+  <data name="Footer.Tagline" xml:space="preserve">
+    <value>Carefully selected technology.</value>
+  </data>
+  <data name="Footer.Shop" xml:space="preserve">
+    <value>Shop</value>
+  </data>
+  <data name="Footer.Service" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="Footer.Legal" xml:space="preserve">
+    <value>Legal</value>
+  </data>
+  <data name="Footer.Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Footer.Returns" xml:space="preserve">
+    <value>Returns</value>
+  </data>
+  <data name="Footer.Terms" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+  <data name="Footer.Cookies" xml:space="preserve">
+    <value>Cookies</value>
+  </data>
 </root>
