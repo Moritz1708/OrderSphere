@@ -30,3 +30,4 @@ immutable; supersede rather than rewrite.
 | [0010](0010-shared-infrastructure-building-block.md) | Shared infrastructure building block for Blob storage | Accepted |
 | [0011](0011-invoicing-in-api-consumer-no-outbox.md) | Invoicing: in-Api Service Bus consumer without an outbox | Accepted |
 | [0012](0012-org-level-multi-tenancy.md) | Org-level multi-tenancy via row-level `TenantId` scoping | Accepted |
+| [0013](0013-editorial-design-system.md) | Single editorial design system replacing multi-brand theming | Proposed |

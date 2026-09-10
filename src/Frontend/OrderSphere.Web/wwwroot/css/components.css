@@ -1,0 +1,52 @@
+/* Design-system component classes for the Os* kit in Components/Ui.
+   Grows with the kit; page-specific layout belongs in pages.css. */
+@layer components {
+
+  /* ---- ThemeToggle ---- */
+  .os-theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--os-radius-control);
+    background: transparent;
+    color: var(--os-ink);
+    cursor: pointer;
+    transition: background-color var(--os-dur-2) var(--os-ease);
+  }
+
+  .os-theme-toggle:hover { background: var(--os-sunk); }
+
+  .os-theme-toggle__icon {
+    width: 20px;
+    height: 20px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  /* Light: sun visible. Dark: sun collapses, moon rotates in. */
+  .os-theme-toggle__sun,
+  .os-theme-toggle__rays,
+  .os-theme-toggle__moon {
+    transform-origin: center;
+    transition:
+      transform var(--os-dur-4) var(--os-ease),
+      opacity var(--os-dur-3) var(--os-ease);
+  }
+
+  .os-theme-toggle__moon {
+    opacity: 0;
+    transform: rotate(-70deg) scale(0.4);
+    fill: currentColor;
+    stroke: none;
+  }
+
+  :root[data-theme="dark"] .os-theme-toggle__sun { opacity: 0; transform: scale(0.3); }
+  :root[data-theme="dark"] .os-theme-toggle__rays { opacity: 0; transform: rotate(60deg) scale(0.5); }
+  :root[data-theme="dark"] .os-theme-toggle__moon { opacity: 1; transform: none; }
+}

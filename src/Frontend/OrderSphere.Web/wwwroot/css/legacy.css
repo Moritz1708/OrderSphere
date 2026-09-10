@@ -1,0 +1,279 @@
+/* TRANSITIONAL — delete in phase 2.
+   The classes the existing pages still reference, re-expressed on the new
+   tokens so the app stays coherent while the Os* kit is being built. Every
+   rule here is replaced by a component in Components/Ui. Do not add to it. */
+@layer pages {
+
+  /* ---- Text ---- */
+  .text-muted { color: var(--os-muted); }
+  .text-strong { color: var(--os-ink); font-weight: 600; }
+  .text-monospace { font-family: var(--os-font-mono); }
+  .os-mono { font-family: var(--os-font-mono); font-variant-numeric: tabular-nums; }
+  .os-display { font-family: var(--os-font-display); }
+
+  .os-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--os-space-3);
+    font-family: var(--os-font-mono);
+    font-size: var(--os-eyebrow-size);
+    font-weight: 500;
+    letter-spacing: var(--os-eyebrow-tracking);
+    text-transform: uppercase;
+    color: var(--os-accent-ink);
+  }
+
+  .os-eyebrow::before {
+    content: "";
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+  }
+
+  /* ---- Sections ---- */
+  .page-section { padding-block: var(--os-space-8); }
+  .section-white { background: var(--os-paper); padding-block: var(--os-space-8); }
+  .section-gray { background: var(--os-sunk); padding-block: var(--os-space-8); }
+
+  /* The old indigo gradient is gone; the masthead is now an ink block that stays
+     dark in both themes (see --os-block). */
+  .section-hero,
+  .section-hero-sm {
+    background: var(--os-block);
+    color: var(--os-on-block);
+    border-bottom: 1px solid var(--os-hairline);
+  }
+
+  .section-hero { padding-block: var(--os-space-9); }
+  .section-hero-sm { padding-block: var(--os-space-7); }
+
+  .section-hero .os-eyebrow,
+  .section-hero-sm .os-eyebrow { color: var(--os-accent); }
+
+  .hero-title,
+  .hero-title-lg {
+    font-family: var(--os-font-display);
+    font-weight: 400;
+    line-height: var(--os-lh-tight);
+    letter-spacing: -0.015em;
+    color: var(--os-on-block);
+    text-wrap: balance;
+  }
+
+  .hero-title { font-size: var(--os-text-d2); }
+  .hero-title-lg { font-size: var(--os-text-d1); }
+
+  .hero-subtitle,
+  .hero-subtitle-muted {
+    font-size: var(--os-text-lg);
+    line-height: var(--os-lh-relaxed);
+    max-width: 60ch;
+  }
+
+  .hero-subtitle { color: var(--os-on-block); }
+  .hero-subtitle-muted,
+  .text-on-dark-muted { color: var(--os-on-block-muted); }
+  .text-on-dark { color: var(--os-on-block); }
+
+  /* PageHero hard-codes rgba(255,255,255,.75) on its eyebrow; override until the
+     component is replaced by OsPageHeader in phase 2. */
+  .section-hero .os-eyebrow,
+  .section-hero-sm .os-eyebrow,
+  .section-hero .os-eyebrow span,
+  .section-hero-sm .os-eyebrow span { color: var(--os-accent); }
+
+  /* ---- Surfaces ---- */
+  .surface-card,
+  .surface-card-lg {
+    background: var(--os-paper);
+    border: 1px solid var(--os-hairline);
+    box-shadow: none;
+  }
+
+  .surface-card { border-radius: var(--os-radius-card); }
+  .surface-card-lg { border-radius: var(--os-radius-card); }
+
+  .surface-card-row-hover {
+    transition: border-color var(--os-dur-2) var(--os-ease),
+                background-color var(--os-dur-2) var(--os-ease);
+  }
+
+  @media (hover: hover) {
+    .surface-card-row-hover:hover {
+      border-color: var(--os-hairline-strong);
+      background: var(--os-sunk);
+    }
+  }
+
+  /* ---- Buttons ---- */
+  .btn-pill,
+  .btn-pill-outline,
+  .btn-pill-white,
+  .btn-pill-outline-white {
+    border-radius: var(--os-radius-control);
+    text-transform: none;
+    font-weight: 600;
+  }
+
+  .btn-pill {
+    background: var(--os-accent);
+    color: var(--os-on-accent);
+  }
+
+  .btn-pill:hover { background: color-mix(in srgb, var(--os-accent) 88%, var(--os-ink)); }
+
+  .btn-pill-outline {
+    border: 1px solid var(--os-border-control);
+    color: var(--os-ink);
+    background: transparent;
+  }
+
+  .btn-pill-outline:hover { background: var(--os-sunk); border-color: var(--os-ink); }
+
+  .btn-pill-white {
+    background: var(--os-on-block);
+    color: var(--os-block);
+  }
+
+  .btn-pill-outline-white {
+    border: 1px solid color-mix(in srgb, var(--os-on-block) 48%, transparent);
+    color: var(--os-on-block);
+    background: transparent;
+  }
+
+  .btn-pill-outline-white:hover { background: color-mix(in srgb, var(--os-on-block) 10%, transparent); }
+
+  /* ---- Product card ---- */
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background: var(--os-paper);
+    border: 1px solid var(--os-hairline);
+    border-radius: var(--os-radius-card);
+    cursor: pointer;
+  }
+
+  .product-card-image {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+
+  .product-card-content { flex: 1; }
+
+  .product-card-category {
+    font-family: var(--os-font-mono);
+    font-size: var(--os-eyebrow-size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--os-muted);
+  }
+
+  .product-add-btn {
+    border: 1px solid var(--os-border-control);
+    border-radius: var(--os-radius-control);
+    color: var(--os-ink);
+  }
+
+  .product-add-btn:hover {
+    background: var(--os-accent);
+    border-color: var(--os-accent);
+    color: var(--os-on-accent);
+  }
+
+  /* ---- Header ---- */
+  .header-appbar {
+    background: color-mix(in srgb, var(--os-canvas) 88%, transparent);
+    color: var(--os-ink);
+  }
+
+  .os-logo-mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--os-radius-control);
+    background: var(--os-accent);
+    color: var(--os-on-accent);
+    font-family: var(--os-font-display);
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  /* ---- Status & misc ---- */
+  .stock-ok { color: var(--os-success); font-weight: 600; }
+  .stock-low { color: var(--os-warning); font-weight: 600; }
+  .stock-out { color: var(--os-error); font-weight: 600; }
+  .shipping-free { color: var(--os-success); font-weight: 600; }
+
+  .icon-bubble-primary {
+    display: grid;
+    place-items: center;
+    border-radius: var(--os-radius-pill);
+    background: var(--os-accent-bg);
+    color: var(--os-accent-ink);
+  }
+
+  .avatar-initials {
+    display: grid;
+    place-items: center;
+    border-radius: var(--os-radius-pill);
+    background: var(--os-ink);
+    color: var(--os-canvas);
+    font-family: var(--os-font-mono);
+    font-weight: 600;
+  }
+
+  .stepper-value,
+  .cart-quantity-control {
+    font-family: var(--os-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cart-quantity-control {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--os-border-control);
+    border-radius: var(--os-radius-control);
+  }
+}
+
+/* ---- 404 + routing shell (moves to OsSection/OsDisplay in phase 1) ---- */
+@layer pages {
+  .os-route-authorizing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+
+  .os-notfound {
+    max-width: var(--os-container-narrow);
+    margin-inline: auto;
+    padding: var(--os-space-9) var(--os-gutter);
+    text-align: center;
+  }
+
+  .os-notfound__title {
+    margin-top: var(--os-space-4);
+    font-size: var(--os-text-d1);
+    line-height: var(--os-lh-tight);
+  }
+
+  .os-notfound__body {
+    margin-top: var(--os-space-4);
+    color: var(--os-muted);
+    font-size: var(--os-text-lg);
+  }
+
+  .os-notfound__actions {
+    display: flex;
+    gap: var(--os-space-3);
+    justify-content: center;
+    margin-top: var(--os-space-6);
+  }
+
+  .os-notfound .os-eyebrow { justify-content: center; }
+}

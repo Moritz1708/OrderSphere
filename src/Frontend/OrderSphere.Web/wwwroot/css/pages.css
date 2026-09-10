@@ -1,0 +1,4 @@
+/* Page-scoped layout only, prefixed pg-<route>-. Anything reusable belongs in
+   components.css as an Os* class instead. Populated from phase 4 onward. */
+@layer pages {
+}

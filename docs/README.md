@@ -11,7 +11,7 @@ overview; the documents below are the detail it points to. Behavioural rules and
 | [architecture.md](architecture.md) | System map: project layout, per-service tables, feature inventory, AI advisory/MCP design, Service Bus queues, EF migration matrix, external services. |
 | [glossary.md](glossary.md) | Ubiquitous language — aggregates and core domain terms. |
 | [auth/role-model.md](auth/role-model.md) | Roles, ASP.NET authorization policies, ABAC handlers, MFA, token claims, and `sub`-derived identity. |
-| [ui-conventions.md](ui-conventions.md) | Binding visual/theming/MudBlazor/CSS reference for the Blazor client. |
+| [ui-conventions.md](ui-conventions.md) | Binding visual/theming/MudBlazor/CSS reference for the Blazor client — the "Bold Editorial" design system (see [ADR 0013](adr/0013-editorial-design-system.md)). |
 | [../contracts/CONVENTIONS.md](../contracts/CONVENTIONS.md) | Service contract conventions: typed HTTP clients and integration-event schemas. |
 
 ## Decisions

@@ -1123,6 +1123,9 @@
   <data name="Admin.Reviews.ColAction" xml:space="preserve">
     <value>Action</value>
   </data>
+  <data name="Admin.Reviews.StatusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
   <data name="Admin.Reviews.StatusApproved" xml:space="preserve">
     <value>Approved</value>
   </data>
@@ -1335,5 +1338,17 @@
   </data>
   <data name="Common.Retry" xml:space="preserve">
     <value>Retry</value>
+  </data>
+  <data name="NotFound.PageTitle" xml:space="preserve">
+    <value>404 – Page not found</value>
+  </data>
+  <data name="NotFound.Title" xml:space="preserve">
+    <value>This page does not exist</value>
+  </data>
+  <data name="NotFound.Body" xml:space="preserve">
+    <value>The link is outdated, or the address contains a typo.</value>
+  </data>
+  <data name="NotFound.GoHome" xml:space="preserve">
+    <value>Back to home</value>
   </data>
 </root>

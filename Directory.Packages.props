@@ -62,7 +62,6 @@
     <PackageVersion Include="Azure.Communication.Email" Version="1.1.0" />
     <PackageVersion Include="QuestPDF" Version="2026.8.0" />
     <PackageVersion Include="Stripe.net" Version="52.4.1" />
-    <PackageVersion Include="Extensions.MudBlazor.StaticInput" Version="4.1.0" />
     <PackageVersion Include="MediatR" Version="14.2.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />

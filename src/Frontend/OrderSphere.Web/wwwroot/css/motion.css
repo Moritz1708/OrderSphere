@@ -1,0 +1,114 @@
+/* Motion system. Durations and easing come from tokens; every effect degrades
+   to nothing under prefers-reduced-motion (the only !important in the codebase). */
+@layer motion {
+
+  /* ---- Scroll reveal ----
+     Gated on html[data-motion="ready"] so content is never hidden when JS
+     fails to load. motion.js sets --reveal-index on grouped children. */
+  html[data-motion="ready"] [data-reveal] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity var(--os-dur-4) var(--os-ease),
+      transform var(--os-dur-4) var(--os-ease);
+    transition-delay: calc(var(--reveal-index, 0) * var(--os-stagger));
+    will-change: opacity, transform;
+  }
+
+  html[data-motion="ready"] [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* ---- Page enter (re-keyed by PageTransition on every path change) ---- */
+  @keyframes os-page-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .os-page { animation: os-page-in var(--os-dur-3) var(--os-ease) both; }
+
+  /* ---- Hover lift (pointer devices only) ---- */
+  .os-card--interactive,
+  .os-product-card {
+    transition:
+      transform var(--os-dur-2) var(--os-ease),
+      box-shadow var(--os-dur-2) var(--os-ease),
+      border-color var(--os-dur-2) var(--os-ease);
+  }
+
+  @media (hover: hover) {
+    .os-card--interactive:hover,
+    .os-product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--os-shadow-soft);
+      border-color: var(--os-hairline-strong);
+    }
+  }
+
+  /* ---- Cart badge pop (element is re-keyed on count change) ---- */
+  @keyframes os-pop {
+    0% { transform: scale(0.6); }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .os-badge { animation: os-pop var(--os-dur-3) var(--os-ease); }
+
+  /* ---- Overlays ---- */
+  @keyframes os-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  @keyframes os-dialog-in {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes os-pop-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes os-toast-in {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---- Advisor message enter ---- */
+  @keyframes os-msg-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .os-msg { animation: os-msg-in var(--os-dur-3) var(--os-ease) both; }
+
+  /* ---- Skeleton shimmer ---- */
+  @keyframes os-shimmer {
+    to { background-position: -200% 0; }
+  }
+
+  /* ---- Reduced motion: nothing moves, nothing stays hidden ---- */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --os-dur-1: 0ms;
+      --os-dur-2: 0ms;
+      --os-dur-3: 0ms;
+      --os-dur-4: 0ms;
+      --os-stagger: 0ms;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    html [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+}

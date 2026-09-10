@@ -1,0 +1,154 @@
+/* OrderSphere design tokens — "Bold Editorial".
+   Single source of truth for colour, type, space, radius, motion and depth.
+   Mirrored in C# by Services/DesignTokens.cs (guarded by TokensCssSyncTests).
+   Components use --os-*; --mud-palette-* is owned by MudThemeProvider. */
+@layer tokens {
+
+  :root {
+    /* ---- Surfaces & text (light) ---- */
+    --os-canvas: #F7F5F0;
+    --os-paper: #FFFFFF;
+    --os-sunk: #EFECE5;
+    --os-ink: #14120F;
+    --os-muted: #6B6560;
+
+    /* ---- Accent ----
+       --os-accent is 3.04:1 on canvas: fills, large display text (>=24px) and
+       UI borders only. Use --os-accent-ink for any text below 24px. */
+    --os-accent: #FF4D1F;
+    --os-accent-ink: #C93A0F;
+    --os-on-accent: #14120F;
+    --os-accent-2: #1F4DFF;
+
+    /* ---- Semantic ---- */
+    --os-success: #1E7B45;
+    --os-warning: #8A5A00;
+    --os-warning-fill: #E8A317;
+    --os-error: #C62828;
+
+    /* ---- Lines ---- */
+    --os-hairline: color-mix(in srgb, var(--os-ink) 12%, transparent);
+    --os-hairline-strong: color-mix(in srgb, var(--os-ink) 24%, transparent);
+
+    /* Interactive boundaries (inputs, steppers, outlined buttons) need 3:1 against
+       the canvas under WCAG 1.4.11, which a decorative hairline does not reach. */
+    --os-border-control: color-mix(in srgb, var(--os-ink) 48%, transparent);
+
+    /* ---- Tinted fills (chips, alerts, selected rows) ---- */
+    --os-tint-strength: 12%;
+    --os-accent-bg: color-mix(in srgb, var(--os-accent) var(--os-tint-strength), transparent);
+    --os-info-bg: color-mix(in srgb, var(--os-accent-2) var(--os-tint-strength), transparent);
+    --os-success-bg: color-mix(in srgb, var(--os-success) var(--os-tint-strength), transparent);
+    --os-warning-bg: color-mix(in srgb, var(--os-warning-fill) var(--os-tint-strength), transparent);
+    --os-error-bg: color-mix(in srgb, var(--os-error) var(--os-tint-strength), transparent);
+    --os-neutral-bg: color-mix(in srgb, var(--os-ink) 7%, transparent);
+
+    /* ---- Inverted block ----
+       A deliberately dark panel (masthead, CTA band, quote block). It must NOT
+       simply flip with the theme: --os-ink is near-white in dark mode, which would
+       turn a dark masthead into a glaring white slab. In dark mode the block
+       instead reads as a raised panel against the darker canvas. */
+    --os-block: var(--os-ink);
+    --os-on-block: var(--os-canvas);
+    --os-on-block-muted: color-mix(in srgb, var(--os-canvas) 72%, transparent);
+
+    /* ---- Depth: exactly one shadow, hover only ---- */
+    --os-shadow-soft: 0 12px 32px -12px rgb(20 18 15 / 18%);
+
+    /* ---- Type ---- */
+    --os-font-display: "Instrument Serif", "Iowan Old Style", "Times New Roman", Times, serif;
+    --os-font-body: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --os-font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+    --os-text-d1: clamp(2.75rem, 7vw, 4.5rem);
+    --os-text-d2: clamp(2.25rem, 5vw, 3.5rem);
+    --os-text-d3: clamp(1.75rem, 3.5vw, 2.5rem);
+    --os-text-xs: 0.75rem;
+    --os-text-sm: 0.875rem;
+    --os-text-base: 1rem;
+    --os-text-lg: 1.125rem;
+    --os-text-xl: 1.375rem;
+
+    --os-lh-tight: 0.95;
+    --os-lh-snug: 1.15;
+    --os-lh-body: 1.6;
+    --os-lh-relaxed: 1.7;
+
+    --os-eyebrow-size: 0.72rem;
+    --os-eyebrow-tracking: 0.12em;
+
+    /* ---- Space ---- */
+    --os-space-1: 4px;
+    --os-space-2: 8px;
+    --os-space-3: 12px;
+    --os-space-4: 16px;
+    --os-space-5: 24px;
+    --os-space-6: 32px;
+    --os-space-7: 48px;
+    --os-space-8: 64px;
+    --os-space-9: 96px;
+    --os-space-10: 128px;
+
+    /* ---- Radius ---- */
+    --os-radius-control: 6px;
+    --os-radius-card: 16px;
+    --os-radius-popover: 8px;
+    --os-radius-pill: 999px;
+
+    /* ---- Motion ---- */
+    --os-dur-1: 120ms;
+    --os-dur-2: 180ms;
+    --os-dur-3: 220ms;
+    --os-dur-4: 320ms;
+    --os-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --os-stagger: 60ms;
+
+    /* ---- Layout ---- */
+    --os-header-h: 64px;
+    --os-container: 1320px;
+    --os-container-narrow: 800px;
+    --os-container-wide: 1440px;
+    --os-gutter: clamp(16px, 4vw, 40px);
+    --os-scrollbar-w: 0px;
+
+    /* ---- Z-index (mirrors MudBlazor's defaults; FAB sits below drawers) ---- */
+    --os-z-fab: 1050;
+    --os-z-drawer: 1100;
+    --os-z-popover: 1200;
+    --os-z-appbar: 1300;
+    --os-z-dialog: 1400;
+    --os-z-snackbar: 1500;
+    --os-z-tooltip: 1600;
+
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    --os-canvas: #0F0E0C;
+    --os-paper: #171613;
+    --os-sunk: #0A0908;
+    --os-ink: #F2EFE9;
+    --os-muted: #A39D95;
+
+    --os-accent: #FF6A3D;
+    --os-accent-ink: #FF6A3D;
+    --os-on-accent: #0F0E0C;
+    --os-accent-2: #6B8CFF;
+
+    --os-success: #4CD97B;
+    --os-warning: #FFB84D;
+    --os-warning-fill: #FFB84D;
+    --os-error: #FF6E6E;
+
+    --os-block: var(--os-paper);
+    --os-on-block: var(--os-ink);
+    --os-on-block-muted: color-mix(in srgb, var(--os-ink) 72%, transparent);
+
+    --os-tint-strength: 18%;
+    --os-neutral-bg: color-mix(in srgb, var(--os-ink) 10%, transparent);
+
+    --os-shadow-soft: 0 16px 40px -12px rgb(0 0 0 / 65%);
+
+    color-scheme: dark;
+  }
+}

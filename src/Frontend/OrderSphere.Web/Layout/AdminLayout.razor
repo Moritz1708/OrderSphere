@@ -1,13 +1,7 @@
 @inherits LayoutComponentBase
-@inject ThemeState ThemeState
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IStringLocalizer<AppStrings> L
-
-<MudThemeProvider Theme="ThemeState.Theme" IsDarkMode="ThemeState.IsDarkMode" />
-<MudPopoverProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
 
 <MudLayout>
     <MudAppBar Elevation="0" Style="border-bottom: 1px solid var(--mud-palette-divider);">
@@ -67,7 +61,7 @@
         </MudNavMenu>
     </MudDrawer>
 
-    <MudMainContent Style="padding-top: 64px;">
+    <MudMainContent>
         <AppErrorBoundary>
             @Body
         </AppErrorBoundary>

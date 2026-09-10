@@ -24,8 +24,7 @@
 
     <CultureSwitcher />
     <CurrencySwitcher />
-    <BrandSwitcher />
-    <DarkModeToggle />
+    <ThemeToggle />
 
     <MudBadge Content="@CartItemCount" Color="Color.Primary" Overlap="true" Visible="@(CartItemCount > 0)">
         <MudIconButton Icon="@Icons.Material.Outlined.ShoppingCart"
@@ -86,8 +85,7 @@
             <MudButton Variant="Variant.Outlined"
                        Color="Color.Primary"
                        Href="/bff/login"
-                       Class="btn-pill ml-2"
-                       Style="padding: 6px 20px !important;">
+                       Class="ml-2">
                 @L["Auth.SignIn"]
             </MudButton>
         </NotAuthorized>
