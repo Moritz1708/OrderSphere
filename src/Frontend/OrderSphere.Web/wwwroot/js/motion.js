@@ -18,7 +18,7 @@ function ensureObserver() {
         (entries) => {
             for (const entry of entries) {
                 if (!entry.isIntersecting) continue;
-                entry.target.classList.add('is-revealed');
+                entry.target.setAttribute('data-revealed', '');
                 observer.unobserve(entry.target); // reveals are one-shot
             }
         },
@@ -27,6 +27,10 @@ function ensureObserver() {
 
     return observer;
 }
+
+/* The revealed state lives on a data attribute rather than a class: Blazor owns the
+   class attribute of these elements and rewrites it on re-render, which silently
+   dropped the flag and left already-revealed tiles invisible for good. */
 
 /** Marks the document ready for motion and keeps the reduced-motion flag current. */
 export function init() {
@@ -37,8 +41,8 @@ export function init() {
         if (reduced) {
             root.dataset.reducedMotion = 'true';
             // Anything already waiting must not stay hidden.
-            document.querySelectorAll('[data-reveal]:not(.is-revealed)')
-                .forEach((el) => el.classList.add('is-revealed'));
+            document.querySelectorAll('[data-reveal]:not([data-revealed])')
+                .forEach((el) => el.setAttribute('data-revealed', ''));
         } else {
             delete root.dataset.reducedMotion;
         }
@@ -58,6 +62,8 @@ export function init() {
  * Reveals `root` on scroll. A [data-reveal-group] root instead indexes its
  * direct children so they stagger; a plain element reveals on its own.
  */
+const MAX_STAGGER_STEPS = 5;
+
 export function observeReveals(root) {
     if (!root) return;
 
@@ -68,11 +74,13 @@ export function observeReveals(root) {
     targets.forEach((el, i) => {
         if (root.hasAttribute('data-reveal-group')) {
             el.setAttribute('data-reveal', '');
-            el.style.setProperty('--reveal-index', String(i));
+            // The stagger is capped: a long grid (14 categories) would otherwise leave
+            // the last tile waiting almost a second before it starts to fade in.
+            el.style.setProperty('--reveal-index', String(Math.min(i, MAX_STAGGER_STEPS)));
         }
 
         if (prefersReduced()) {
-            el.classList.add('is-revealed');
+            el.setAttribute('data-revealed', '');
             return;
         }
 

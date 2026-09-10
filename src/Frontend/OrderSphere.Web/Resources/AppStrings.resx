@@ -265,9 +265,6 @@
   <data name="Home.HeroEyebrow" xml:space="preserve">
     <value>Frühjahr 2026 · Neu</value>
   </data>
-  <data name="Home.HeroTitle" xml:space="preserve">
-    <value>Die beste Tech. Sorgfältig ausgewählt.</value>
-  </data>
   <data name="Home.HeroSubtitle" xml:space="preserve">
     <value>Laptops, Tablets und Zubehör – von Experten kuratiert, schnell geliefert.</value>
   </data>
@@ -286,20 +283,8 @@
   <data name="Home.WhatLookingFor" xml:space="preserve">
     <value>Was suchst du?</value>
   </data>
-  <data name="Home.CatLaptops" xml:space="preserve">
-    <value>Laptops</value>
-  </data>
-  <data name="Home.CatSmartphones" xml:space="preserve">
-    <value>Smartphones</value>
-  </data>
-  <data name="Home.CatTablets" xml:space="preserve">
-    <value>Tablets</value>
-  </data>
-  <data name="Home.CatAccessories" xml:space="preserve">
-    <value>Zubehör</value>
-  </data>
   <data name="Home.PromiseEyebrow" xml:space="preserve">
-    <value>02 / Unser Versprechen</value>
+    <value>03 / Unser Versprechen</value>
   </data>
   <data name="Home.PromiseTitle" xml:space="preserve">
     <value>Qualität, &lt;em&gt;nicht&lt;/em&gt; Quantität.</value>
@@ -1464,5 +1449,47 @@
   </data>
   <data name="Reviews.SignInHint" xml:space="preserve">
     <value>Melde dich an, um eine Bewertung zu schreiben.</value>
+  </data>
+  <data name="Home.HeroTitleHtml" xml:space="preserve">
+    <value>Die beste Tech.&lt;br&gt;Sorgfältig &lt;em&gt;ausgewählt&lt;/em&gt;.</value>
+  </data>
+  <data name="Home.IssueTitle" xml:space="preserve">
+    <value>Was uns wichtig ist</value>
+  </data>
+  <data name="Home.ProductCount" xml:space="preserve">
+    <value>{0} Produkte</value>
+  </data>
+  <data name="Home.CuratedRange" xml:space="preserve">
+    <value>Kuratiertes Sortiment</value>
+  </data>
+  <data name="Home.ViewAll" xml:space="preserve">
+    <value>Alle ansehen</value>
+  </data>
+  <data name="Home.FeaturedEyebrow" xml:space="preserve">
+    <value>02 / Neu im Sortiment</value>
+  </data>
+  <data name="Home.FeaturedTitle" xml:space="preserve">
+    <value>Gerade angekommen</value>
+  </data>
+  <data name="Shop.Filters" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="Shop.CloseFilters" xml:space="preserve">
+    <value>Filter schließen</value>
+  </data>
+  <data name="Shop.AllCategories" xml:space="preserve">
+    <value>Alle Kategorien</value>
+  </data>
+  <data name="Shop.Price" xml:space="preserve">
+    <value>Preis</value>
+  </data>
+  <data name="Shop.ShowingRange" xml:space="preserve">
+    <value>{0}–{1} von {2}</value>
+  </data>
+  <data name="ProductDetails.Category" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="ProductDetails.Availability" xml:space="preserve">
+    <value>Verfügbarkeit</value>
   </data>
 </root>

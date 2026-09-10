@@ -61,7 +61,17 @@ else
         get
         {
             var id = Seed ?? Product?.Id ?? Guid.Empty;
-            return (int)(BitConverter.ToUInt32(id.ToByteArray(), 0) % 360);
+
+            // FNV-1a over all sixteen bytes. Taking only the first four made every
+            // seeded category share a hue, because their ids differ late in the Guid.
+            uint hash = 2166136261;
+            foreach (var b in id.ToByteArray())
+            {
+                hash ^= b;
+                hash *= 16777619;
+            }
+
+            return (int)(hash % 360);
         }
     }
 }

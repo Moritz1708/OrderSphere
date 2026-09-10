@@ -15,7 +15,7 @@
     will-change: opacity, transform;
   }
 
-  html[data-motion="ready"] [data-reveal].is-revealed {
+  html[data-motion="ready"] [data-reveal][data-revealed] {
     opacity: 1;
     transform: none;
     will-change: auto;
@@ -27,7 +27,11 @@
     to { opacity: 1; transform: none; }
   }
 
-  .os-page { animation: os-page-in var(--os-dur-3) var(--os-ease) both; }
+  /* fill-mode must not be "both": a forwards-filling animation keeps the element a
+     containing block for fixed descendants, which pushed page-level MudDrawers
+     (the shop filter sheet) out of the viewport. "backwards" only pre-applies
+     the start frame. */
+  .os-page { animation: os-page-in var(--os-dur-3) var(--os-ease) backwards; }
 
   /* ---- Hover lift (pointer devices only) ---- */
   .os-card--interactive,

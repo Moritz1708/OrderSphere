@@ -159,6 +159,18 @@ Every animation uses a duration token and `--os-ease`. `@media (prefers-reduced-
 zeroes the duration tokens, neutralises all animations and transitions, and forces revealed elements
 visible. Add motion only where it explains a change of state; reveal below-the-fold content only.
 
+Two rules keep the reveal mechanism intact when JavaScript and Blazor touch the same element:
+
+- The revealed flag is the `data-revealed` attribute, never a CSS class. Blazor owns the `class`
+  attribute of the elements it renders and rewrites it on re-render, which silently dropped a
+  class-based flag and left already-revealed tiles invisible.
+- Page-level animations must not use `animation-fill-mode: forwards` or `both`. A forwards-filling
+  animation keeps the element a containing block for `position: fixed` descendants, which pushed a
+  page-level `MudDrawer` out of the viewport. `.os-page` uses `backwards`.
+
+The stagger index is capped in `motion.js`, so a long grid never leaves its last tile waiting
+almost a second before it starts to fade in.
+
 ---
 
 ## 6. Components

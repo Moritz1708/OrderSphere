@@ -80,7 +80,15 @@ else
                 <dl class="os-kv pg-pdp__meta">
                     <div class="os-kv__row">
                         <dt class="os-kv__key">@L["ProductDetails.Sku"]</dt>
-                        <dd class="os-kv__val">@_product.SKU</dd>
+                        <dd class="os-kv__val os-mono">@_product.SKU</dd>
+                    </div>
+                    <div class="os-kv__row">
+                        <dt class="os-kv__key">@L["ProductDetails.Category"]</dt>
+                        <dd class="os-kv__val"><a href="@($"/shop/category/{Uri.EscapeDataString(_product.CategoryName)}")">@_product.CategoryName</a></dd>
+                    </div>
+                    <div class="os-kv__row">
+                        <dt class="os-kv__key">@L["ProductDetails.Availability"]</dt>
+                        <dd class="os-kv__val">@L[StatusPresentation.StockLabelKey(_product.Stock), _product.Stock]</dd>
                     </div>
                 </dl>
             </div>

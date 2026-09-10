@@ -23,25 +23,35 @@
     }
     else
     {
-        <div class="pg-categories__grid">
-            @foreach (var category in _categories)
+        @* Bento: the largest category leads full-width, the rest fill a three-column grid. *@
+        <OsRevealGroup Class="pg-categories__grid">
+            @foreach (var (category, index) in _categories.Select((c, i) => (c, i)))
             {
                 <OsCard @key="category.Id"
                         Href="@($"/shop/category/{Uri.EscapeDataString(category.Name)}")"
-                        Padding="OsCard.CardPadding.Lg"
-                        Class="pg-categories__tile">
-                    <MudIcon Icon="@GetCategoryIcon(category.Name)" Class="pg-categories__icon" />
-                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@category.Name</OsDisplay>
-                    @if (!string.IsNullOrWhiteSpace(category.Description))
-                    {
-                        <p class="pg-categories__desc">@category.Description</p>
-                    }
-                    <OsStatusChip Tone="StatusTone.Neutral"
-                                  Text="@($"{category.ProductCount} {(category.ProductCount == 1 ? L["Categories.ProductSingular"] : L["Categories.ProductPlural"])}")"
-                                  Class="mt-auto" />
+                        Padding="OsCard.CardPadding.None"
+                        Class="@($"pg-categories__tile {(index == 0 ? "pg-categories__tile--lead" : null)}")">
+                    <OsProductImage Seed="category.Id"
+                                    Initial="@category.Name"
+                                    Name="@category.Name"
+                                    Ratio="@(index == 0 ? "21/9" : "16/10")"
+                                    Class="pg-categories__media" />
+                    <div class="pg-categories__body">
+                        <div class="pg-categories__meta">
+                            <MudIcon Icon="@GetCategoryIcon(category.Name)" Class="pg-categories__icon" />
+                            <OsStatusChip Tone="StatusTone.Neutral"
+                                          Size="OsStatusChip.ChipSize.Sm"
+                                          Text="@($"{category.ProductCount} {(category.ProductCount == 1 ? L["Categories.ProductSingular"] : L["Categories.ProductPlural"])}")" />
+                        </div>
+                        <OsDisplay As="h2" Size="@(index == 0 ? OsDisplay.DisplaySize.D2 : OsDisplay.DisplaySize.D3)">@category.Name</OsDisplay>
+                        @if (!string.IsNullOrWhiteSpace(category.Description))
+                        {
+                            <p class="pg-categories__desc">@category.Description</p>
+                        }
+                    </div>
                 </OsCard>
             }
-        </div>
+        </OsRevealGroup>
     }
 </OsSection>
 
@@ -60,7 +70,7 @@
         {
             var res = await Catalog.GetCategoriesAsync();
             if (res.IsSuccess)
-                _categories = res.Value!.Items.ToList();
+                _categories = res.Value!.Items.OrderByDescending(c => c.ProductCount).ThenBy(c => c.Name).ToList();
             else
                 _error = res.Error?.Message ?? L["Common.LoadError"];
         }
@@ -79,10 +89,18 @@
         var n when n.Contains("laptop") => Icons.Material.Outlined.Laptop,
         var n when n.Contains("phone") || n.Contains("smartphone") => Icons.Material.Outlined.PhoneIphone,
         var n when n.Contains("tablet") => Icons.Material.Outlined.Tablet,
-        var n when n.Contains("zubehör") || n.Contains("accessor") => Icons.Material.Outlined.Headphones,
-        var n when n.Contains("audio") => Icons.Material.Outlined.Speaker,
+        var n when n.Contains("kopfhörer") || n.Contains("earbud") || n.Contains("headphone") => Icons.Material.Outlined.Headphones,
+        var n when n.Contains("zubehör") || n.Contains("accessor") || n.Contains("speicher") => Icons.Material.Outlined.Cable,
+        var n when n.Contains("audio") || n.Contains("lautsprecher") => Icons.Material.Outlined.Speaker,
         var n when n.Contains("monitor") || n.Contains("display") => Icons.Material.Outlined.Monitor,
+        var n when n.Contains("tv") || n.Contains("fernseh") => Icons.Material.Outlined.Tv,
         var n when n.Contains("kamera") || n.Contains("camera") => Icons.Material.Outlined.PhotoCamera,
+        var n when n.Contains("gaming") || n.Contains("konsole") => Icons.Material.Outlined.SportsEsports,
+        var n when n.Contains("watch") || n.Contains("wearable") => Icons.Material.Outlined.Watch,
+        var n when n.Contains("netzwerk") || n.Contains("network") || n.Contains("router") => Icons.Material.Outlined.Router,
+        var n when n.Contains("smart home") || n.Contains("home") => Icons.Material.Outlined.Home,
+        var n when n.Contains("tastatur") || n.Contains("maus") || n.Contains("keyboard") => Icons.Material.Outlined.Keyboard,
+        var n when n.Contains("desktop") || n.Contains("pc") => Icons.Material.Outlined.DesktopWindows,
         _ => Icons.Material.Outlined.Devices
     };
 }
