@@ -200,11 +200,11 @@
             var result = await AdminInvoicing.GetByIdAsync(InvoiceId);
             _invoice = result.Value;
             if (!result.IsSuccess && result.Error!.Kind != ApiErrorKind.NotFound)
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Common.LoadError", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Common.LoadError", ex.Message]);
         }
         finally
         {
@@ -223,7 +223,7 @@
 
             if (result.IsSuccess)
             {
-                Snackbar.Add(L["Admin.Invoices.Detail.AdjustmentApplied"], Severity.Success);
+                Snackbar.ShowSuccess(L["Admin.Invoices.Detail.AdjustmentApplied"]);
                 _invoice = result.Value;
                 _discountAmount = null;
                 _discountPercentage = null;
@@ -231,7 +231,7 @@
             }
             else
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             }
         }
         finally
@@ -248,14 +248,14 @@
             var result = await AdminInvoicing.IssueCreditNoteAsync(InvoiceId, _creditAmount!.Value, _creditReason);
             if (result.IsSuccess)
             {
-                Snackbar.Add(L["Admin.Invoices.Detail.AdjustmentApplied"], Severity.Success);
+                Snackbar.ShowSuccess(L["Admin.Invoices.Detail.AdjustmentApplied"]);
                 _invoice = result.Value;
                 _creditAmount = null;
                 _creditReason = string.Empty;
             }
             else
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             }
         }
         finally

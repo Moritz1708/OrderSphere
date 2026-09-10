@@ -146,9 +146,9 @@
         {
             var r = await AdminOrdering.GetCouponsAsync();
             if (r.IsSuccess) _coupons = r.Value!;
-            else Snackbar.Add(r.Error!.Message, Severity.Error);
+            else Snackbar.ShowApiError(r.Error);
         }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -202,13 +202,13 @@
 
             if (error is null)
             {
-                Snackbar.Add(L["Admin.Coupons.Saved"], Severity.Success);
+                Snackbar.ShowSuccess(L["Admin.Coupons.Saved"]);
                 _dialogOpen = false;
                 await LoadAsync();
             }
             else
             {
-                Snackbar.Add(error.Message, Severity.Error);
+                Snackbar.ShowError(error.Message);
             }
         }
         finally { _saving = false; }
@@ -219,12 +219,12 @@
         var result = await AdminOrdering.DeactivateCouponAsync(c.Id);
         if (result.IsSuccess)
         {
-            Snackbar.Add(L["Admin.Coupons.Deactivated"], Severity.Success);
+            Snackbar.ShowSuccess(L["Admin.Coupons.Deactivated"]);
             await LoadAsync();
         }
         else
         {
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+            Snackbar.ShowApiError(result.Error);
         }
     }
 

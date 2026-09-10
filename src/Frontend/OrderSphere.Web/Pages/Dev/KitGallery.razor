@@ -1,0 +1,199 @@
+@page "/dev/kit"
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@inject IWebAssemblyHostEnvironment Env
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+@* Living reference for the Os* kit. Development only: it renders every component
+   in its variants so the design can be reviewed without signing in or seeding
+   data. Not linked from anywhere. *@
+<PageTitle>Kit — OrderSphere</PageTitle>
+
+@if (!Env.IsDevelopment())
+{
+    <OsSection Width="OsSection.SectionWidth.Narrow">
+        <OsEmptyState Icon="@Icons.Material.Outlined.Lock" Title="Development only" ActionText="Home" ActionHref="/" />
+    </OsSection>
+}
+else
+{
+    <OsPageHeader Eyebrow="Design system" Title="Component kit" Subtitle="Every Os* component in its variants, light and dark." Size="OsDisplay.DisplaySize.D2">
+        <Actions>
+            <OsButton Variant="OsButton.ButtonVariant.Secondary" Size="OsButton.ButtonSize.Sm" OnClick="@(() => Snackbar.ShowSuccess("Saved."))">Success toast</OsButton>
+            <OsButton Variant="OsButton.ButtonVariant.Secondary" Size="OsButton.ButtonSize.Sm" OnClick="@(() => Snackbar.ShowApiError(new ApiError(ApiErrorKind.Server, "Server said no.")))">Error toast</OsButton>
+        </Actions>
+    </OsPageHeader>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsEyebrow Text="01 / Buttons" Class="mb-4" />
+        <div class="pg-kit__row">
+            <OsButton>Primary</OsButton>
+            <OsButton Variant="OsButton.ButtonVariant.Secondary">Secondary</OsButton>
+            <OsButton Variant="OsButton.ButtonVariant.Ghost">Ghost</OsButton>
+            <OsButton Variant="OsButton.ButtonVariant.Danger">Danger</OsButton>
+            <OsButton Loading="true">Saving</OsButton>
+            <OsButton Disabled="true">Disabled</OsButton>
+            <OsButton Size="OsButton.ButtonSize.Sm" StartIcon="@Icons.Material.Outlined.Add">Small</OsButton>
+            <OsButton Size="OsButton.ButtonSize.Lg" EndIcon="@Icons.Material.Outlined.ArrowForward">Large</OsButton>
+            <OsIconButton Icon="@Icons.Material.Outlined.Favorite" AriaLabel="Favourite" />
+            <OsIconButton Icon="@Icons.Material.Outlined.Share" AriaLabel="Share" Variant="OsIconButton.IconButtonVariant.Secondary" />
+            <OsIconButton Icon="@Icons.Material.Outlined.Bookmark" AriaLabel="Bookmark" Pressed="true" />
+        </div>
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm" Tone="OsSection.SectionTone.Sunk">
+        <OsEyebrow Text="02 / Type" Class="mb-4" />
+        <OsDisplay As="p" Size="OsDisplay.DisplaySize.D1">Display one, <em>italic</em> accent.</OsDisplay>
+        <OsDisplay As="p" Size="OsDisplay.DisplaySize.D2" Class="mt-3">Display two for page titles.</OsDisplay>
+        <OsDisplay As="p" Size="OsDisplay.DisplaySize.D3" Class="mt-3">Display three for card headings.</OsDisplay>
+        <div class="pg-kit__row mt-5">
+            <OsEyebrow Text="Accent eyebrow" />
+            <OsEyebrow Text="Muted, no rule" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+            <OsPrice Value="1299.99m" Size="OsPrice.PriceSize.Sm" />
+            <OsPrice Value="1299.99m" />
+            <OsPrice Value="999m" Original="1299.99m" Size="OsPrice.PriceSize.Lg" />
+            <OsPrice Value="49.5m" Size="OsPrice.PriceSize.Display" />
+        </div>
+        <OsBreadcrumbs Items="_crumbs" Class="mt-5" />
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsEyebrow Text="03 / Status" Class="mb-4" />
+        <div class="pg-kit__row">
+            @foreach (var tone in Enum.GetValues<StatusTone>())
+            {
+                <OsStatusChip Tone="tone" Text="@tone.ToString()" Dot="true" />
+            }
+            <OsStatusChip Tone="StatusTone.Danger" Text="Small" Size="OsStatusChip.ChipSize.Sm" />
+        </div>
+        <div class="pg-kit__grid mt-5">
+            <OsStat Label="Orders" Value="1284" Delta="+12 today" DeltaTone="StatusTone.Success" Icon="@Icons.Material.Outlined.Receipt" />
+            <OsStat Label="Revenue" Value="48210.5m" Format="@(v => Formatting.Currency(v))" Delta="+3.1 %" DeltaTone="StatusTone.Success" />
+            <OsStat Label="Pending shipments" Value="7" DeltaTone="StatusTone.Warning" Delta="needs attention" />
+            <OsStat Label="Low stock" Value="3" Href="/admin/products" Icon="@Icons.Material.Outlined.Inventory2" />
+        </div>
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm" Tone="OsSection.SectionTone.Sunk">
+        <OsEyebrow Text="04 / Surfaces" Class="mb-4" />
+        <div class="pg-kit__grid">
+            <OsCard><strong>Paper</strong><p class="os-muted">Default card.</p></OsCard>
+            <OsCard Surface="OsCard.CardSurface.Canvas"><strong>Canvas</strong><p class="os-muted">Same as the page.</p></OsCard>
+            <OsCard Surface="OsCard.CardSurface.Sunk"><strong>Sunk</strong><p class="os-muted">Recessed.</p></OsCard>
+            <OsCard Surface="OsCard.CardSurface.Block"><OsEyebrow Text="Block" /><p class="os-muted">Stays dark in both themes.</p></OsCard>
+            <OsCard Href="/dev/kit" Padding="OsCard.CardPadding.Lg"><strong>Interactive (link)</strong><p class="os-muted">Hover lifts it.</p></OsCard>
+        </div>
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsEyebrow Text="05 / Media" Class="mb-4" />
+        <div class="pg-kit__grid">
+            @foreach (var seed in _seeds)
+            {
+                <OsProductImage Seed="seed" Name="@($"Product {seed.ToString()[..4]}")" />
+            }
+        </div>
+        <div class="pg-kit__row mt-5">
+            <OsQuantityStepper @bind-Value="_qty" Label="Aurora 14" />
+            <OsQuantityStepper @bind-Value="_qty" Size="OsQuantityStepper.StepperSize.Sm" Max="5" Label="Small" />
+            <OsQuantityStepper Value="1" Disabled="true" Label="Disabled" />
+            <span class="os-header__cart"><OsIconButton Icon="@Icons.Material.Outlined.ShoppingCart" AriaLabel="Cart" /><OsBadge Count="_qty" /></span>
+        </div>
+        <OsSearchBar Size="OsSearchBar.SearchSize.Hero" Placeholder="Hero search" Class="mt-5" OnSubmit="OnSearch" />
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm" Tone="OsSection.SectionTone.Sunk">
+        <OsEyebrow Text="06 / States" Class="mb-4" />
+        <div class="pg-kit__stack">
+            <OsEmptyState Icon="@Icons.Material.Outlined.Inventory2" Title="No products yet" Body="Add your first product to see it here." ActionText="Add product" ActionHref="/dev/kit" />
+            <OsEmptyState Icon="@Icons.Material.Outlined.ShoppingCart" Title="Compact empty state" Compact="true" />
+            <OsErrorState Message="The catalogue could not be loaded." OnRetry="OnRetry" />
+            <OsErrorState Title="Compact with title" Message="Something small went wrong." Compact="true" />
+        </div>
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsEyebrow Text="07 / Loading" Class="mb-4" />
+        <OsProductCardSkeleton Count="3" />
+        <div class="pg-kit__grid mt-5">
+            <OsListSkeleton Rows="2" />
+            <OsTableSkeleton Rows="3" Cols="4" />
+        </div>
+        <OsDetailSkeleton />
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Sm" Tone="OsSection.SectionTone.Sunk">
+        <OsEyebrow Text="08 / Forms & dialogs" Class="mb-4" />
+        <OsCard Padding="OsCard.CardPadding.Lg">
+            <AddressForm @ref="_addressForm" Model="_address" ShowLabel="true" ShowEmail="true" />
+            <div class="os-card__actions">
+                <OsButton OnClick="ValidateAsync">Validate</OsButton>
+                <OsButton Variant="OsButton.ButtonVariant.Secondary" OnClick="ConfirmAsync">Confirm dialog</OsButton>
+                <OsButton Variant="OsButton.ButtonVariant.Danger" OnClick="DangerAsync">Danger dialog</OsButton>
+                <OsButton Variant="OsButton.ButtonVariant.Ghost" OnClick="AddToCartAsync">Add-to-cart dialog</OsButton>
+            </div>
+        </OsCard>
+    </OsSection>
+
+    <OsSection Padding="OsSection.SectionPadding.Md">
+        <OsEyebrow Text="09 / Reveal" Class="mb-4" />
+        <OsRevealGroup Class="pg-kit__grid">
+            @foreach (var i in Enumerable.Range(1, 6))
+            {
+                <OsCard><strong>Tile @i</strong><p class="os-muted">Staggers in as it scrolls into view.</p></OsCard>
+            }
+        </OsRevealGroup>
+    </OsSection>
+}
+
+@code {
+    private int _qty = 2;
+    private AddressForm _addressForm = default!;
+    private readonly AddressFormModel _address = new();
+
+    private readonly IReadOnlyList<OsCrumb> _crumbs =
+    [
+        new("Shop", "/shop"),
+        new("Laptops", "/shop/category/Laptops"),
+        new("Aurora 14"),
+    ];
+
+    private readonly Guid[] _seeds =
+    [
+        Guid.Parse("00001ef7-0000-0000-0102-030405060701"),
+        Guid.Parse("00003dee-0000-0000-0102-030405060702"),
+        Guid.Parse("00005ce5-0000-0000-0102-030405060703"),
+        Guid.Parse("00007bdc-0000-0000-0102-030405060704"),
+    ];
+
+    private static readonly ProductDto Sample = new(
+        Guid.Parse("11111111-2222-3333-4444-555555555555"), "Aurora 14", "aurora-14",
+        "A quiet, fast laptop.", 1299.99m, 8, Guid.Empty, "Laptops", "AUR-14", null, true, 4.5, 12);
+
+    private void OnSearch(string term) => Snackbar.ShowInfo($"Search: {term}");
+
+    private void OnRetry() => Snackbar.ShowInfo("Retrying…");
+
+    private async Task ValidateAsync()
+    {
+        var ok = await _addressForm.ValidateAsync();
+        if (ok)
+            Snackbar.ShowSuccess("Address is valid.");
+        else
+            Snackbar.ShowWarning("Fix the highlighted fields.");
+    }
+
+    private async Task ConfirmAsync()
+    {
+        var yes = await ConfirmDialog.ShowAsync(Dialogs, "Publish changes?", "Customers will see them immediately.", "Publish");
+        Snackbar.ShowInfo(yes ? "Confirmed" : "Cancelled");
+    }
+
+    private async Task DangerAsync()
+    {
+        var yes = await ConfirmDialog.ShowAsync(Dialogs, "Delete product?", "This cannot be undone.", "Delete", danger: true);
+        Snackbar.ShowInfo(yes ? "Deleted" : "Kept");
+    }
+
+    private Task AddToCartAsync() => AddToCartDialog.ShowAsync(Dialogs, Sample);
+}

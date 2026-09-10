@@ -1,53 +1,45 @@
 @page "/checkout/success"
 @attribute [Authorize]
 @inject IOrderingClient Ordering
-@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["CheckoutSuccess.PageTitle"]</PageTitle>
 
-<section style="padding:var(--os-section-py-md) 0;">
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center">
+<OsSection Width="OsSection.SectionWidth.Narrow" Padding="OsSection.SectionPadding.Lg" Class="pg-success">
+    <span class="pg-success__mark" aria-hidden="true">
+        <MudIcon Icon="@Icons.Material.Outlined.Check" />
+    </span>
 
-        <IconBadge CssClass="avatar-initials" Style="margin:0 auto 24px;">
-            <MudIcon Icon="@Icons.Material.Outlined.CheckCircle" Style="font-size:48px;color:var(--mud-palette-primary-text);" />
-        </IconBadge>
+    <OsDisplay As="h1" Size="OsDisplay.DisplaySize.D1">@L["CheckoutSuccess.Title"]</OsDisplay>
+    <p class="pg-success__body">@L["CheckoutSuccess.Body"]</p>
 
-        <MudText Typo="Typo.h3" Style="font-weight:700;">@L["CheckoutSuccess.Title"]</MudText>
-        <MudText Typo="Typo.body1" Class="text-muted mt-3">
-            @L["CheckoutSuccess.Body"]
-        </MudText>
+    @if (_totalAmount.HasValue)
+    {
+        <p class="pg-success__total os-mono">@L["CheckoutSuccess.Total", Formatting.Currency(_totalAmount.Value)]</p>
+    }
 
-        @if (_totalAmount.HasValue)
-        {
-            <MudText Typo="Typo.h5" Class="mt-4" Style="font-weight:600;">
-                @L["CheckoutSuccess.Total", Formatting.Currency(_totalAmount.Value)]
-            </MudText>
-        }
+    @if (_order is not null)
+    {
+        <OsCard Surface="OsCard.CardSurface.Sunk" Class="pg-success__order">
+            <OsEyebrow Text="@L["CheckoutSuccess.OrderNumber"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+            <span class="pg-success__number os-mono">#@_order.Id.ToString("N")[..8].ToUpperInvariant()</span>
+        </OsCard>
+    }
+    else if (_polling)
+    {
+        <OsSkeletonGroup Class="pg-success__order">
+            <OsSkeleton Width="140px" Height="10px" />
+            <OsSkeleton Width="200px" Height="28px" Class="mt-2" />
+        </OsSkeletonGroup>
+    }
 
-        @if (_order is not null)
-        {
-            <MudPaper Elevation="0" Class="surface-card pa-6 mt-6 text-left">
-                <MudText Typo="Typo.caption" Class="text-muted">@L["CheckoutSuccess.OrderNumber"]</MudText>
-                <MudText Typo="Typo.subtitle1" Class="text-monospace" Style="font-weight:600;">
-                    #@_order.Id.ToString("N")[..8].ToUpperInvariant()
-                </MudText>
-            </MudPaper>
-        }
-
-        <MudStack Row="true" Justify="Justify.Center" Spacing="3" Class="mt-8">
-            <MudButton Href="/account/orders" Variant="Variant.Filled"
-                       Color="Color.Primary" Size="Size.Large" Class="btn-pill">
-                @L["Account.MyOrders"]
-            </MudButton>
-            <MudButton Href="/shop" Variant="Variant.Outlined"
-                       Color="Color.Primary" Size="Size.Large" Class="btn-pill">
-                @L["CheckoutSuccess.ContinueShopping"]
-            </MudButton>
-        </MudStack>
-
-    </MudContainer>
-</section>
+    <div class="pg-success__actions">
+        <OsButton Href="/account/orders" Size="OsButton.ButtonSize.Lg">@L["Account.MyOrders"]</OsButton>
+        <OsButton Href="/shop" Variant="OsButton.ButtonVariant.Secondary" Size="OsButton.ButtonSize.Lg">
+            @L["CheckoutSuccess.ContinueShopping"]
+        </OsButton>
+    </div>
+</OsSection>
 
 @code {
     [SupplyParameterFromQuery] private Guid? CorrelationId { get; set; }
@@ -55,6 +47,7 @@
 
     private OrderDto? _order;
     private decimal? _totalAmount;
+    private bool _polling;
 
     protected override async Task OnInitializedAsync()
     {
@@ -68,11 +61,19 @@
 
         // Poll for the order (Service Bus processing may take a moment).
         // Ownership is enforced server-side via the JWT token.
-        for (var i = 0; i < 6; i++)
+        _polling = true;
+        try
         {
-            _order = await Ordering.GetOrderByCorrelationIdAsync(CorrelationId.Value);
-            if (_order is not null) break;
-            await Task.Delay(2000);
+            for (var i = 0; i < 6; i++)
+            {
+                _order = await Ordering.GetOrderByCorrelationIdAsync(CorrelationId.Value);
+                if (_order is not null) break;
+                await Task.Delay(2000);
+            }
+        }
+        finally
+        {
+            _polling = false;
         }
     }
 }

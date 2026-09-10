@@ -79,9 +79,9 @@
         {
             var r = await AdminCatalog.GetReviewsAsync();
             if (r.IsSuccess) _reviews = r.Value!;
-            else Snackbar.Add(r.Error!.Message, Severity.Error);
+            else Snackbar.ShowApiError(r.Error);
         }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -90,12 +90,12 @@
         var result = await AdminCatalog.ModerateReviewAsync(review.Id, approve);
         if (result.IsSuccess)
         {
-            Snackbar.Add(approve ? L["Admin.Reviews.Approved"] : L["Admin.Reviews.Rejected"], Severity.Success);
+            Snackbar.ShowSuccess(approve ? L["Admin.Reviews.Approved"] : L["Admin.Reviews.Rejected"]);
             await LoadAsync();
         }
         else
         {
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+            Snackbar.ShowApiError(result.Error);
         }
     }
 }

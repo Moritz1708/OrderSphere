@@ -70,11 +70,11 @@
             try
             {
                 var cats = await AdminCatalog.GetCategoriesAsync();
-                if (!cats.IsSuccess) Snackbar.Add(cats.Error!.Message, Severity.Error);
+                if (!cats.IsSuccess) Snackbar.ShowApiError(cats.Error);
                 var cat = cats.Value?.FirstOrDefault(c => c.Id == CategoryId!.Value);
                 if (cat is not null) { _name = cat.Name; _description = cat.Description; _isActive = cat.IsActive; }
             }
-            catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+            catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         }
         _loading = false;
     }
@@ -88,14 +88,14 @@
             if (IsEdit)
             {
                 var result = await AdminCatalog.UpdateCategoryAsync(CategoryId!.Value, input);
-                if (result.IsSuccess) { Snackbar.Add(L["Admin.CategoryForm.Saved"], Severity.Success); Navigation.NavigateTo("/admin/categories"); }
-                else Snackbar.Add(result.Error!.Message, Severity.Error);
+                if (result.IsSuccess) { Snackbar.ShowSuccess(L["Admin.CategoryForm.Saved"]); Navigation.NavigateTo("/admin/categories"); }
+                else Snackbar.ShowApiError(result.Error);
             }
             else
             {
                 var result = await AdminCatalog.CreateCategoryAsync(input);
-                if (result.IsSuccess) { Snackbar.Add(L["Admin.CategoryForm.Created"], Severity.Success); Navigation.NavigateTo("/admin/categories"); }
-                else Snackbar.Add(result.Error!.Message, Severity.Error);
+                if (result.IsSuccess) { Snackbar.ShowSuccess(L["Admin.CategoryForm.Created"]); Navigation.NavigateTo("/admin/categories"); }
+                else Snackbar.ShowApiError(result.Error);
             }
         }
         finally { _saving = false; }

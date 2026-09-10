@@ -1,0 +1,16 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* The accessible wrapper every skeleton composite uses: one polite "loading"
+   announcement, everything visual hidden from the accessibility tree. *@
+<div class="os-skeleton-group @Class" role="status" aria-live="polite" aria-busy="true" @attributes="AdditionalAttributes">
+    <span class="os-visually-hidden">@L["Common.Loading"]</span>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}

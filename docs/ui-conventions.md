@@ -166,12 +166,36 @@ visible. Add motion only where it explains a change of state; reveal below-the-f
 The `Os*` kit in `Components/Ui` carries the visual identity; MudBlazor supplies behaviour (dialog,
 snackbar, select, table, drawer, popover, date picker). Reach for a kit component before a Mud one.
 
-| Component | Purpose |
-|---|---|
-| `ThemeToggle` | Header light/dark control. Writes the attribute, storage and server preference |
+| Component | Purpose | Notes |
+|---|---|---|
+| `OsButton` | Every call-to-action. Variants Primary / Secondary / Ghost / Danger, sizes Sm / Md / Lg | Native `<button>` or `<a>` (with `Href`). `Loading` disables and shows a spinner. Never `MudButton` for page actions |
+| `OsIconButton` | Icon-only control | `AriaLabel` is required. `Pressed` renders `aria-pressed` for toggles |
+| `OsCard` | Surface primitive — hairline border, card radius | `Surface` Paper / Canvas / Sunk / Block; `Href` or `OnClick` make it interactive |
+| `OsSection` | Page band with tone, vertical rhythm and a centred container | `Width` Default / Narrow / Wide / Full; `Tone` Block stays dark in both themes |
+| `OsPageHeader` | Top of every page: breadcrumbs, eyebrow, the one `<h1>`, subtitle, actions | `TitleAs` defaults to `h1` — leave it unless the page has another h1 |
+| `OsBreadcrumbs` | Mono trail; last item gets `aria-current` | Items are `OsCrumb(Text, Href?)` |
+| `OsDisplay` | Serif display heading, D1 / D2 / D3, any tag via `As` | One `<em>` per heading renders italic in the accent |
+| `OsEyebrow` | Mono uppercase label with a leading rule | `Rule="false"` for inline labels, `Tone` Muted / Ink / OnBlock |
+| `OsPrice` | Money in mono with tabular figures | `Original` renders a struck-through previous price |
+| `OsStatusChip` | Tinted status chip, `role="status"` | Tone and label come from `StatusPresentation`, never a local switch |
+| `OsStat` | Dashboard tile with an animated count-up | Count-up is skipped under reduced motion |
+| `OsBadge` | Count badge that pops on change | Hidden at zero |
+| `OsSkeleton` + `OsProductCardSkeleton`, `OsTableSkeleton`, `OsDetailSkeleton`, `OsListSkeleton` | Loading placeholders | Composites wrap in `OsSkeletonGroup` (`role="status"`, one hidden "Loading" label). Use these instead of spinners |
+| `OsEmptyState` | "Nothing here" with one clear action | `Compact` for inside cards and drawers |
+| `OsErrorState` | Persistent, in-place failure with retry (`role="alert"`) | Transient failures use `SnackbarExtensions` instead |
+| `OsQuantityStepper` | Labelled minus / value / plus group | `Label` = the product name, for the group's accessible name |
+| `OsProductImage` | Product media with a deterministic duotone placeholder | Hue derives from the product id; `Eager` for above-the-fold media |
+| `OsSearchBar` | The one search control (header and search page) | `Size` Header / Hero; navigates to `/search` unless `OnSubmit` is set |
+| `OsReveal`, `OsRevealGroup` | Scroll-reveal wrappers | Below-the-fold content only; groups stagger their direct children |
+| `PageTransition` | Wraps `@Body`; replays the enter animation on path changes | Query-only changes keep the page mounted |
+| `AddressForm` + `AddressFormModel` | The one address form, `MudForm`-validated | `ShowLabel` (profile), `ShowEmail` (checkout); `ValidateAsync()` before submitting |
+| `AddToCartDialog` | Quantity picker that performs the add itself | `AddToCartDialog.ShowAsync(dialogs, product)` |
+| `ConfirmDialog` | The confirmation for every destructive action | `ConfirmDialog.ShowAsync(dialogs, title, message, confirmText, danger: true)` |
+| `ThemeToggle`, `LocaleMenu`, `AccountMenu`, `MobileNavDrawer` | Shell controls | Header and mobile drawer share them |
 
-*(This table grows as the kit lands. Until a page is migrated it may still use the transitional
-classes in `legacy.css`.)*
+Still MudBlazor at the call site, restyled by `mud-overrides.css`: `MudTextField` / `MudSelect` / `MudNumericField`
+(`Variant.Outlined` + `ShrinkLabel="true"`), `MudForm`, `MudTable`, `MudPagination`, `MudDialog`, `MudDrawer`,
+`MudMenu`, `MudRadioGroup`, `MudRating`, `MudTimeline`, `MudExpansionPanels`, `MudDatePicker`, `MudSnackbar`.
 
 Cross-cutting helpers that are already binding:
 

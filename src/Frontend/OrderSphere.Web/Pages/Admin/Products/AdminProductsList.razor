@@ -104,8 +104,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try { var r = await AdminCatalog.GetProductsAsync(); if (r.IsSuccess) _products = r.Value!; else Snackbar.Add(r.Error!.Message, Severity.Error); }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        try { var r = await AdminCatalog.GetProductsAsync(); if (r.IsSuccess) _products = r.Value!; else Snackbar.ShowApiError(r.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -116,7 +116,7 @@
         if (confirmed != true) return;
 
         var result = await AdminCatalog.DeleteProductAsync(id);
-        if (result.IsSuccess) { _products.RemoveAll(p => p.Id == id); Snackbar.Add(L["Admin.Products.Deleted"], Severity.Success); }
-        else Snackbar.Add(result.Error!.Message, Severity.Error);
+        if (result.IsSuccess) { _products.RemoveAll(p => p.Id == id); Snackbar.ShowSuccess(L["Admin.Products.Deleted"]); }
+        else Snackbar.ShowApiError(result.Error);
     }
 }

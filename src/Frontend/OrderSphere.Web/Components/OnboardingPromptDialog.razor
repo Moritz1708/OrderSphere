@@ -3,25 +3,17 @@
 @inject IStringLocalizer<AppStrings> L
 
 <MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6">@L["OnboardingPrompt.Title"]</MudText>
-    </TitleContent>
+    <TitleContent>@L["OnboardingPrompt.Title"]</TitleContent>
     <DialogContent>
-        <MudText Typo="Typo.body2">@L["OnboardingPrompt.Message"]</MudText>
+        <p class="os-confirm__message">@L["OnboardingPrompt.Message"]</p>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Text"
-                   Disabled="_busy"
-                   OnClick="SkipAsync">
+        <OsButton Variant="OsButton.ButtonVariant.Ghost" Disabled="_busy" OnClick="SkipAsync">
             @L["OnboardingPrompt.Skip"]
-        </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   Class="btn-pill"
-                   Disabled="_busy"
-                   OnClick="Complete">
+        </OsButton>
+        <OsButton Disabled="_busy" OnClick="Complete">
             @L["OnboardingPrompt.Complete"]
-        </MudButton>
+        </OsButton>
     </DialogActions>
 </MudDialog>
 

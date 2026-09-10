@@ -1,0 +1,25 @@
+@* Placeholder rows for an admin table: a mono-style head rule and hairline rows. *@
+<OsSkeletonGroup Class="os-table-skeleton">
+    <div class="os-table-skeleton__head" style="@Columns">
+        @for (var c = 0; c < Cols; c++)
+        {
+            <OsSkeleton Width="@(c == 0 ? "60%" : "45%")" Height="10px" />
+        }
+    </div>
+    @for (var r = 0; r < Rows; r++)
+    {
+        <div class="os-table-skeleton__row" style="@Columns">
+            @for (var c = 0; c < Cols; c++)
+            {
+                <OsSkeleton Width="@(c == 0 ? "80%" : "55%")" Height="14px" />
+            }
+        </div>
+    }
+</OsSkeletonGroup>
+
+@code {
+    [Parameter] public int Rows { get; set; } = 6;
+    [Parameter] public int Cols { get; set; } = 5;
+
+    private string Columns => $"grid-template-columns:repeat({Cols},1fr)";
+}

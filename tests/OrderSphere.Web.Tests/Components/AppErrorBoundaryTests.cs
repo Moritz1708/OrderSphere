@@ -1,21 +1,10 @@
 using Bunit;
-using MudBlazor.Services;
 using OrderSphere.Web.Components;
 
 namespace OrderSphere.Web.Tests.Components;
 
-public sealed class AppErrorBoundaryTests : BunitContext, IAsyncLifetime
+public sealed class AppErrorBoundaryTests : BunitBase
 {
-    public AppErrorBoundaryTests()
-    {
-        Services.AddMudServices();
-        JSInterop.Mode = JSRuntimeMode.Loose;
-    }
-
-    Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
-
-    async Task IAsyncLifetime.DisposeAsync() => await DisposeAsync();
-
     [Fact]
     public void RendersChildContent_WhenNoError()
     {
@@ -26,12 +15,15 @@ public sealed class AppErrorBoundaryTests : BunitContext, IAsyncLifetime
     }
 
     [Fact]
-    public void ShowsFallback_WhenChildThrows()
+    public void ShowsLocalizedFallback_WhenChildThrows()
     {
         var cut = Render<AppErrorBoundary>(
             parameters => parameters.AddChildContent<ThrowingChild>());
 
-        cut.Markup.Should().Contain("Etwas ist schiefgelaufen");
+        // The pass-through localizer renders keys, so the fallback is recognisable by its key.
+        cut.Markup.Should().Contain("Error.BoundaryTitle");
+        cut.Markup.Should().Contain("Common.Retry");
+        cut.Markup.Should().NotContain("child works");
     }
 
     private sealed class ThrowingChild : Microsoft.AspNetCore.Components.ComponentBase

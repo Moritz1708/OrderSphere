@@ -92,7 +92,7 @@
         {
             var cats = await AdminCatalog.GetCategoriesAsync();
             if (cats.IsSuccess) _categories = cats.Value!;
-            else Snackbar.Add(cats.Error!.Message, Severity.Error);
+            else Snackbar.ShowApiError(cats.Error);
             if (IsEdit)
             {
                 var p = (await AdminCatalog.GetProductByIdAsync(ProductId!.Value)).Value;
@@ -100,7 +100,7 @@
                     _model = new ProductModel { Name = p.Name, SKU = p.SKU, Description = p.Description, Price = p.Price, Stock = p.Stock, CategoryId = p.CategoryId, IsActive = p.IsActive };
             }
         }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -113,14 +113,14 @@
             if (IsEdit)
             {
                 var result = await AdminCatalog.UpdateProductAsync(ProductId!.Value, input);
-                if (result.IsSuccess) { Snackbar.Add(L["Admin.ProductForm.Saved"], Severity.Success); Navigation.NavigateTo("/admin/products"); }
-                else Snackbar.Add(result.Error!.Message, Severity.Error);
+                if (result.IsSuccess) { Snackbar.ShowSuccess(L["Admin.ProductForm.Saved"]); Navigation.NavigateTo("/admin/products"); }
+                else Snackbar.ShowApiError(result.Error);
             }
             else
             {
                 var result = await AdminCatalog.CreateProductAsync(input);
-                if (result.IsSuccess) { Snackbar.Add(L["Admin.ProductForm.Created"], Severity.Success); Navigation.NavigateTo("/admin/products"); }
-                else Snackbar.Add(result.Error!.Message, Severity.Error);
+                if (result.IsSuccess) { Snackbar.ShowSuccess(L["Admin.ProductForm.Created"]); Navigation.NavigateTo("/admin/products"); }
+                else Snackbar.ShowApiError(result.Error);
             }
         }
         finally { _saving = false; }

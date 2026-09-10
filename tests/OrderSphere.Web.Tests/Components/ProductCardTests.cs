@@ -89,7 +89,7 @@ public sealed class ProductCardTests : BunitBase
             p.Add(c => c.OnOpen, EventCallback.Factory.Create<ProductDto>(this, dto => opened = dto));
         });
 
-        cut.Find(".mud-paper").Click();
+        cut.Find(".os-product-card").Click();
 
         opened.Should().Be(product);
     }

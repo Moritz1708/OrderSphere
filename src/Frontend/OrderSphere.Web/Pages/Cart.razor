@@ -4,106 +4,79 @@
 @inject IOrderingClient Ordering
 @inject CartState CartState
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Cart.PageTitle"]</PageTitle>
 
-<PageHero Title="@L["Cart.HeroTitle"]"
-          Subtitle="@L["Cart.HeroSubtitle", _items.Count]" />
+<OsPageHeader Title="@L["Cart.HeroTitle"]" Subtitle="@L["Cart.HeroSubtitle", _items.Count]" />
 
-<section style="padding: 48px 0 var(--os-section-py-md);">
-    <MudContainer MaxWidth="MaxWidth.Large">
-        @if (_loading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Style="min-height:40vh;justify-content:center;">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudStack>
-        }
-        else if (_items.Count == 0)
-        {
-            <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <EmptyStateCard Icon="@Icons.Material.Outlined.ShoppingCart" IconSize="80px"
-                                Title="@L["Cart.EmptyHeading"]" Body="@L["Cart.AddProductsHint"]"
-                                ActionText="@L["Cart.DiscoverProducts"]" ActionHref="/shop"
-                                ActionStartIcon="@Icons.Material.Outlined.Storefront" />
-            </MudPaper>
-        }
-        else
-        {
-            <MudGrid Spacing="4">
-                <MudItem xs="12" lg="8">
-                    <MudStack Spacing="3">
-                        @foreach (var item in _items)
-                        {
-                            <MudPaper Elevation="0" Class="surface-card pa-4">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
-                                    <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;background:var(--mud-palette-background-grey);border-radius:12px;flex-shrink:0;">
-                                        <MudIcon Icon="@Icons.Material.Outlined.Inventory2"
-                                                 Style="font-size:32px;color:var(--mud-palette-divider);" />
-                                    </div>
+<OsSection Padding="OsSection.SectionPadding.Sm">
+    @if (_loading)
+    {
+        <OsListSkeleton Rows="3" />
+    }
+    else if (_items.Count == 0)
+    {
+        <OsEmptyState Icon="@Icons.Material.Outlined.ShoppingCart"
+                      Title="@L["Cart.EmptyHeading"]"
+                      Body="@L["Cart.AddProductsHint"]"
+                      ActionText="@L["Cart.DiscoverProducts"]"
+                      ActionHref="/shop"
+                      ActionIcon="@Icons.Material.Outlined.Storefront" />
+    }
+    else
+    {
+        <MudGrid Spacing="4">
+            <MudItem xs="12" lg="8">
+                <div class="os-rows">
+                    @foreach (var item in _items)
+                    {
+                        <div class="os-row pg-cart__row" @key="item.ProductId">
+                            <OsProductImage Seed="item.ProductId" Name="@item.ProductName" Ratio="1/1" Class="pg-cart__thumb" />
 
-                                    <MudStack Spacing="1" Style="flex: 1;">
-                                        <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                                            @item.ProductName
-                                        </MudText>
-                                        <MudText Typo="Typo.caption" Style="font-weight: 600; color: var(--os-primary-text);">
-                                            @Formatting.Currency(item.Price) @L["Cart.PerUnitSuffix"]
-                                        </MudText>
+                            <div class="os-row__main">
+                                <span class="os-row__title">@item.ProductName</span>
+                                <span class="os-row__meta os-num">@Formatting.Currency(item.Price) @L["Cart.PerUnitSuffix"]</span>
+                                <OsQuantityStepper Value="item.Quantity"
+                                                   ValueChanged="newValue => HandleQuantityChange(item, newValue)"
+                                                   Min="1"
+                                                   Disabled="_busy"
+                                                   Size="OsQuantityStepper.StepperSize.Sm"
+                                                   Label="@item.ProductName"
+                                                   Class="mt-2" />
+                            </div>
 
-                                        <div class="mt-2" style="display: inline-block;">
-                                            <QuantityStepper Value="item.Quantity"
-                                                             ValueChanged="newValue => HandleQuantityChange(item, newValue)"
-                                                             Min="1"
-                                                             Disabled="_busy" />
-                                        </div>
-                                    </MudStack>
+                            <div class="os-row__end pg-cart__end">
+                                <OsPrice Value="item.Price * item.Quantity" Size="OsPrice.PriceSize.Lg" />
+                                <OsIconButton Icon="@Icons.Material.Outlined.Close"
+                                              Size="OsIconButton.IconButtonSize.Sm"
+                                              AriaLabel="@L["Cart.RemoveAria", item.ProductName]"
+                                              Disabled="_busy"
+                                              OnClick="@(() => RemoveItemAsync(item))" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </MudItem>
 
-                                    <MudStack AlignItems="AlignItems.End" Spacing="2">
-                                        <MudText Typo="Typo.h6" Style="font-weight: 700;">
-                                            @Formatting.Currency(item.Price * item.Quantity)
-                                        </MudText>
-                                        <MudIconButton Icon="@Icons.Material.Outlined.DeleteOutline"
-                                                       Size="Size.Small"
-                                                       Color="Color.Error"
-                                                       aria-label="@L["Cart.RemoveAria", item.ProductName]"
-                                                       Disabled="_busy"
-                                                       OnClick="@(() => RemoveItemAsync(item))" />
-                                    </MudStack>
-                                </MudStack>
-                            </MudPaper>
-                        }
-                    </MudStack>
-                </MudItem>
-
-                <MudItem xs="12" lg="4">
-                    <OrderSummary Title="@L["Cart.Summary"]" Subtotal="Subtotal">
-                        <Actions>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Size="Size.Large"
-                                       FullWidth="true"
-                                       Href="/checkout"
-                                       EndIcon="@Icons.Material.Outlined.ArrowForward"
-                                       Class="mt-2"
-                                       Style="border-radius: 100px;">
-                                @L["Cart.ToCheckout"]
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Text"
-                                       FullWidth="true"
-                                       Href="/shop"
-                                       Color="Color.Default"
-                                       Style="border-radius: 100px;">
-                                @L["Cart.ContinueShopping"]
-                            </MudButton>
-                        </Actions>
-                    </OrderSummary>
-                </MudItem>
-            </MudGrid>
-        }
-    </MudContainer>
-</section>
+            <MudItem xs="12" lg="4">
+                <OrderSummary Title="@L["Cart.Summary"]" Subtotal="Subtotal">
+                    <Actions>
+                        <OsButton Href="/checkout"
+                                  Size="OsButton.ButtonSize.Lg"
+                                  FullWidth="true"
+                                  EndIcon="@Icons.Material.Outlined.ArrowForward">
+                            @L["Cart.ToCheckout"]
+                        </OsButton>
+                        <OsButton Href="/shop" Variant="OsButton.ButtonVariant.Ghost" FullWidth="true">
+                            @L["Cart.ContinueShopping"]
+                        </OsButton>
+                    </Actions>
+                </OrderSummary>
+            </MudItem>
+        </MudGrid>
+    }
+</OsSection>
 
 @code {
     private List<CartItemDto> _items = [];
@@ -125,10 +98,7 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private void SyncFromCartState()
-    {
-        _items = CartState.Cart?.Items?.ToList() ?? [];
-    }
+    private void SyncFromCartState() => _items = CartState.Cart?.Items?.ToList() ?? [];
 
     private async Task HandleQuantityChange(CartItemDto item, int newValue)
     {
@@ -143,7 +113,7 @@
             if (result.IsSuccess)
                 await CartState.RefreshAsync();
             else
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
         }
         finally
         {
@@ -161,11 +131,11 @@
             if (result.IsSuccess)
             {
                 await CartState.RefreshAsync();
-                Snackbar.Add(L["Cart.ItemRemoved", item.ProductName], Severity.Info);
+                Snackbar.ShowInfo(L["Cart.ItemRemoved", item.ProductName]);
             }
             else
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             }
         }
         finally
@@ -174,8 +144,5 @@
         }
     }
 
-    public void Dispose()
-    {
-        CartState.OnChange -= OnCartChanged;
-    }
+    public void Dispose() => CartState.OnChange -= OnCartChanged;
 }

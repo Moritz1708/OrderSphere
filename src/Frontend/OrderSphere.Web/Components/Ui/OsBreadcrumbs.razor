@@ -1,0 +1,31 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* Mono breadcrumb trail. The slash separators are CSS so screen readers hear a
+   plain list; the last item carries aria-current. *@
+@if (Items.Count > 0)
+{
+    <nav class="os-crumbs @Class" aria-label="@L["Nav.BreadcrumbsAria"]">
+        <ol>
+            @for (var i = 0; i < Items.Count; i++)
+            {
+                var crumb = Items[i];
+                var last = i == Items.Count - 1;
+                <li>
+                    @if (crumb.Href is not null && !last)
+                    {
+                        <a href="@crumb.Href">@crumb.Text</a>
+                    }
+                    else
+                    {
+                        <span aria-current="@(last ? "page" : null)">@crumb.Text</span>
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<OsCrumb> Items { get; set; } = [];
+    [Parameter] public string? Class { get; set; }
+}

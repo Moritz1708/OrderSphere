@@ -63,8 +63,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try { var r = await AdminUsers.GetUsersAsync(); if (r.IsSuccess) _users = r.Value!; else Snackbar.Add(r.Error!.Message, Severity.Error); }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        try { var r = await AdminUsers.GetUsersAsync(); if (r.IsSuccess) _users = r.Value!; else Snackbar.ShowApiError(r.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 }

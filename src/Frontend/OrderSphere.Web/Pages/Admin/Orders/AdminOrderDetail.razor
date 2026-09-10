@@ -196,8 +196,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try { var r = await AdminOrdering.GetOrderByIdAsync(OrderId); _order = r.Value; if (!r.IsSuccess) Snackbar.Add(r.Error!.Message, Severity.Error); }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        try { var r = await AdminOrdering.GetOrderByIdAsync(OrderId); _order = r.Value; if (!r.IsSuccess) Snackbar.ShowApiError(r.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -210,8 +210,8 @@
         try
         {
             var result = await AdminOrdering.UpdateStatusAsync(OrderId, status);
-            if (result.IsSuccess) { Snackbar.Add(L["Admin.OrderDetail.StatusUpdated"], Severity.Success); _order = (await AdminOrdering.GetOrderByIdAsync(OrderId)).Value; }
-            else Snackbar.Add(result.Error!.Message, Severity.Error);
+            if (result.IsSuccess) { Snackbar.ShowSuccess(L["Admin.OrderDetail.StatusUpdated"]); _order = (await AdminOrdering.GetOrderByIdAsync(OrderId)).Value; }
+            else Snackbar.ShowApiError(result.Error);
         }
         finally { _busy = false; }
     }
@@ -222,8 +222,8 @@
         try
         {
             var result = await AdminOrdering.CancelOrderAsync(OrderId);
-            if (result.IsSuccess) { Snackbar.Add(L["Admin.OrderDetail.OrderCancelled"], Severity.Success); _order = (await AdminOrdering.GetOrderByIdAsync(OrderId)).Value; }
-            else Snackbar.Add(result.Error!.Message, Severity.Error);
+            if (result.IsSuccess) { Snackbar.ShowSuccess(L["Admin.OrderDetail.OrderCancelled"]); _order = (await AdminOrdering.GetOrderByIdAsync(OrderId)).Value; }
+            else Snackbar.ShowApiError(result.Error);
         }
         finally { _busy = false; }
     }

@@ -3,35 +3,34 @@
 
 <PageTitle>OrderSphere</PageTitle>
 
-<PageHero Variant="PageHero.HeroVariant.TwoColumn"
-          Eyebrow="@L["Home.HeroEyebrow"]"
-          Title="@L["Home.HeroTitle"]"
-          Subtitle="@L["Home.HeroSubtitle"]">
-    <LeadingContent>
-        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mt-6">
-            <MudButton Variant="Variant.Filled" Size="Size.Large"
-                       Href="/shop" Class="btn-pill-white">
-                @L["Cart.ToShop"]
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" Size="Size.Large"
-                       Href="/categories" Class="btn-pill-outline-white">
-                @L["Nav.Categories"]
-            </MudButton>
-        </MudStack>
-        <MudStack Row="true" Spacing="4" Class="mt-6">
-            <span class="os-mono text-on-dark-muted" style="font-size:0.75rem;">✓ @L["Home.FreeShipping"]</span>
-            <span class="os-mono text-on-dark-muted" style="font-size:0.75rem;">✓ @L["Home.Returns"]</span>
-            <span class="os-mono text-on-dark-muted" style="font-size:0.75rem;">✓ @L["Home.Warranty"]</span>
-        </MudStack>
-    </LeadingContent>
-    <ChildContent>
-        <MudPaper Elevation="0"
-                  Style="border-radius:20px;overflow:hidden;background:rgba(255,255,255,0.12);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.18);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;">
-            <MudIcon Icon="@Icons.Material.Outlined.Laptop"
-                     Style="font-size:120px;color:var(--mud-palette-primary-text);opacity:0.55;" />
-        </MudPaper>
-    </ChildContent>
-</PageHero>
+@* Masthead. Stays dark in both themes (--os-block). The editorial bento and the
+   featured rail arrive with the storefront redesign; this is the shell of it. *@
+<OsSection Tone="OsSection.SectionTone.Block" Padding="OsSection.SectionPadding.Lg" Class="pg-home-hero">
+    <div class="os-split os-split--xl">
+        <div class="pg-home-hero__copy">
+            <OsEyebrow Text="@L["Home.HeroEyebrow"]" Tone="OsEyebrow.EyebrowTone.OnBlock" />
+            <OsDisplay As="h1" Size="OsDisplay.DisplaySize.D1" Class="mt-3">@L["Home.HeroTitle"]</OsDisplay>
+            <p class="pg-home-hero__lede">@L["Home.HeroSubtitle"]</p>
+
+            <div class="pg-home-hero__actions">
+                <OsButton Href="/shop" Size="OsButton.ButtonSize.Lg">@L["Cart.ToShop"]</OsButton>
+                <OsButton Href="/categories" Variant="OsButton.ButtonVariant.Secondary" Size="OsButton.ButtonSize.Lg" Class="pg-home-hero__ghost">
+                    @L["Nav.Categories"]
+                </OsButton>
+            </div>
+
+            <ul class="pg-home-hero__trust os-mono">
+                <li>@L["Home.FreeShipping"]</li>
+                <li>@L["Home.Returns"]</li>
+                <li>@L["Home.Warranty"]</li>
+            </ul>
+        </div>
+
+        <div class="pg-home-hero__visual" aria-hidden="true">
+            <MudIcon Icon="@Icons.Material.Outlined.Laptop" Class="pg-home-hero__icon" />
+        </div>
+    </div>
+</OsSection>
 
 <!-- CATEGORY STRIP -->
 <section class="section-white">
@@ -43,10 +42,9 @@
                     @L["Home.WhatLookingFor"]
                 </MudText>
             </div>
-            <MudButton Variant="Variant.Text" Href="/shop" Color="Color.Primary"
-                       EndIcon="@Icons.Material.Outlined.ArrowForward">
+            <OsButton Href="/shop" Variant="OsButton.ButtonVariant.Ghost" EndIcon="@Icons.Material.Outlined.ArrowForward">
                 @L["Common.AllProducts"]
-            </MudButton>
+            </OsButton>
         </div>
 
         <MudGrid Spacing="3">
@@ -77,22 +75,21 @@
                 </MudText>
             </div>
             <div>
-                <MudPaper Elevation="0"
-                          Style="border-radius:16px;padding:32px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-divider);box-shadow:var(--os-shadow-card);">
+                <OsCard Padding="OsCard.CardPadding.Lg">
                     <MudText Typo="Typo.h5" Style="font-style:italic;line-height:1.5;font-weight:400;">
                         @L["Home.Quote"]
                     </MudText>
                     <MudDivider Class="my-4" />
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                        <IconBadge Size="36px">
-                            <MudIcon Icon="@Icons.Material.Outlined.Person" Style="font-size:18px;color:var(--mud-palette-primary-text);" />
-                        </IconBadge>
+                        <span class="icon-bubble-primary" style="width:36px;height:36px;">
+                            <MudIcon Icon="@Icons.Material.Outlined.Person" Style="font-size:18px;" />
+                        </span>
                         <div>
                             <MudText Typo="Typo.body2" Style="font-weight:600;">OrderSphere Team</MudText>
                             <MudText Typo="Typo.caption" Class="text-muted">@L["Home.TeamRole"]</MudText>
                         </div>
                     </MudStack>
-                </MudPaper>
+                </OsCard>
             </div>
         </div>
     </MudContainer>

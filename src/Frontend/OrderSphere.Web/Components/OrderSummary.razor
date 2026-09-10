@@ -1,74 +1,79 @@
-@* Sticky order-summary card shared by the cart and checkout pages.
-   Set ShowLineItems to render the itemised list above the totals.
-   Place page-specific buttons/notes into the Actions fragment. *@
-
+@* Order-summary card shared by the cart and checkout pages. Set ShowLineItems to
+   render the itemised list above the totals; page-specific buttons and notes go
+   into the Actions fragment. *@
 @inject IStringLocalizer<AppStrings> L
 
-<MudPaper Elevation="0" Class="surface-card-lg pa-6" Style="@($"position:sticky;top:{StickyTop};")">
-    <MudText Typo="Typo.h5" Class="mb-4" Style="font-weight:600;">@Title</MudText>
-    <MudStack Spacing="3">
-        @if (ShowLineItems)
-        {
+<aside class="os-card os-card--paper os-card--pad-lg os-summary" style="@($"position:sticky;top:calc(var(--os-header-h) + {StickyTop});")">
+    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="os-summary__title">@(Title ?? L["OrderSummary.Title"])</OsDisplay>
+
+    @if (ShowLineItems && Items.Count > 0)
+    {
+        <div class="os-rows os-summary__items">
             @foreach (var item in Items)
             {
-                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudStack Spacing="0">
-                        <MudText Typo="Typo.subtitle2">@item.ProductName</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">@L["OrderSummary.Quantity", item.Quantity]</MudText>
-                    </MudStack>
-                    <MudText Typo="Typo.body2">@Formatting.Currency(item.Price * item.Quantity)</MudText>
-                </MudStack>
+                <div class="os-row">
+                    <div class="os-row__main">
+                        <span class="os-row__title">@item.ProductName</span>
+                        <span class="os-row__meta">@L["OrderSummary.Quantity", item.Quantity]</span>
+                    </div>
+                    <OsPrice Value="item.Price * item.Quantity" Size="OsPrice.PriceSize.Sm" />
+                </div>
             }
-            <MudDivider />
-        }
+        </div>
+    }
 
-        @CouponSlot
+    @if (CouponSlot is not null)
+    {
+        <div class="os-summary__coupon">@CouponSlot</div>
+    }
 
-        <MudStack Row="true" Justify="Justify.SpaceBetween">
-            <MudText Typo="Typo.body2" Class="text-muted">@L["OrderSummary.Subtotal"]</MudText>
-            <MudText Typo="Typo.body2">@Formatting.Currency(Subtotal)</MudText>
-        </MudStack>
+    <dl class="os-kv">
+        <div class="os-kv__row">
+            <dt class="os-kv__key">@L["OrderSummary.Subtotal"]</dt>
+            <dd class="os-kv__val">@Formatting.Currency(Subtotal)</dd>
+        </div>
         @if (Discount > 0)
         {
-            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                <MudText Typo="Typo.body2" Class="text-muted">@(DiscountLabel ?? L["OrderSummary.Discount"])</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Success">−@Formatting.Currency(Discount)</MudText>
-            </MudStack>
+            <div class="os-kv__row">
+                <dt class="os-kv__key">@(DiscountLabel ?? L["OrderSummary.Discount"])</dt>
+                <dd class="os-kv__val os-kv__val--positive">−@Formatting.Currency(Discount)</dd>
+            </div>
         }
-        <MudStack Row="true" Justify="Justify.SpaceBetween">
-            <MudText Typo="Typo.body2" Class="text-muted">@L["OrderSummary.Shipping"]</MudText>
+        <div class="os-kv__row">
+            <dt class="os-kv__key">@L["OrderSummary.Shipping"]</dt>
             @if (ShippingCost > 0)
             {
-                <MudText Typo="Typo.body2">@Formatting.Currency(ShippingCost)</MudText>
+                <dd class="os-kv__val">@Formatting.Currency(ShippingCost)</dd>
             }
             else
             {
-                <MudText Typo="Typo.body2" Class="shipping-free">@L["OrderSummary.Free"]</MudText>
+                <dd class="os-kv__val os-kv__val--positive shipping-free">@L["OrderSummary.Free"]</dd>
             }
-        </MudStack>
+        </div>
+        <div class="os-kv__row os-kv__row--total">
+            <dt class="os-kv__key">@L["OrderSummary.Total"]</dt>
+            <dd class="os-kv__val">@Formatting.Currency(Subtotal - Discount + ShippingCost)</dd>
+        </div>
+    </dl>
 
-        <MudDivider />
-
-        <MudStack Row="true" Justify="Justify.SpaceBetween">
-            <MudText Typo="Typo.h6" Style="font-weight:700;">@L["OrderSummary.Total"]</MudText>
-            <MudText Typo="Typo.h6" Style="font-weight:700;color:var(--os-primary-text);">
-                @Formatting.Currency(Subtotal - Discount + ShippingCost)
-            </MudText>
-        </MudStack>
-
-        @Actions
-    </MudStack>
-</MudPaper>
+    @if (Actions is not null)
+    {
+        <div class="os-summary__actions">@Actions</div>
+    }
+</aside>
 
 @code {
-    [Parameter] public string Title { get; set; } = "Zusammenfassung";
+    [Parameter] public string? Title { get; set; }
     [Parameter] public decimal Subtotal { get; set; }
     [Parameter] public decimal Discount { get; set; }
     [Parameter] public decimal ShippingCost { get; set; }
     [Parameter] public string? DiscountLabel { get; set; }
     [Parameter] public bool ShowLineItems { get; set; }
     [Parameter] public IReadOnlyList<CartItemDto> Items { get; set; } = [];
+
+    /// <summary>Offset below the fixed header while sticky.</summary>
     [Parameter] public string StickyTop { get; set; } = "24px";
+
     [Parameter] public RenderFragment? CouponSlot { get; set; }
     [Parameter] public RenderFragment? Actions { get; set; }
 }

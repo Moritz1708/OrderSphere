@@ -1,0 +1,61 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* The one confirmation dialog. Every destructive action (cancel order, reject
+   review, deactivate coupon, delete address/product/category) goes through
+   ShowAsync below instead of firing on a single click. *@
+<MudDialog>
+    <TitleContent>@Title</TitleContent>
+    <DialogContent>
+        <p class="os-confirm__message">@Message</p>
+    </DialogContent>
+    <DialogActions>
+        <OsButton Variant="OsButton.ButtonVariant.Ghost" OnClick="Cancel">
+            @(CancelText ?? L["Common.Cancel"])
+        </OsButton>
+        <OsButton Variant="@(Danger ? OsButton.ButtonVariant.Danger : OsButton.ButtonVariant.Primary)"
+                  OnClick="Confirm">
+            @(ConfirmText ?? L["Common.Confirm"])
+        </OsButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public string? ConfirmText { get; set; }
+    [Parameter] public string? CancelText { get; set; }
+
+    /// <summary>Renders the confirm button in the danger variant.</summary>
+    [Parameter] public bool Danger { get; set; }
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    /// <summary>Shows the dialog and resolves to true only when the user confirmed.</summary>
+    public static async Task<bool> ShowAsync(
+        IDialogService dialogs,
+        string title,
+        string message,
+        string? confirmText = null,
+        bool danger = false,
+        string? cancelText = null)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Title, title },
+            { x => x.Message, message },
+            { x => x.ConfirmText, confirmText },
+            { x => x.CancelText, cancelText },
+            { x => x.Danger, danger },
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = await dialogs.ShowAsync<ConfirmDialog>(string.Empty, parameters, options);
+        var result = await dialog.Result;
+
+        return result is { Canceled: false };
+    }
+}

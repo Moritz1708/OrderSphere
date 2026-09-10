@@ -154,7 +154,7 @@
         {
             var stats = await AdminOrdering.GetStatsAsync();
             _stats = stats.Value;
-            if (!stats.IsSuccess) Snackbar.Add(stats.Error!.Message, Severity.Error);
+            if (!stats.IsSuccess) Snackbar.ShowApiError(stats.Error);
 
             var products = await AdminCatalog.GetProductsAsync();
             if (products.IsSuccess)
@@ -166,12 +166,12 @@
             }
             else
             {
-                Snackbar.Add(products.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(products.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Common.LoadError", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Common.LoadError", ex.Message]);
         }
         finally
         {

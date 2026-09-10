@@ -137,12 +137,12 @@
             }
             else
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Common.LoadError", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Common.LoadError", ex.Message]);
         }
         finally
         {

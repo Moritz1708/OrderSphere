@@ -1,93 +1,65 @@
 @page "/account/orders"
 @attribute [Authorize]
 @inject IOrderingClient Ordering
-@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Orders.PageTitle"]</PageTitle>
 
-<PageHero Title="@L["Account.MyOrders"]"
-          Subtitle="@L["Orders.HeroSubtitle"]" />
+<OsPageHeader Title="@L["Account.MyOrders"]" Subtitle="@L["Orders.HeroSubtitle"]" Narrow="true" />
 
-<section class="page-section" style="padding:48px 0 var(--os-section-py-md);">
-    <MudContainer MaxWidth="MaxWidth.Medium">
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Narrow">
+    @if (_loading)
+    {
+        <OsListSkeleton Rows="3" />
+    }
+    else if (_orders.Count == 0)
+    {
+        <OsEmptyState Icon="@Icons.Material.Outlined.ShoppingBag"
+                      Title="@L["Orders.EmptyHeading"]"
+                      Body="@L["Orders.EmptyBody"]"
+                      ActionText="@L["Orders.Discover"]"
+                      ActionHref="/shop"
+                      ActionIcon="@Icons.Material.Outlined.Storefront" />
+    }
+    else
+    {
+        <div class="pg-orders__list">
+            @foreach (var order in _orders)
+            {
+                <OsCard @key="order.Id" Href="@($"/account/orders/{order.Id}")" Padding="OsCard.CardPadding.Lg" Class="pg-order-card">
+                    <div class="pg-order-card__head">
+                        <div class="pg-order-card__id">
+                            <OsEyebrow Text="@L["Orders.OrderNumber"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                            <span class="pg-order-card__number os-mono">#@order.Id.ToString("N")[..8].ToUpperInvariant()</span>
+                            <span class="os-row__meta os-mono">@Formatting.DateTime(order.CreatedAt.ToLocalTime())</span>
+                        </div>
+                        <OsStatusChip Tone="StatusPresentation.OrderTone(order.Status)"
+                                      Text="@L[StatusPresentation.OrderLabelKey(order.Status)]"
+                                      Dot="true" />
+                    </div>
 
-        @if (_loading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Class="py-12">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-                <MudText Typo="Typo.body2" Class="text-muted mt-4">
-                    @L["Orders.Loading"]
-                </MudText>
-            </MudStack>
-        }
-        else if (_orders.Count == 0)
-        {
-            <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <EmptyStateCard Icon="@Icons.Material.Outlined.ShoppingBag" IconSize="80px"
-                                Title="@L["Orders.EmptyHeading"]" Body="@L["Orders.EmptyBody"]"
-                                ActionText="@L["Orders.Discover"]" ActionHref="/shop"
-                                ActionStartIcon="@Icons.Material.Outlined.Storefront" />
-            </MudPaper>
-        }
-        else
-        {
-            <MudStack Spacing="4">
-                @foreach (var order in _orders)
-                {
-                    <MudPaper Elevation="0" Class="surface-card surface-card-row-hover pa-6"
-                              @onclick="@(() => Navigation.NavigateTo($"/account/orders/{order.Id}"))">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start"
-                                  Wrap="Wrap.Wrap" Class="mb-4">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.caption" Class="text-muted">@L["Orders.OrderNumber"]</MudText>
-                                <MudText Typo="Typo.subtitle1" Class="text-monospace" Style="font-weight:600;">
-                                    #@order.Id.ToString("N")[..8].ToUpperInvariant()
-                                </MudText>
-                                <MudText Typo="Typo.caption" Class="text-muted">
-                                    @Formatting.DateTime(order.CreatedAt.ToLocalTime())
-                                </MudText>
-                            </MudStack>
-                            <MudChip T="string"
-                                     Color="@GetStatusColor(order.Status)"
-                                     Variant="Variant.Filled" Size="Size.Medium"
-                                     Style="border-radius:100px;font-weight:600;">
-                                @GetStatusLabel(order.Status)
-                            </MudChip>
-                        </MudStack>
+                    <div class="os-rows pg-order-card__lines">
+                        @foreach (var line in order.Items)
+                        {
+                            <div class="os-row">
+                                <span class="os-row__main"><span class="os-num">@line.Quantity ×</span> @line.ProductName</span>
+                                <OsPrice Value="line.Price * line.Quantity" Size="OsPrice.PriceSize.Sm" Muted="true" />
+                            </div>
+                        }
+                    </div>
 
-                        <MudDivider Class="mb-4" />
-
-                        <MudStack Spacing="2" Class="mb-4">
-                            @foreach (var line in order.Items)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                    <MudText Typo="Typo.body2">@line.Quantity × @line.ProductName</MudText>
-                                    <MudText Typo="Typo.body2" Class="text-muted">
-                                        @Formatting.Currency(line.Price * line.Quantity)
-                                    </MudText>
-                                </MudStack>
-                            }
-                        </MudStack>
-
-                        <MudDivider Class="mb-4" />
-
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.body2" Class="text-muted">
-                                @order.ShippingAddress.FirstName @order.ShippingAddress.LastName,
-                                @order.ShippingAddress.City
-                            </MudText>
-                            <MudText Typo="Typo.h6" Style="font-weight:700;">
-                                @Formatting.Currency(order.Total)
-                            </MudText>
-                        </MudStack>
-                    </MudPaper>
-                }
-            </MudStack>
-        }
-    </MudContainer>
-</section>
+                    <div class="pg-order-card__foot">
+                        <span class="os-row__meta">
+                            @order.ShippingAddress.FirstName @order.ShippingAddress.LastName, @order.ShippingAddress.City
+                        </span>
+                        <OsPrice Value="order.Total" Size="OsPrice.PriceSize.Lg" />
+                    </div>
+                </OsCard>
+            }
+        </div>
+    }
+</OsSection>
 
 @code {
     private List<OrderDto> _orders = [];
@@ -99,33 +71,13 @@
         {
             var result = await Ordering.GetOrdersByCustomerAsync();
             if (result.IsSuccess)
-                _orders = [..result.Value!.OrderByDescending(o => o.CreatedAt)];
+                _orders = [.. result.Value!.OrderByDescending(o => o.CreatedAt)];
             else
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
         }
         finally
         {
             _loading = false;
         }
     }
-
-    private static Color GetStatusColor(string status) => status switch
-    {
-        "Pending"    => Color.Warning,
-        "Processing" => Color.Info,
-        "Shipped"    => Color.Primary,
-        "Delivered"  => Color.Success,
-        "Cancelled"  => Color.Error,
-        _            => Color.Default,
-    };
-
-    private string GetStatusLabel(string status) => status switch
-    {
-        "Pending"    => L["OrderStatus.Pending"],
-        "Processing" => L["OrderStatus.Processing"],
-        "Shipped"    => L["OrderStatus.Shipped"],
-        "Delivered"  => L["OrderStatus.Delivered"],
-        "Cancelled"  => L["OrderStatus.Cancelled"],
-        _            => status,
-    };
 }

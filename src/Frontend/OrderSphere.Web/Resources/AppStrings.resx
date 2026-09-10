@@ -1396,4 +1396,67 @@
   <data name="Footer.Cookies" xml:space="preserve">
     <value>Cookies</value>
   </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>Pflichtfeld</value>
+  </data>
+  <data name="Validation.Email" xml:space="preserve">
+    <value>Bitte eine gültige E-Mail-Adresse eingeben.</value>
+  </data>
+  <data name="Validation.PostalCode" xml:space="preserve">
+    <value>Ungültige Postleitzahl für das gewählte Land.</value>
+  </data>
+  <data name="Quantity.DecreaseAria" xml:space="preserve">
+    <value>Menge verringern</value>
+  </data>
+  <data name="Quantity.IncreaseAria" xml:space="preserve">
+    <value>Menge erhöhen</value>
+  </data>
+  <data name="Quantity.GroupAria" xml:space="preserve">
+    <value>Menge für {0}</value>
+  </data>
+  <data name="Address.Label" xml:space="preserve">
+    <value>Bezeichnung (z. B. Zuhause)</value>
+  </data>
+  <data name="Address.Country.DE" xml:space="preserve">
+    <value>Deutschland</value>
+  </data>
+  <data name="Address.Country.AT" xml:space="preserve">
+    <value>Österreich</value>
+  </data>
+  <data name="Address.Country.CH" xml:space="preserve">
+    <value>Schweiz</value>
+  </data>
+  <data name="Common.Loading" xml:space="preserve">
+    <value>Wird geladen …</value>
+  </data>
+  <data name="Common.Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+  <data name="Nav.BreadcrumbsAria" xml:space="preserve">
+    <value>Sie befinden sich hier</value>
+  </data>
+  <data name="OrderSummary.Title" xml:space="preserve">
+    <value>Zusammenfassung</value>
+  </data>
+  <data name="Price.OriginalAria" xml:space="preserve">
+    <value>Vorher {0}</value>
+  </data>
+  <data name="Cart.ViewCart" xml:space="preserve">
+    <value>Warenkorb ansehen</value>
+  </data>
+  <data name="Profile.DeleteAddressTitle" xml:space="preserve">
+    <value>Adresse löschen?</value>
+  </data>
+  <data name="Profile.DeleteAddressMessage" xml:space="preserve">
+    <value>„{0}“ wird dauerhaft entfernt.</value>
+  </data>
+  <data name="Error.BoundaryTitle" xml:space="preserve">
+    <value>Etwas ist schiefgelaufen</value>
+  </data>
+  <data name="Error.BoundaryBody" xml:space="preserve">
+    <value>Diese Ansicht konnte nicht geladen werden. Bitte versuche es erneut.</value>
+  </data>
+  <data name="ProductDetails.Sku" xml:space="preserve">
+    <value>Artikelnummer</value>
+  </data>
 </root>

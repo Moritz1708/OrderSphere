@@ -1,190 +1,144 @@
-@page "/shop/{category}/{slug}"
+@page "/shop/{Category}/{Slug}"
+@page "/p/{Slug}"
 @attribute [Authorize]
 @inject ICatalogClient Catalog
 @inject IOrderingClient Ordering
 @inject CartState CartState
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@(_product?.Name ?? L["ProductDetails.PageFallback"]) – OrderSphere</PageTitle>
 
 @if (_loading)
 {
-    <div style="display:flex;justify-content:center;align-items:center;min-height:60vh;">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-    </div>
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsDetailSkeleton />
+    </OsSection>
 }
 else if (_product is null)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:var(--os-section-py-md) 0;">
-        <MudText Typo="Typo.h5">@L["ProductDetails.NotFound"]</MudText>
-        <MudButton Href="/shop" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-4">
-            @L["ProductDetails.BackToShop"]
-        </MudButton>
-    </MudContainer>
+    <OsSection Width="OsSection.SectionWidth.Narrow">
+        <OsEmptyState Icon="@Icons.Material.Outlined.SearchOff"
+                      Title="@L["ProductDetails.NotFound"]"
+                      ActionText="@L["ProductDetails.BackToShop"]"
+                      ActionHref="/shop" />
+    </OsSection>
 }
 else
 {
-    <section style="padding:64px 0 var(--os-section-py-md);">
-        <MudContainer MaxWidth="MaxWidth.Large">
-            <MudGrid Spacing="6">
-                <!-- Image -->
-                <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0"
-                              Style="border-radius:20px;overflow:hidden;background:var(--mud-palette-background-grey);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;">
-                        @if (!string.IsNullOrWhiteSpace(_product.ImageUrl))
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsBreadcrumbs Items="Crumbs" Class="mb-6" />
+
+        <div class="pg-pdp">
+            <div class="pg-pdp__media">
+                <OsProductImage Product="_product" Ratio="4/5" Eager="true" />
+            </div>
+
+            <div class="pg-pdp__buy">
+                <OsEyebrow Text="@_product.CategoryName" />
+                <OsDisplay As="h1" Size="OsDisplay.DisplaySize.D2" Class="mt-2">@_product.Name</OsDisplay>
+
+                @if (_product.ReviewCount > 0)
+                {
+                    <StarRating Value="_product.AverageRating" Count="_product.ReviewCount" />
+                }
+
+                <OsPrice Value="_product.Price" Size="OsPrice.PriceSize.Display" Class="mt-3" />
+
+                <OsStatusChip Tone="StatusPresentation.StockTone(_product.Stock)"
+                              Text="@L[StatusPresentation.StockLabelKey(_product.Stock), _product.Stock]"
+                              Dot="true" />
+
+                <p class="pg-pdp__desc">@_product.Description</p>
+
+                <div class="pg-pdp__cta">
+                    <OsQuantityStepper @bind-Value="_quantity"
+                                       Min="1"
+                                       Max="@Math.Max(1, _product.Stock)"
+                                       Disabled="@(_product.Stock == 0)"
+                                       Label="@_product.Name" />
+                    <OsButton Size="OsButton.ButtonSize.Lg"
+                              Loading="_adding"
+                              Disabled="@(_product.Stock == 0)"
+                              StartIcon="@Icons.Material.Outlined.AddShoppingCart"
+                              OnClick="AddToCartAsync">
+                        @L["Common.AddToCart"]
+                    </OsButton>
+                </div>
+
+                <dl class="os-kv pg-pdp__meta">
+                    <div class="os-kv__row">
+                        <dt class="os-kv__key">@L["ProductDetails.Sku"]</dt>
+                        <dd class="os-kv__val">@_product.SKU</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </OsSection>
+
+    <OsSection Tone="OsSection.SectionTone.Sunk">
+        <div class="pg-pdp__reviews">
+            <div class="pg-pdp__review-form">
+                <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Reviews.WriteTitle"]</OsDisplay>
+                <p class="os-muted">@L["Reviews.WriteHint"]</p>
+
+                <div class="pg-pdp__rating">
+                    <span class="os-eyebrow os-eyebrow--muted os-eyebrow--no-rule">@L["Reviews.RatingLabel"]</span>
+                    <MudRating @bind-SelectedValue="_newRating" MaxValue="5" />
+                </div>
+                <MudTextField @bind-Value="_newTitle" Label="@L["Reviews.TitleLabel"]"
+                              Variant="Variant.Outlined" ShrinkLabel="true" MaxLength="150" Immediate="true" />
+                <MudTextField @bind-Value="_newBody" Label="@L["Reviews.BodyLabel"]"
+                              Variant="Variant.Outlined" ShrinkLabel="true" Lines="4" MaxLength="2000" Immediate="true" />
+                <OsButton Loading="_submitting"
+                          Disabled="@(_newRating == 0 || string.IsNullOrWhiteSpace(_newTitle) || string.IsNullOrWhiteSpace(_newBody))"
+                          OnClick="SubmitReviewAsync">
+                    @L["Reviews.Submit"]
+                </OsButton>
+            </div>
+
+            <div class="pg-pdp__review-list">
+                <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">
+                    @L["Reviews.ListTitle"] <span class="os-num os-muted">(@_reviews.Count)</span>
+                </OsDisplay>
+
+                @if (_reviewsError is not null)
+                {
+                    <OsErrorState Message="@_reviewsError" OnRetry="LoadReviewsAsync" />
+                }
+                else if (_reviews.Count == 0)
+                {
+                    <OsEmptyState Icon="@Icons.Material.Outlined.RateReview" Title="@L["Reviews.Empty"]" Compact="true" />
+                }
+                else
+                {
+                    <div class="os-rows">
+                        @foreach (var review in _reviews)
                         {
-                            <img src="@_product.ImageUrl" alt="@_product.Name"
-                                 style="max-height:100%;max-width:100%;object-fit:contain;" />
-                        }
-                        else
-                        {
-                            <MudIcon Icon="@Icons.Material.Outlined.Inventory2"
-                                     Style="font-size:120px;color:var(--mud-palette-divider);" />
-                        }
-                    </MudPaper>
-                </MudItem>
-
-                <!-- Details -->
-                <MudItem xs="12" md="6">
-                    <MudStack Spacing="4">
-                        <div>
-                            <span class="os-eyebrow">@_product.CategoryName</span>
-                            <MudText Typo="Typo.h3" Style="margin-top:8px;font-weight:700;">@_product.Name</MudText>
-                            @if (_product.ReviewCount > 0)
-                            {
-                                <div style="margin-top:8px;">
-                                    <StarRating Value="_product.AverageRating" Count="_product.ReviewCount" />
-                                </div>
-                            }
-                            <span class="os-mono" style="font-size:1.75rem;font-weight:700;display:block;margin-top:16px;">
-                                @Formatting.Currency(_product.Price)
-                            </span>
-                        </div>
-
-                        <MudText Typo="Typo.body1" Class="text-muted" Style="line-height:1.7;">
-                            @_product.Description
-                        </MudText>
-
-                        @if (_product.Stock > 0)
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Success">
-                                ✓ @L["Stock.InStockCount", _product.Stock]
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Error">✕ @L["Common.SoldOut"]</MudText>
-                        }
-
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                            <MudNumericField T="int" @bind-Value="_quantity"
-                                             Min="1" Max="@_product.Stock"
-                                             Label="@L["Common.Quantity"]" Variant="Variant.Outlined"
-                                             Style="max-width:120px;" />
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Size="Size.Large"
-                                       Class="btn-pill"
-                                       Disabled="@(_product.Stock == 0 || _adding)"
-                                       OnClick="AddToCartAsync">
-                                @if (_adding)
-                                {
-                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                }
-                                @L["Common.AddToCart"]
-                            </MudButton>
-                        </MudStack>
-
-                        <MudDivider />
-
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.caption" Class="text-muted">SKU: @_product.SKU</MudText>
-                        </MudStack>
-                    </MudStack>
-                </MudItem>
-            </MudGrid>
-        </MudContainer>
-    </section>
-
-    <section style="padding:0 0 var(--os-section-py-md);">
-        <MudContainer MaxWidth="MaxWidth.Large">
-            <MudDivider Class="mb-8" />
-            <MudGrid Spacing="6">
-                <!-- Write a review -->
-                <MudItem xs="12" md="5">
-                    <MudText Typo="Typo.h5" Style="font-weight:700;" Class="mb-2">@L["Reviews.WriteTitle"]</MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mb-4">@L["Reviews.WriteHint"]</MudText>
-
-                    <MudStack Spacing="3">
-                        <div>
-                            <MudText Typo="Typo.caption" Class="text-muted">@L["Reviews.RatingLabel"]</MudText>
-                            <MudRating @bind-SelectedValue="_newRating" MaxValue="5" />
-                        </div>
-                        <MudTextField @bind-Value="_newTitle" Label="@L["Reviews.TitleLabel"]"
-                                      Variant="Variant.Outlined" MaxLength="150" Immediate="true" />
-                        <MudTextField @bind-Value="_newBody" Label="@L["Reviews.BodyLabel"]"
-                                      Variant="Variant.Outlined" Lines="4" MaxLength="2000" Immediate="true" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill"
-                                   Disabled="@(_submitting || _newRating == 0 || string.IsNullOrWhiteSpace(_newTitle) || string.IsNullOrWhiteSpace(_newBody))"
-                                   OnClick="SubmitReviewAsync">
-                            @if (_submitting)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            }
-                            @L["Reviews.Submit"]
-                        </MudButton>
-                    </MudStack>
-                </MudItem>
-
-                <!-- Existing reviews -->
-                <MudItem xs="12" md="7">
-                    <MudText Typo="Typo.h5" Style="font-weight:700;" Class="mb-4">
-                        @L["Reviews.ListTitle"] (@_reviews.Count)
-                    </MudText>
-
-                    @if (_reviewsError is not null)
-                    {
-                        <ErrorStateWithRetry Message="@_reviewsError" OnRetry="LoadReviewsAsync" />
-                    }
-                    else if (_reviews.Count == 0)
-                    {
-                        <MudText Typo="Typo.body2" Class="text-muted">@L["Reviews.Empty"]</MudText>
-                    }
-                    else
-                    {
-                        <MudStack Spacing="4">
-                            @foreach (var review in _reviews)
-                            {
-                                <MudPaper Elevation="0" Style="padding:16px;border:1px solid var(--mud-palette-divider);border-radius:12px;">
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            <article class="os-row pg-review" @key="review.Id">
+                                <div class="os-row__main">
+                                    <div class="pg-review__head">
                                         <StarRating Value="review.Rating" ShowCount="false" />
                                         @if (review.IsVerifiedPurchase)
                                         {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text"
-                                                     Icon="@Icons.Material.Filled.Verified">
-                                                @L["Reviews.VerifiedPurchase"]
-                                            </MudChip>
+                                            <OsStatusChip Tone="StatusTone.Success" Text="@L["Reviews.VerifiedPurchase"]" Size="OsStatusChip.ChipSize.Sm" />
                                         }
-                                    </MudStack>
-                                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;margin-top:8px;">@review.Title</MudText>
-                                    <MudText Typo="Typo.body2" Class="text-muted" Style="line-height:1.6;">@review.Body</MudText>
-                                    <MudText Typo="Typo.caption" Class="text-muted" Style="display:block;margin-top:8px;">
-                                        @review.CreatedAt.ToLocalTime().ToString("d")
-                                    </MudText>
-                                </MudPaper>
-                            }
-                        </MudStack>
-                    }
-                </MudItem>
-            </MudGrid>
-        </MudContainer>
-    </section>
+                                    </div>
+                                    <strong class="pg-review__title">@review.Title</strong>
+                                    <p class="pg-review__body">@review.Body</p>
+                                    <span class="os-row__meta os-mono">@Formatting.Date(review.CreatedAt.ToLocalTime())</span>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </OsSection>
 }
 
 @code {
-    [Parameter] public string Category { get; set; } = string.Empty;
+    [Parameter] public string? Category { get; set; }
     [Parameter] public string Slug { get; set; } = string.Empty;
 
     private ProductDto? _product;
@@ -199,21 +153,30 @@ else
     private string _newBody = string.Empty;
     private bool _submitting;
 
+    private IReadOnlyList<OsCrumb> Crumbs => _product is null
+        ? []
+        :
+        [
+            new(L["Nav.Shop"], "/shop"),
+            new(_product.CategoryName, $"/shop/category/{Uri.EscapeDataString(_product.CategoryName)}"),
+            new(_product.Name),
+        ];
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var res = await Catalog.GetProductBySlugAsync(Slug);
             _product = res.Value;
-            if (!res.IsSuccess && res.Error!.Kind != ApiErrorKind.NotFound)
-                Snackbar.Add(res.Error!.Message, Severity.Error);
+            if (!res.IsSuccess && res.Error?.Kind != ApiErrorKind.NotFound)
+                Snackbar.ShowApiError(res.Error);
 
             if (_product is not null)
                 await LoadReviewsAsync();
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["ProductDetails.Error", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["ProductDetails.Error", ex.Message]);
         }
         finally
         {
@@ -231,7 +194,7 @@ else
             if (res.IsSuccess)
                 _reviews = res.Value ?? [];
             else
-                _reviewsError = res.Error!.Message;
+                _reviewsError = res.Error?.Message ?? L["Common.LoadError"];
         }
         catch (Exception ex)
         {
@@ -248,23 +211,22 @@ else
             var result = await Catalog.CreateReviewAsync(
                 _product.Id, new CreateReviewRequest(_newRating, _newTitle.Trim(), _newBody.Trim()));
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                Snackbar.Add(L["Reviews.SubmitSuccess"], Severity.Success);
-                _newRating = 0;
-                _newTitle = string.Empty;
-                _newBody = string.Empty;
+                Snackbar.ShowApiError(result.Error);
+                return;
+            }
 
-                // Refresh reviews and the product so the average rating updates.
-                await LoadReviewsAsync();
-                var refreshed = await Catalog.GetProductBySlugAsync(Slug);
-                if (refreshed.IsSuccess)
-                    _product = refreshed.Value;
-            }
-            else
-            {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
-            }
+            Snackbar.ShowSuccess(L["Reviews.SubmitSuccess"]);
+            _newRating = 0;
+            _newTitle = string.Empty;
+            _newBody = string.Empty;
+
+            // Refresh reviews and the product so the average rating updates.
+            await LoadReviewsAsync();
+            var refreshed = await Catalog.GetProductBySlugAsync(Slug);
+            if (refreshed.IsSuccess)
+                _product = refreshed.Value;
         }
         finally
         {
@@ -279,15 +241,14 @@ else
         try
         {
             var result = await Ordering.AddToCartAsync(_product.Id, _quantity);
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                Snackbar.Add(L["Common.AddedToCart", _quantity, _product.Name], Severity.Success);
-                await CartState.RefreshAsync();
+                Snackbar.ShowApiError(result.Error);
+                return;
             }
-            else
-            {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
-            }
+
+            Snackbar.ShowSuccess(L["Common.AddedToCart", _quantity, _product.Name]);
+            await CartState.RefreshAsync();
         }
         finally
         {

@@ -1,0 +1,60 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* Minus / value / plus as one labelled group. Native buttons, mono value,
+   localized names — the old stepper hard-coded German aria-labels. *@
+<div class="@CssClass" role="group" aria-label="@(Label is not null ? L["Quantity.GroupAria", Label] : L["Common.Quantity"])" @attributes="AdditionalAttributes">
+    <button type="button"
+            class="os-qty__btn"
+            aria-label="@L["Quantity.DecreaseAria"]"
+            disabled="@(Disabled || Value <= Min)"
+            @onclick="DecreaseAsync">
+        <MudIcon Icon="@Icons.Material.Outlined.Remove" />
+    </button>
+
+    <output class="os-qty__value os-num" aria-live="polite">@Value</output>
+
+    <button type="button"
+            class="os-qty__btn"
+            aria-label="@L["Quantity.IncreaseAria"]"
+            disabled="@(Disabled || Value >= Max)"
+            @onclick="IncreaseAsync">
+        <MudIcon Icon="@Icons.Material.Outlined.Add" />
+    </button>
+</div>
+
+@code {
+    public enum StepperSize { Sm, Md }
+
+    [Parameter] public int Value { get; set; } = 1;
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter] public int Min { get; set; } = 1;
+    [Parameter] public int Max { get; set; } = 99;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public StepperSize Size { get; set; } = StepperSize.Md;
+
+    /// <summary>What is being counted (a product name), for the group's accessible name.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[] { "os-qty", $"os-qty--{Size.ToString().ToLowerInvariant()}", Class }
+            .Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private async Task IncreaseAsync()
+    {
+        if (Value >= Max) return;
+        Value++;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task DecreaseAsync()
+    {
+        if (Value <= Min) return;
+        Value--;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

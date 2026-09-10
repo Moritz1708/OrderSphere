@@ -1,0 +1,53 @@
+@* The surface primitive: hairline border, card radius, flat fill. An anchor when
+   Href is set, a button-like div when OnClick is set, a plain div otherwise. *@
+
+@if (Href is not null)
+{
+    <a href="@Href" class="@CssClass" @attributes="AdditionalAttributes">@ChildContent</a>
+}
+else if (OnClick.HasDelegate)
+{
+    <div class="@CssClass"
+         role="button"
+         tabindex="0"
+         @onclick="OnClick"
+         @onkeydown="OnKeyDown"
+         @attributes="AdditionalAttributes">@ChildContent</div>
+}
+else
+{
+    <div class="@CssClass" @attributes="AdditionalAttributes">@ChildContent</div>
+}
+
+@code {
+    public enum CardSurface { Paper, Canvas, Sunk, Block }
+
+    public enum CardPadding { None, Sm, Md, Lg }
+
+    [Parameter] public CardSurface Surface { get; set; } = CardSurface.Paper;
+    [Parameter] public CardPadding Padding { get; set; } = CardPadding.Md;
+
+    /// <summary>Hover lift and pointer cursor. Implied by <see cref="Href"/> and <see cref="OnClick"/>.</summary>
+    [Parameter] public bool Interactive { get; set; }
+
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-card",
+            $"os-card--{Surface.ToString().ToLowerInvariant()}",
+            $"os-card--pad-{Padding.ToString().ToLowerInvariant()}",
+            (Interactive || Href is not null || OnClick.HasDelegate) ? "os-card--interactive" : null,
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private Task OnKeyDown(KeyboardEventArgs e) =>
+        e.Key is "Enter" or " " ? OnClick.InvokeAsync(new MouseEventArgs()) : Task.CompletedTask;
+}

@@ -83,7 +83,7 @@ public sealed class CartDrawerTests : BunitBase
                 EventCallback.Factory.Create<bool>(this, v => isOpenChangedTo = v));
         });
 
-        cut.Find(".btn-pill").Click();
+        cut.Find(".os-btn--primary").Click();
 
         var nav = Services.GetRequiredService<NavigationManager>();
         nav.Uri.Should().EndWith("/checkout");

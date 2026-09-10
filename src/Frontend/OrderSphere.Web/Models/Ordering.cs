@@ -70,12 +70,6 @@ public sealed record InvoiceDto(
 // Editable form-state for the checkout page (bound across the address/payment sub-forms).
 public sealed class CheckoutFormModel
 {
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Street { get; set; } = string.Empty;
-    public string PostalCode { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string Country { get; set; } = "Deutschland";
-    public string Email { get; set; } = string.Empty;
+    public AddressFormModel Address { get; } = new();
     public int PaymentMethod { get; set; }
 }

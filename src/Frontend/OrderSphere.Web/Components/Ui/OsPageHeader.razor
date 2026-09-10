@@ -1,0 +1,71 @@
+@* The top of every page: breadcrumbs, eyebrow, the page's one <h1>, a subtitle
+   and an actions row, closed by a hairline. Replaces PageHero. *@
+<header class="@CssClass" @attributes="AdditionalAttributes">
+    <div class="@ContainerClass">
+        @if (Breadcrumbs is { Count: > 0 })
+        {
+            <OsBreadcrumbs Items="Breadcrumbs" Class="os-page-header__crumbs" />
+        }
+
+        <div class="os-page-header__row">
+            <div class="os-page-header__main">
+                @if (!string.IsNullOrWhiteSpace(Eyebrow))
+                {
+                    <OsEyebrow Text="@Eyebrow" Tone="@(Tone == HeaderTone.Block ? OsEyebrow.EyebrowTone.OnBlock : OsEyebrow.EyebrowTone.Accent)" />
+                }
+                <OsDisplay As="@TitleAs" Size="Size" Class="os-page-header__title">@Title</OsDisplay>
+                @if (!string.IsNullOrWhiteSpace(Subtitle))
+                {
+                    <p class="os-page-header__subtitle">@Subtitle</p>
+                }
+                @ChildContent
+            </div>
+
+            @if (Actions is not null)
+            {
+                <div class="os-page-header__actions">@Actions</div>
+            }
+        </div>
+    </div>
+</header>
+
+@code {
+    public enum HeaderTone { Canvas, Sunk, Block }
+
+    public enum HeaderPadding { Sm, Md }
+
+    [Parameter] public string? Eyebrow { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Heading element. Every page has exactly one h1, which is this by default.</summary>
+    [Parameter] public string TitleAs { get; set; } = "h1";
+
+    [Parameter] public OsDisplay.DisplaySize Size { get; set; } = OsDisplay.DisplaySize.D2;
+    [Parameter] public IReadOnlyList<OsCrumb>? Breadcrumbs { get; set; }
+    [Parameter] public HeaderTone Tone { get; set; } = HeaderTone.Canvas;
+    [Parameter] public HeaderPadding Padding { get; set; } = HeaderPadding.Md;
+    [Parameter] public bool Narrow { get; set; }
+
+    /// <summary>Buttons or metadata aligned to the end of the title row.</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>Extra content under the subtitle (a search bar, a filter strip).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-page-header",
+            $"os-page-header--{Tone.ToString().ToLowerInvariant()}",
+            $"os-page-header--pad-{Padding.ToString().ToLowerInvariant()}",
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private string ContainerClass => Narrow ? "os-container os-container--narrow" : "os-container";
+}

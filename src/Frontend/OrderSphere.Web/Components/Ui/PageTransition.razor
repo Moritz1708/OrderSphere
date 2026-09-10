@@ -30,7 +30,7 @@
             return;
 
         _path = next;
-        StateHasChanged();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private static string PathOf(string uri) => new Uri(uri).AbsolutePath;

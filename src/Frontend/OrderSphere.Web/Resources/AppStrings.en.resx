@@ -1396,4 +1396,67 @@
   <data name="Footer.Cookies" xml:space="preserve">
     <value>Cookies</value>
   </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="Validation.Email" xml:space="preserve">
+    <value>Please enter a valid email address.</value>
+  </data>
+  <data name="Validation.PostalCode" xml:space="preserve">
+    <value>Invalid postal code for the selected country.</value>
+  </data>
+  <data name="Quantity.DecreaseAria" xml:space="preserve">
+    <value>Decrease quantity</value>
+  </data>
+  <data name="Quantity.IncreaseAria" xml:space="preserve">
+    <value>Increase quantity</value>
+  </data>
+  <data name="Quantity.GroupAria" xml:space="preserve">
+    <value>Quantity for {0}</value>
+  </data>
+  <data name="Address.Label" xml:space="preserve">
+    <value>Label (e.g. Home)</value>
+  </data>
+  <data name="Address.Country.DE" xml:space="preserve">
+    <value>Germany</value>
+  </data>
+  <data name="Address.Country.AT" xml:space="preserve">
+    <value>Austria</value>
+  </data>
+  <data name="Address.Country.CH" xml:space="preserve">
+    <value>Switzerland</value>
+  </data>
+  <data name="Common.Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="Common.Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Nav.BreadcrumbsAria" xml:space="preserve">
+    <value>You are here</value>
+  </data>
+  <data name="OrderSummary.Title" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Price.OriginalAria" xml:space="preserve">
+    <value>Previously {0}</value>
+  </data>
+  <data name="Cart.ViewCart" xml:space="preserve">
+    <value>View cart</value>
+  </data>
+  <data name="Profile.DeleteAddressTitle" xml:space="preserve">
+    <value>Delete address?</value>
+  </data>
+  <data name="Profile.DeleteAddressMessage" xml:space="preserve">
+    <value>“{0}” will be removed permanently.</value>
+  </data>
+  <data name="Error.BoundaryTitle" xml:space="preserve">
+    <value>Something went wrong</value>
+  </data>
+  <data name="Error.BoundaryBody" xml:space="preserve">
+    <value>This view could not be loaded. Please try again.</value>
+  </data>
+  <data name="ProductDetails.Sku" xml:space="preserve">
+    <value>SKU</value>
+  </data>
 </root>

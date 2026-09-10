@@ -92,8 +92,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try { var r = await AdminCatalog.GetCategoriesAsync(); if (r.IsSuccess) _categories = r.Value!; else Snackbar.Add(r.Error!.Message, Severity.Error); }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        try { var r = await AdminCatalog.GetCategoriesAsync(); if (r.IsSuccess) _categories = r.Value!; else Snackbar.ShowApiError(r.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -104,7 +104,7 @@
         if (confirmed != true) return;
 
         var result = await AdminCatalog.DeleteCategoryAsync(id);
-        if (result.IsSuccess) { _categories.RemoveAll(c => c.Id == id); Snackbar.Add(L["Admin.Categories.Deleted"], Severity.Success); }
-        else Snackbar.Add(result.Error!.Message, Severity.Error);
+        if (result.IsSuccess) { _categories.RemoveAll(c => c.Id == id); Snackbar.ShowSuccess(L["Admin.Categories.Deleted"]); }
+        else Snackbar.ShowApiError(result.Error);
     }
 }
