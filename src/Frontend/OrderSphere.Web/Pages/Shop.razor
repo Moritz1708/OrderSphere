@@ -138,7 +138,7 @@
                               OnKeyDown="OnSearchKeyDown" />
             </div>
 
-            <nav class="pg-shop__group" aria-label="@L["Nav.Categories"]">
+            <nav class="pg-shop__group pg-shop__group--cats" aria-label="@L["Nav.Categories"]">
                 <OsEyebrow Text="@L["Nav.Categories"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
                 <div class="pg-shop__cats">
                     <a href="/shop" class="pg-shop__cat @(Category is null ? "is-active" : null)" @onclick="() => _filtersOpen = false">

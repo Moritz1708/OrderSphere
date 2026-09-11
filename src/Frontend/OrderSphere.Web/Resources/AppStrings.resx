@@ -1052,19 +1052,19 @@
     <value>Titel</value>
   </data>
   <data name="Reviews.BodyLabel" xml:space="preserve">
-    <value>Ihre Bewertung</value>
+    <value>Deine Bewertung</value>
   </data>
   <data name="Reviews.Submit" xml:space="preserve">
     <value>Absenden</value>
   </data>
   <data name="Reviews.SubmitSuccess" xml:space="preserve">
-    <value>Vielen Dank für Ihre Bewertung.</value>
+    <value>Danke für deine Bewertung.</value>
   </data>
   <data name="Reviews.ListTitle" xml:space="preserve">
     <value>Bewertungen</value>
   </data>
   <data name="Reviews.Empty" xml:space="preserve">
-    <value>Noch keine Bewertungen. Seien Sie die oder der Erste.</value>
+    <value>Noch keine Bewertungen. Sei die oder der Erste.</value>
   </data>
   <data name="Reviews.VerifiedPurchase" xml:space="preserve">
     <value>Verifizierter Kauf</value>
@@ -1139,7 +1139,7 @@
     <value>Keine Rechnung mit dieser Nummer gefunden</value>
   </data>
   <data name="Admin.Invoices.Prompt" xml:space="preserve">
-    <value>Geben Sie eine Rechnungsnummer ein, um zu suchen.</value>
+    <value>Gib eine Rechnungsnummer ein, um zu suchen.</value>
   </data>
   <data name="Admin.Invoices.ColNumber" xml:space="preserve">
     <value>Rechnungsnummer</value>
@@ -1460,7 +1460,7 @@
     <value>Bestätigen</value>
   </data>
   <data name="Nav.BreadcrumbsAria" xml:space="preserve">
-    <value>Sie befinden sich hier</value>
+    <value>Du bist hier</value>
   </data>
   <data name="OrderSummary.Title" xml:space="preserve">
     <value>Zusammenfassung</value>

@@ -218,7 +218,17 @@
   .pg-shop { display: grid; grid-template-columns: 1fr; gap: var(--os-space-6); align-items: start; }
   @media (min-width: 960px) {
     .pg-shop { grid-template-columns: 260px minmax(0, 1fr); gap: var(--os-space-8); }
-    .pg-shop__rail { position: sticky; top: calc(var(--os-header-h) + var(--os-space-5)); max-height: calc(100vh - var(--os-header-h) - var(--os-space-6)); overflow-y: auto; overscroll-behavior: contain; padding-inline-end: var(--os-space-2); }
+    /* The rail itself must not scroll. Letting both it and the category list
+       overflow put two scrollbars side by side, the outer one travelling the
+       handful of pixels the list was over — so the rail is clipped and the
+       list, the only part that grows, takes whatever height is left. */
+    .pg-shop__rail {
+      position: sticky; top: calc(var(--os-header-h) + var(--os-space-5));
+      max-height: calc(100vh - var(--os-header-h) - var(--os-space-6));
+      display: flex; overflow: hidden; padding-inline-end: var(--os-space-2);
+    }
+    .pg-shop__rail .pg-shop__filters { flex: 1; min-height: 0; }
+    .pg-shop__rail .pg-shop__group--cats { flex: 1 1 auto; min-height: 0; }
     .pg-shop__mobile-toggle { display: none; }
   }
   @media (max-width: 959.98px) { .pg-shop__rail { display: none; } }
@@ -228,7 +238,9 @@
   /* The category list is the only part that grows without bound, so it scrolls on its
      own — price, sorting and the buttons stay visible in the rail. */
   .pg-shop__cats { display: flex; flex-direction: column; }
-  @media (min-width: 960px) { .pg-shop__cats { max-height: 40vh; overflow-y: auto; } }
+  @media (min-width: 960px) {
+    .pg-shop__rail .pg-shop__cats { flex: 1 1 auto; min-height: 8rem; overflow-y: auto; overscroll-behavior: contain; }
+  }
   .pg-shop__cat {
     display: flex; align-items: center; justify-content: space-between; gap: var(--os-space-3);
     padding: var(--os-space-2) 0 var(--os-space-2) var(--os-space-3);
