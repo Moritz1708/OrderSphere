@@ -252,6 +252,40 @@ else
             </table>
         </div>
     </OsSection>
+
+    @* The advisor only renders for signed-in users, so its thread lives here too. *@
+    <OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Narrow">
+        <OsEyebrow Text="13 / Advisor thread" Class="mb-4" />
+        <div class="os-advisor__thread">
+            <div class="os-msg os-advisor__msg is-user">
+                <p class="os-advisor__msg-text">Ich suche ein Notizbuch für unterwegs.</p>
+            </div>
+            <div class="os-msg os-advisor__msg is-assistant">
+                <p class="os-advisor__msg-text">Das Field Notebook ist A5, gepunktet und passt in jede Jackentasche.</p>
+                <div class="os-advisor__cites">
+                    <a class="os-advisor__cite" href="/p/field-notebook">Field Notebook</a>
+                    <a class="os-advisor__cite" href="/p/aurora-desk-lamp">Aurora Desk Lamp</a>
+                </div>
+            </div>
+            <div class="os-advisor__activity os-mono" role="status">
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                <span>Katalog wird durchsucht…</span>
+            </div>
+            <div class="os-msg os-advisor__confirm">
+                <OsEyebrow Text="In den Warenkorb legen?" Rule="false" />
+                <p class="os-advisor__msg-text">Field Notebook, Menge 1 — 14,90 €</p>
+                <div class="os-advisor__confirm-actions">
+                    <OsButton Size="OsButton.ButtonSize.Sm">Bestätigen</OsButton>
+                    <OsButton Size="OsButton.ButtonSize.Sm" Variant="OsButton.ButtonVariant.Ghost">Abbrechen</OsButton>
+                </div>
+            </div>
+        </div>
+
+        <div class="os-advisor__suggestions mt-6">
+            <button type="button" class="os-advisor__suggestion">Was ist neu im Shop?</button>
+            <button type="button" class="os-advisor__suggestion">Wo ist meine letzte Bestellung?</button>
+        </div>
+    </OsSection>
 }
 
 @code {

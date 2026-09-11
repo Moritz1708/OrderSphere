@@ -10,157 +10,186 @@
            Anchor="Anchor.Right"
            Elevation="0"
            Variant="DrawerVariant.Temporary"
-           Width="420px"
+           Width="440px"
            ClipMode="DrawerClipMode.Never"
-           Style="box-shadow:var(--os-shadow-float);">
+           Class="os-advisor">
 
-    <div style="padding:24px;height:100%;display:flex;flex-direction:column;gap:16px;">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h6" Style="font-weight:600;">Berater</MudText>
-            <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center">
-                <MudIconButton Icon="@Icons.Material.Outlined.Add"
-                               OnClick="NewChat" Size="Size.Small" aria-label="@L["Advisor.NewChatAria"]" />
-                <MudIconButton Icon="@(_showHistory ? Icons.Material.Filled.History : Icons.Material.Outlined.History)"
-                               OnClick="ToggleHistoryAsync" Size="Size.Small" aria-label="@L["Advisor.ToggleHistoryAria"]" />
-                <MudIconButton Icon="@Icons.Material.Outlined.Close"
-                               OnClick="Close" Size="Size.Small" aria-label="@L["Advisor.CloseAria"]" />
-            </MudStack>
-        </MudStack>
+    <header class="os-advisor__head">
+        <div class="os-advisor__title">
+            <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Advisor.Title"]</OsDisplay>
+            <span class="os-advisor__id os-mono">
+                @L["Advisor.Conversation"] @_conversationId[..8].ToUpperInvariant()
+            </span>
+        </div>
+        <div class="os-advisor__tools">
+            <OsIconButton Icon="@Icons.Material.Outlined.Add"
+                          Size="OsIconButton.IconButtonSize.Sm"
+                          OnClick="NewChat"
+                          AriaLabel="@L["Advisor.NewChatAria"]" />
+            <OsIconButton Icon="@Icons.Material.Outlined.History"
+                          Size="OsIconButton.IconButtonSize.Sm"
+                          Pressed="_showHistory"
+                          OnClick="ToggleHistoryAsync"
+                          AriaLabel="@L["Advisor.ToggleHistoryAria"]" />
+            <OsIconButton Icon="@Icons.Material.Outlined.Close"
+                          Size="OsIconButton.IconButtonSize.Sm"
+                          OnClick="Close"
+                          AriaLabel="@L["Advisor.CloseAria"]" />
+        </div>
+    </header>
 
-        @if (_showHistory)
-        {
-            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-                @if (_loadingHistory)
-                {
-                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-                }
-                else if (_conversations.Count == 0)
-                {
-                    <MudText Typo="Typo.body2" Align="Align.Center" Class="text-muted mt-4">
-                        Noch keine gespeicherten Unterhaltungen.
-                    </MudText>
-                }
-                else
-                {
+    @if (_showHistory)
+    {
+        <div class="os-advisor__body">
+            <OsEyebrow Text="@L["Advisor.HistoryTitle"]" />
+            @if (_loadingHistory)
+            {
+                <OsListSkeleton Rows="4" />
+            }
+            else if (_conversations.Count == 0)
+            {
+                <OsEmptyState Icon="@Icons.Material.Outlined.Forum"
+                              Title="@L["Advisor.HistoryEmpty"]"
+                              Compact="true" />
+            }
+            else
+            {
+                <div class="os-rows">
                     @foreach (var c in _conversations)
                     {
-                        <MudPaper Elevation="0"
-                                  Class="surface-card pa-3"
-                                  Style="@($"cursor:pointer;{(c.ConversationId == _conversationId ? "border:1px solid var(--mud-palette-primary);" : string.Empty)}")"
-                                  @onclick="@(() => SelectConversationAsync(c.ConversationId))">
-                            <MudText Typo="Typo.body2" Style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                @(string.IsNullOrWhiteSpace(c.LastMessage) ? "(leer)" : c.LastMessage)
-                            </MudText>
-                            <MudText Typo="Typo.caption" Class="text-muted">
-                                @c.UpdatedAt.ToLocalTime().ToString("g") · @c.MessageCount Nachrichten
-                            </MudText>
-                        </MudPaper>
+                        <button type="button"
+                                class="os-row os-advisor__conv @(c.ConversationId == _conversationId ? "is-current" : null)"
+                                @key="c.ConversationId"
+                                @onclick="@(() => SelectConversationAsync(c.ConversationId))">
+                            <span class="os-row__main">
+                                <span class="os-row__title os-truncate">
+                                    @(string.IsNullOrWhiteSpace(c.LastMessage) ? L["Advisor.HistoryUntitled"] : c.LastMessage)
+                                </span>
+                                <span class="os-row__meta os-mono">
+                                    @c.UpdatedAt.ToLocalTime().ToString("g") · @L["Advisor.HistoryMessages", c.MessageCount]
+                                </span>
+                            </span>
+                        </button>
                     }
-                }
-            </div>
-        }
-        else
-        {
-            <div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;">
-                @if (_messages.Count == 0)
-                {
-                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="flex:1;padding:40px 0;">
-                        <MudIcon Icon="@Icons.Material.Outlined.SupportAgent"
-                                 Style="font-size:64px;color:var(--mud-palette-divider);" />
-                        <MudText Typo="Typo.body1" Align="Align.Center" Class="text-muted mt-3">
-                            Frag mich nach Produkten, deinen Bestellungen oder deinem Konto.
-                        </MudText>
-                    </MudStack>
-                }
-                else
-                {
-                    <div style="margin-top:auto;display:flex;flex-direction:column;gap:12px;">
-                        @foreach (var m in _messages)
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="os-advisor__body">
+            @if (_messages.Count == 0)
+            {
+                <div class="os-advisor__empty">
+                    <OsDisplay As="p" Size="OsDisplay.DisplaySize.D3">@L["Advisor.Greeting"]</OsDisplay>
+                    <p class="os-advisor__empty-body">@L["Advisor.EmptyBody"]</p>
+                    <div class="os-advisor__suggestions">
+                        @foreach (var key in Suggestions)
                         {
-                            <MudPaper Elevation="0"
-                                      Class="surface-card pa-3"
-                                      Style="@(m.IsUser ? "align-self:flex-end;max-width:85%;background:var(--mud-palette-primary);color:var(--mud-palette-primary-text);" : "align-self:flex-start;max-width:85%;")">
-                                <MudText Typo="Typo.body2" Style="white-space:pre-wrap;overflow-wrap:anywhere;">@m.Text</MudText>
-                                @if (!m.IsUser && !string.IsNullOrEmpty(m.Text))
-                                {
-                                    <MudIconButton Icon="@Icons.Material.Outlined.VolumeUp"
-                                                   Size="Size.Small"
-                                                   Color="Color.Default"
-                                                   aria-label="@L["Advisor.SpeakAria"]"
-                                                   Style="margin-top:2px;padding:2px;"
-                                                   OnClick="@(() => SpeakAsync(m.Text))" />
-                                }
-                                @if (!m.IsUser && m.Citations is { Count: > 0 })
-                                {
-                                    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
-                                        @foreach (var c in m.Citations)
-                                        {
-                                            <MudChip T="string"
-                                                     Size="Size.Small"
-                                                     Variant="Variant.Outlined"
-                                                     Color="Color.Primary"
-                                                     OnClick="@(() => NavigateToProduct(c.Slug))"
-                                                     Style="cursor:pointer;">
-                                                @c.Name
-                                            </MudChip>
-                                        }
-                                    </div>
-                                }
-                            </MudPaper>
-                        }
-                        @if (_toolActivity is not null)
-                        {
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="align-self:flex-start;">
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
-                                <MudText Typo="Typo.caption" Class="text-muted">@_toolActivity…</MudText>
-                            </MudStack>
-                        }
-                        @if (_pendingConfirm is not null)
-                        {
-                            <MudPaper Elevation="0" Class="surface-card pa-3 mt-1"
-                                      Style="align-self:flex-start;max-width:100%;border-left:3px solid var(--mud-palette-primary);">
-                                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">In den Warenkorb legen?</MudText>
-                                <MudText Typo="Typo.body2" Class="mt-1">@_pendingConfirm.Summary</MudText>
-                                <MudStack Row="true" Spacing="2" Class="mt-3">
-                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
-                                               Disabled="_busy" OnClick="ConfirmAddToCartAsync">Bestätigen</MudButton>
-                                    <MudButton Variant="Variant.Outlined" Size="Size.Small"
-                                               Disabled="_busy" OnClick="CancelAddToCartAsync">Abbrechen</MudButton>
-                                </MudStack>
-                            </MudPaper>
+                            <button type="button" class="os-advisor__suggestion" @key="key"
+                                    @onclick="@(() => SendSuggestionAsync(L[key]))">
+                                @L[key]
+                            </button>
                         }
                     </div>
-                }
-            </div>
+                </div>
+            }
+            else
+            {
+                @* Pushed to the bottom so a short conversation sits above the composer
+                   rather than floating in the middle of the drawer. *@
+                <div class="os-advisor__thread">
+                    @foreach (var m in _messages)
+                    {
+                        <div class="os-msg os-advisor__msg @(m.IsUser ? "is-user" : "is-assistant")" @key="m">
+                            <p class="os-advisor__msg-text">@m.Text</p>
 
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                <MudTextField @bind-Value="_input"
-                              Placeholder="Nachricht…"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
-                              Immediate="true"
-                              OnKeyDown="OnKeyDown"
-                              Disabled="_busy"
-                              Style="flex:1;" />
-                <MudIconButton Icon="@(_recording ? Icons.Material.Filled.MicOff : Icons.Material.Filled.Mic)"
-                               Color="@(_recording ? Color.Error : Color.Default)"
-                               OnClick="ToggleRecordingAsync"
-                               Disabled="_busy && !_recording"
-                               aria-label="@(_recording ? L["Advisor.StopRecordingAria"] : L["Advisor.StartRecordingAria"])"
-                               Style="@(_recording ? "animation:pulse 1s ease-in-out infinite;" : string.Empty)" />
-                <MudIconButton Icon="@Icons.Material.Filled.Send"
-                               Color="Color.Primary"
-                               OnClick="SendAsync"
-                               aria-label="@L["Advisor.SendAria"]"
-                               Disabled="@(_busy || string.IsNullOrWhiteSpace(_input))" />
-            </MudStack>
-        }
-    </div>
+                            @if (!m.IsUser && !string.IsNullOrEmpty(m.Text))
+                            {
+                                <div class="os-advisor__msg-foot">
+                                    <OsIconButton Icon="@Icons.Material.Outlined.VolumeUp"
+                                                  Size="OsIconButton.IconButtonSize.Sm"
+                                                  OnClick="@(() => SpeakAsync(m.Text))"
+                                                  AriaLabel="@L["Advisor.SpeakAria"]" />
+                                </div>
+                            }
+
+                            @if (!m.IsUser && m.Citations is { Count: > 0 })
+                            {
+                                <div class="os-advisor__cites">
+                                    @foreach (var c in m.Citations)
+                                    {
+                                        @* /p/{slug} is the product alias route; /products/{slug}
+                                           was a 404 for every citation the advisor produced. *@
+                                        <a class="os-advisor__cite" href="@($"/p/{c.Slug}")"
+                                           @key="c.Slug" @onclick="CloseOnNavigate" @onclick:preventDefault="false">
+                                            @c.Name
+                                        </a>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (_toolActivity is not null)
+                    {
+                        <div class="os-advisor__activity os-mono" role="status">
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                            <span>@_toolActivity…</span>
+                        </div>
+                    }
+
+                    @if (_pendingConfirm is not null)
+                    {
+                        <div class="os-msg os-advisor__confirm">
+                            <OsEyebrow Text="@L["Advisor.ConfirmTitle"]" Rule="false" />
+                            <p class="os-advisor__msg-text">@_pendingConfirm.Summary</p>
+                            <div class="os-advisor__confirm-actions">
+                                <OsButton Size="OsButton.ButtonSize.Sm" Disabled="_busy" OnClick="ConfirmAddToCartAsync">
+                                    @L["Advisor.ConfirmYes"]
+                                </OsButton>
+                                <OsButton Size="OsButton.ButtonSize.Sm" Variant="OsButton.ButtonVariant.Ghost"
+                                          Disabled="_busy" OnClick="CancelAddToCartAsync">
+                                    @L["Advisor.ConfirmNo"]
+                                </OsButton>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="os-advisor__composer">
+            <MudTextField @bind-Value="_input"
+                          Placeholder="@L["Advisor.InputPlaceholder"]"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          OnKeyDown="OnKeyDown"
+                          Disabled="_busy"
+                          Class="os-advisor__input" />
+            <OsIconButton Icon="@(_recording ? Icons.Material.Filled.MicOff : Icons.Material.Filled.Mic)"
+                          Size="OsIconButton.IconButtonSize.Md"
+                          Pressed="_recording"
+                          OnClick="ToggleRecordingAsync"
+                          Disabled="@(_busy && !_recording)"
+                          AriaLabel="@(_recording ? L["Advisor.StopRecordingAria"] : L["Advisor.StartRecordingAria"])" />
+            <OsIconButton Icon="@Icons.Material.Filled.Send"
+                          Size="OsIconButton.IconButtonSize.Md"
+                          Variant="OsIconButton.IconButtonVariant.Secondary"
+                          OnClick="SendAsync"
+                          Disabled="@(_busy || string.IsNullOrWhiteSpace(_input))"
+                          AriaLabel="@L["Advisor.SendAria"]" />
+        </div>
+    }
 </MudDrawer>
 
 @code {
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    private static readonly string[] Suggestions =
+        ["Advisor.Suggest1", "Advisor.Suggest2", "Advisor.Suggest3"];
 
     private sealed class ChatMessage
     {
@@ -189,6 +218,12 @@
         {
             await SendAsync();
         }
+    }
+
+    private async Task SendSuggestionAsync(string text)
+    {
+        _input = text;
+        await SendAsync();
     }
 
     private async Task SendAsync()
@@ -254,7 +289,7 @@
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Advisor chat request failed; showing the fallback reply.");
-            reply.Text = "Entschuldigung, der Berater ist gerade nicht erreichbar.";
+            reply.Text = L["Advisor.Unavailable"];
         }
         finally
         {
@@ -324,22 +359,20 @@
         if (_pendingConfirm is null) return;
         var confirm = _pendingConfirm;
         _pendingConfirm = null;
-        _input = $"Bestätigt: {confirm.ProductName} (Menge: {confirm.Quantity}, slug={confirm.Slug})";
+        // Sent in the user's language: the model reads both, and everything else
+        // the user types is in their language anyway.
+        _input = L["Advisor.ConfirmedMessage", confirm.ProductName, confirm.Quantity, confirm.Slug];
         await SendAsync();
     }
 
     private async Task CancelAddToCartAsync()
     {
         _pendingConfirm = null;
-        _input = "Abbrechen, bitte nicht in den Warenkorb legen.";
+        _input = L["Advisor.CancelledMessage"];
         await SendAsync();
     }
 
-    private void NavigateToProduct(string slug)
-    {
-        IsOpenChanged.InvokeAsync(false);
-        Nav.NavigateTo($"/products/{slug}");
-    }
+    private Task CloseOnNavigate() => IsOpenChanged.InvokeAsync(false);
 
     private async Task ToggleRecordingAsync()
     {

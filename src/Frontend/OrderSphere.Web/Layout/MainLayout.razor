@@ -7,6 +7,7 @@
 @inject NavigationManager Nav
 @inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IStringLocalizer<AppStrings> L
 
 <MudLayout>
     <AppHeader OnCartToggle="ToggleCart"
@@ -35,11 +36,10 @@
         <Authorized>
             <AdvisorDrawer IsOpen="@_advisorOpen" IsOpenChanged="val => _advisorOpen = val" />
 
-            <MudFab Color="Color.Primary"
-                    StartIcon="@Icons.Material.Filled.SupportAgent"
-                    Style="position:fixed;bottom:24px;right:24px;z-index:var(--os-z-fab);"
-                    OnClick="ToggleAdvisor"
-                    aria-label="Berater öffnen" />
+            <button type="button" class="os-fab" @onclick="ToggleAdvisor"
+                    aria-label="@L["Advisor.OpenAria"]" aria-expanded="@_advisorOpen">
+                <MudIcon Icon="@Icons.Material.Filled.SupportAgent" />
+            </button>
         </Authorized>
     </AuthorizeView>
 

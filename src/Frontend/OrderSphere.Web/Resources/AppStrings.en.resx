@@ -1270,6 +1270,63 @@
   <data name="Advisor.SendAria" xml:space="preserve">
     <value>Send message</value>
   </data>
+  <data name="Advisor.Title" xml:space="preserve">
+    <value>Advisor</value>
+  </data>
+  <data name="Advisor.OpenAria" xml:space="preserve">
+    <value>Open the advisor</value>
+  </data>
+  <data name="Advisor.Greeting" xml:space="preserve">
+    <value>How can I help?</value>
+  </data>
+  <data name="Advisor.EmptyBody" xml:space="preserve">
+    <value>Ask me about products, your orders or your account.</value>
+  </data>
+  <data name="Advisor.Suggest1" xml:space="preserve">
+    <value>What's new in the shop?</value>
+  </data>
+  <data name="Advisor.Suggest2" xml:space="preserve">
+    <value>Where is my last order?</value>
+  </data>
+  <data name="Advisor.Suggest3" xml:space="preserve">
+    <value>Recommend a gift under €50</value>
+  </data>
+  <data name="Advisor.HistoryTitle" xml:space="preserve">
+    <value>Conversations</value>
+  </data>
+  <data name="Advisor.HistoryEmpty" xml:space="preserve">
+    <value>No saved conversations yet.</value>
+  </data>
+  <data name="Advisor.HistoryUntitled" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="Advisor.HistoryMessages" xml:space="preserve">
+    <value>{0} messages</value>
+  </data>
+  <data name="Advisor.InputPlaceholder" xml:space="preserve">
+    <value>Message…</value>
+  </data>
+  <data name="Advisor.ConfirmTitle" xml:space="preserve">
+    <value>Add to cart?</value>
+  </data>
+  <data name="Advisor.ConfirmYes" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Advisor.ConfirmNo" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Advisor.ConfirmedMessage" xml:space="preserve">
+    <value>Confirmed: {0} (quantity: {1}, slug={2})</value>
+  </data>
+  <data name="Advisor.CancelledMessage" xml:space="preserve">
+    <value>Cancel, please do not add it to the cart.</value>
+  </data>
+  <data name="Advisor.Unavailable" xml:space="preserve">
+    <value>Sorry, the advisor is unavailable right now.</value>
+  </data>
+  <data name="Advisor.Conversation" xml:space="preserve">
+    <value>Conversation</value>
+  </data>
   <data name="Cart.CloseAria" xml:space="preserve">
     <value>Close cart</value>
   </data>
