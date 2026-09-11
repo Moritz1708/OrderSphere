@@ -204,6 +204,7 @@ snackbar, select, table, drawer, popover, date picker). Reach for a kit componen
 | `AddToCartDialog` | Quantity picker that performs the add itself | `AddToCartDialog.ShowAsync(dialogs, product)` |
 | `ConfirmDialog` | The confirmation for every destructive action | `ConfirmDialog.ShowAsync(dialogs, title, message, confirmText, danger: true)` |
 | `ThemeToggle`, `LocaleMenu`, `AccountMenu`, `MobileNavDrawer` | Shell controls | Header and mobile drawer share them |
+| `AdminListShell` (`Components/Admin`) | The frame every admin list page uses | Header, filter row and the skeleton / error / empty / content branch in one place — do not re-implement those three branches per page |
 
 Still MudBlazor at the call site, restyled by `mud-overrides.css`: `MudTextField` / `MudSelect` / `MudNumericField`
 (`Variant.Outlined` + `ShrinkLabel="true"`), `MudForm`, `MudTable`, `MudPagination`, `MudDialog`, `MudDrawer`,
@@ -216,6 +217,30 @@ Cross-cutting helpers that are already binding:
 - **`Services/StatusPresentation.cs`** — the single mapping from a domain status string to a
   `StatusTone` and a resource key (orders, invoices, reviews, active flags, stock). Do not write a
   new `switch` over status strings.
+
+### Admin pages
+
+The admin area is the same design system at a denser rhythm, not a second one.
+
+- Every list page is `AdminListShell` + one `MudTable Class="os-table"` with `RowsPerPage="25"`,
+  `Breakpoint="Breakpoint.Md"` (Mud stacks the rows into cards below that) and a `MudTablePager`
+  whose `RowsPerPageString` comes from `Admin.Table.RowsPerPage`.
+- Table cell classes: `os-table__strong` (primary line) and `os-table__sub` (secondary line) inside
+  one cell, `os-table__num` for right-aligned numerics, `os-table__end` for the trailing action
+  column, `os-table__actions` around the `OsIconButton`s in it. A plain `<table>` that should read
+  like the Mud ones uses `os-table--plain` inside an `os-table-wrap` (the scroll container — a wide
+  table scrolls inside itself, the page body never scrolls sideways).
+- Sorting is `MudTableSortLabel SortBy="new Func<TDto, object>(x => x.Field)"`; filtering is a
+  client-side `IEnumerable` property, since the admin endpoints return full lists.
+- Destructive actions (cancel an order, deactivate a coupon, reject a review, delete) go through
+  `ConfirmDialog.ShowAsync(..., danger: true)` with an `Admin.Confirm.*` title and body. Actions that
+  can be undone by doing the opposite (approving a review) do not ask.
+- Admin forms are `MudForm` with `Required` / `RequiredError`, a sticky `.os-actionbar` footer, Save
+  disabled until the form is valid, and `IMotionService.FocusFirstInvalidAsync()` on a failed submit.
+- Detail pages reuse the `pg-order` grid: `pg-order__main` for the record, `pg-order__aside` for the
+  sticky action rail (`pg-admin__rail-card`).
+- `/dev/kit` carries one example of each admin pattern (table, timeline, numbered steps) because the
+  admin routes themselves are behind a login and cannot be reviewed anonymously.
 
 ---
 

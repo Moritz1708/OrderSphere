@@ -1,0 +1,74 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* The frame every admin list shares: header with actions, an optional filter row,
+   and one place that decides between skeleton, empty state and content. Without it
+   each list re-implemented the same three branches slightly differently. *@
+<OsPageHeader Eyebrow="@Eyebrow"
+              Title="@Title"
+              Subtitle="@Subtitle"
+              Breadcrumbs="Breadcrumbs"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm">
+    <Actions>
+        @Actions
+    </Actions>
+</OsPageHeader>
+
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Wide">
+    @if (Filters is not null)
+    {
+        <div class="pg-admin__filters">@Filters</div>
+    }
+
+    @if (Loading)
+    {
+        <OsTableSkeleton Rows="@SkeletonRows" />
+    }
+    else if (ErrorMessage is not null)
+    {
+        <OsErrorState Message="@ErrorMessage" OnRetry="OnRetry" />
+    }
+    else if (IsEmpty)
+    {
+        <OsEmptyState Icon="@(EmptyIcon ?? Icons.Material.Outlined.Inbox)"
+                      Title="@(EmptyTitle ?? L["Common.NoResults"])"
+                      Body="@EmptyBody"
+                      ActionText="@EmptyActionText"
+                      ActionHref="@EmptyActionHref"
+                      OnAction="OnEmptyAction" />
+    }
+    else
+    {
+        @ChildContent
+    }
+</OsSection>
+
+@code {
+    [Parameter] public string? Eyebrow { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public IReadOnlyList<OsCrumb>? Breadcrumbs { get; set; }
+
+    /// <summary>Primary actions, rendered top right — usually a "new" button.</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>Search and filter controls, rendered above the table.</summary>
+    [Parameter] public RenderFragment? Filters { get; set; }
+
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public int SkeletonRows { get; set; } = 6;
+
+    /// <summary>Set to show an error state with a retry instead of the content.</summary>
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public bool IsEmpty { get; set; }
+    [Parameter] public string? EmptyIcon { get; set; }
+    [Parameter] public string? EmptyTitle { get; set; }
+    [Parameter] public string? EmptyBody { get; set; }
+    [Parameter] public string? EmptyActionText { get; set; }
+    [Parameter] public string? EmptyActionHref { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnEmptyAction { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,70 +1,61 @@
 @page "/admin/reviews"
 @inject IAdminCatalogClient AdminCatalog
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Admin.Reviews.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudStack Spacing="0" Class="mb-6">
-        <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Reviews.Title"]</MudText>
-        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Reviews.Subtitle"]</MudText>
-    </MudStack>
-
-    @if (_loading)
-    {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
-    }
-    else if (_reviews.Count == 0)
-    {
-        <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.RateReview" IconClass="text-muted" Title="@L["Admin.Reviews.None"]" TitleTypo="Typo.h6" />
-        </MudPaper>
-    }
-    else
-    {
-        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);overflow:hidden;">
-            <MudTable Items="_reviews" Hover="true">
-                <HeaderContent>
-                    <MudTh>@L["Admin.Reviews.ColRating"]</MudTh>
-                    <MudTh>@L["Admin.Reviews.ColReview"]</MudTh>
-                    <MudTh>@L["Admin.Reviews.ColStatus"]</MudTh>
-                    <MudTh Style="text-align:right;">@L["Admin.Reviews.ColAction"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["Admin.Reviews.ColRating"]">
-                        <StarRating Value="context.Rating" ShowCount="false" />
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Reviews.ColReview"]">
-                        <MudText Typo="Typo.body2" Style="font-weight:600;">@context.Title</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">@context.Body</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Reviews.ColStatus"]">
-                        <MudChip T="string"
-                                 Color="@(context.Status == "Approved" ? Color.Success : Color.Default)"
-                                 Size="Size.Small" Variant="Variant.Filled" Style="border-radius:100px;">
-                            @(context.Status == "Approved" ? L["Admin.Reviews.StatusApproved"] : L["Admin.Reviews.StatusRejected"])
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Reviews.ColAction"]" Style="text-align:right;">
-                        <MudIconButton Icon="@Icons.Material.Outlined.Check"
-                                       Color="Color.Success" Size="Size.Small"
-                                       Disabled="@(context.Status == "Approved")"
-                                       OnClick="@(() => ModerateAsync(context, true))"
-                                       aria-label="@L["Admin.ApproveReviewAria"]" />
-                        <MudIconButton Icon="@Icons.Material.Outlined.Block"
-                                       Color="Color.Error" Size="Size.Small"
-                                       Disabled="@(context.Status == "Rejected")"
-                                       OnClick="@(() => ModerateAsync(context, false))"
-                                       aria-label="@L["Admin.RejectReviewAria"]" />
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
-    }
-</MudContainer>
+<AdminListShell Eyebrow="@L["Admin.Nav.Section"]"
+                Title="@L["Admin.Reviews.Title"]"
+                Subtitle="@L["Admin.Reviews.Subtitle"]"
+                Loading="_loading"
+                IsEmpty="@(_reviews.Count == 0)"
+                EmptyIcon="@Icons.Material.Outlined.RateReview"
+                EmptyTitle="@L["Admin.Reviews.None"]">
+    <ChildContent>
+        <MudTable Items="_reviews" Hover="true" Elevation="0" Class="os-table"
+                  RowsPerPage="25" Breakpoint="Breakpoint.Md">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<ReviewDto, object>(r => r.Rating)">@L["Admin.Reviews.ColRating"]</MudTableSortLabel></MudTh>
+                <MudTh>@L["Admin.Reviews.ColReview"]</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ReviewDto, object>(r => r.Status ?? string.Empty)">@L["Admin.Reviews.ColStatus"]</MudTableSortLabel></MudTh>
+                <MudTh Class="os-table__end">@L["Admin.Reviews.ColAction"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@L["Admin.Reviews.ColRating"]">
+                    <StarRating Value="context.Rating" ShowCount="false" />
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Reviews.ColReview"]">
+                    <span class="os-table__strong">@context.Title</span>
+                    <span class="os-table__sub">@context.Body</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Reviews.ColStatus"]">
+                    <OsStatusChip Tone="StatusPresentation.ReviewTone(context.Status)"
+                                  Text="@L[StatusPresentation.ReviewLabelKey(context.Status)]"
+                                  Size="OsStatusChip.ChipSize.Sm" />
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Reviews.ColAction"]" Class="os-table__end">
+                    <div class="os-table__actions">
+                        <OsIconButton Icon="@Icons.Material.Outlined.Check"
+                                      Size="OsIconButton.IconButtonSize.Sm"
+                                      Disabled="@(context.Status == "Approved")"
+                                      OnClick="@(() => ApproveAsync(context))"
+                                      AriaLabel="@L["Admin.ApproveReviewAria"]" />
+                        <OsIconButton Icon="@Icons.Material.Outlined.Block"
+                                      Size="OsIconButton.IconButtonSize.Sm"
+                                      Disabled="@(context.Status == "Rejected")"
+                                      OnClick="@(() => RejectAsync(context))"
+                                      AriaLabel="@L["Admin.RejectReviewAria"]" />
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="@L["Admin.Table.RowsPerPage"]" />
+            </PagerContent>
+        </MudTable>
+    </ChildContent>
+</AdminListShell>
 
 @code {
     private List<ReviewDto> _reviews = [];
@@ -83,6 +74,22 @@
         }
         catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
+    }
+
+    private Task ApproveAsync(ReviewDto review) => ModerateAsync(review, approve: true);
+
+    // Rejecting hides a customer's words for good, so it asks first; approving does not.
+    private async Task RejectAsync(ReviewDto review)
+    {
+        var confirmed = await ConfirmDialog.ShowAsync(
+            Dialogs,
+            L["Admin.Confirm.RejectReviewTitle"],
+            L["Admin.Confirm.RejectReviewBody"],
+            L["Admin.Reviews.Reject"],
+            danger: true);
+
+        if (confirmed)
+            await ModerateAsync(review, approve: false);
     }
 
     private async Task ModerateAsync(ReviewDto review, bool approve)

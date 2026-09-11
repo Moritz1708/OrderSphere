@@ -5,168 +5,208 @@
 
 <PageTitle>@L["Admin.Invoices.Detail.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Outlined.ArrowBack"
-               Href="/admin/invoices" Class="mb-4">
-        @L["Admin.Invoices.Detail.BackToList"]
-    </MudButton>
+<OsPageHeader Eyebrow="@L["Admin.Nav.Section"]"
+              Title="@(_invoice?.InvoiceNumber ?? L["Admin.Invoices.Detail.PageTitle"])"
+              Breadcrumbs="Crumbs"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm">
+    <Actions>
+        @if (_invoice is not null)
+        {
+            <OsStatusChip Tone="StatusPresentation.InvoiceTone(_invoice.Status)"
+                          Text="@L[StatusPresentation.InvoiceLabelKey(_invoice.Status)]"
+                          Dot="true" />
+        }
+    </Actions>
+</OsPageHeader>
 
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Wide">
     @if (_loading)
     {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
+        <OsDetailSkeleton />
     }
     else if (_invoice is null)
     {
-        <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.Invoices.Detail.NotFound"]" TitleTypo="Typo.h6" />
-        </MudPaper>
+        <OsEmptyState Icon="@Icons.Material.Outlined.SearchOff"
+                      Title="@L["Admin.Invoices.Detail.NotFound"]"
+                      ActionText="@L["Admin.Invoices.Detail.BackToList"]"
+                      ActionHref="/admin/invoices" />
     }
     else
     {
-        <MudGrid>
-            <MudItem xs="12" md="8">
-                <MudStack Spacing="4">
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-                            <MudStack Spacing="0">
-                                <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Invoices.ColNumber"]</MudText>
-                                <MudText Typo="Typo.h5" Class="os-mono" Style="font-weight:700;">@_invoice.InvoiceNumber</MudText>
-                                <MudText Typo="Typo.caption" Class="text-muted">
-                                    @Formatting.DateTime(_invoice.IssuedAt.ToLocalTime())
-                                </MudText>
-                            </MudStack>
-                            <MudChip T="string" Color="@StatusColor(_invoice.Status)" Size="Size.Medium"
-                                     Variant="Variant.Filled" Style="border-radius:100px;font-weight:600;">
-                                @StatusLabel(_invoice.Status)
-                            </MudChip>
-                        </MudStack>
-                        <MudDivider Class="mb-3" />
-                        <MudText Typo="Typo.body2" Class="text-muted">@_invoice.CustomerName</MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">@_invoice.CustomerEmail</MudText>
-                    </MudPaper>
+        <div class="pg-order">
+            <div class="pg-order__main os-stack">
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <div class="os-card__head">
+                        <div>
+                            <OsEyebrow Text="@L["Admin.Invoices.ColNumber"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                            <div class="pg-order__number os-mono">@_invoice.InvoiceNumber</div>
+                            <div class="pg-order__placed os-mono">@Formatting.DateTime(_invoice.IssuedAt.ToLocalTime())</div>
+                        </div>
+                    </div>
 
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["Admin.Invoices.Detail.OriginalAmounts"]</MudText>
-                        <MudStack Spacing="2">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.Detail.Net"]</MudText>
-                                <MudText Typo="Typo.body2">@Formatting.Currency(_invoice.NetAmount)</MudText>
-                            </MudStack>
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.Detail.Tax"] (@_invoice.TaxRate.ToString("P0"))</MudText>
-                                <MudText Typo="Typo.body2">@Formatting.Currency(_invoice.TaxAmount)</MudText>
-                            </MudStack>
-                            <MudDivider />
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Admin.Invoices.Detail.Total"]</MudText>
-                                <MudText Typo="Typo.h6" Style="font-weight:700;">@Formatting.Currency(_invoice.Total)</MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
+                    <dl class="os-kv">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Admin.Invoices.ColCustomer"]</dt>
+                            <dd class="os-kv__val">@_invoice.CustomerName</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Admin.Invoices.ColEmail"]</dt>
+                            <dd class="os-kv__val">@_invoice.CustomerEmail</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Admin.Invoices.ColOrder"]</dt>
+                            <dd class="os-kv__val os-mono">
+                                <a href="@($"/admin/orders/{_invoice.OrderId}")">#@_invoice.OrderId.ToString("N")[..8].ToUpperInvariant()</a>
+                            </dd>
+                        </div>
+                    </dl>
 
-                    @if (_invoice.Adjustments.Count > 0)
-                    {
-                        <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                            <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["Admin.Invoices.Detail.AdjustedAmounts"]</MudText>
-                            <MudStack Spacing="2">
-                                <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                    <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.Detail.Net"]</MudText>
-                                    <MudText Typo="Typo.body2">@Formatting.Currency(_invoice.AdjustedNet)</MudText>
-                                </MudStack>
-                                <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                    <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.Detail.Tax"]</MudText>
-                                    <MudText Typo="Typo.body2">@Formatting.Currency(_invoice.AdjustedTax)</MudText>
-                                </MudStack>
-                                <MudDivider />
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Admin.Invoices.Detail.AdjustedTotal"]</MudText>
-                                    <MudText Typo="Typo.h6" Style="font-weight:700;color:var(--os-primary-text);">
-                                        @Formatting.Currency(_invoice.AdjustedTotal)
-                                    </MudText>
-                                </MudStack>
-                            </MudStack>
+                    <div class="os-card__actions">
+                        <OsButton Href="@AdminInvoicing.GetPdfUrl(_invoice.OrderId)" Target="_blank"
+                                  Variant="OsButton.ButtonVariant.Secondary"
+                                  StartIcon="@Icons.Material.Outlined.PictureAsPdf">
+                            @L["Admin.Invoices.ViewInvoice"]
+                        </OsButton>
+                    </div>
+                </OsCard>
 
-                            <MudDivider Class="my-4" />
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Admin.Invoices.Detail.OriginalAmounts"]</OsDisplay>
+                    <dl class="os-kv">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Admin.Invoices.Detail.Net"]</dt>
+                            <dd class="os-kv__val os-num">@Formatting.Currency(_invoice.NetAmount)</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">
+                                @L["Admin.Invoices.Detail.Tax"] <span class="os-mono">(@_invoice.TaxRate.ToString("P0"))</span>
+                            </dt>
+                            <dd class="os-kv__val os-num">@Formatting.Currency(_invoice.TaxAmount)</dd>
+                        </div>
+                        <div class="os-kv__row os-kv__row--total">
+                            <dt class="os-kv__key">@L["Admin.Invoices.Detail.Total"]</dt>
+                            <dd class="os-kv__val">@Formatting.Currency(_invoice.Total)</dd>
+                        </div>
+                    </dl>
+                </OsCard>
 
-                            <MudText Typo="Typo.subtitle2" Class="mb-2" Style="font-weight:600;">@L["Admin.Invoices.Detail.History"]</MudText>
-                            <MudSimpleTable Dense="true" Hover="false" Bordered="false" Striped="false" Style="background:transparent;">
+                @if (_invoice.Adjustments.Count > 0)
+                {
+                    <OsCard Padding="OsCard.CardPadding.Lg">
+                        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Admin.Invoices.Detail.AdjustedAmounts"]</OsDisplay>
+                        <dl class="os-kv">
+                            <div class="os-kv__row">
+                                <dt class="os-kv__key">@L["Admin.Invoices.Detail.Net"]</dt>
+                                <dd class="os-kv__val os-num">@Formatting.Currency(_invoice.AdjustedNet)</dd>
+                            </div>
+                            <div class="os-kv__row">
+                                <dt class="os-kv__key">@L["Admin.Invoices.Detail.Tax"]</dt>
+                                <dd class="os-kv__val os-num">@Formatting.Currency(_invoice.AdjustedTax)</dd>
+                            </div>
+                            <div class="os-kv__row os-kv__row--total">
+                                <dt class="os-kv__key">@L["Admin.Invoices.Detail.AdjustedTotal"]</dt>
+                                <dd class="os-kv__val">@Formatting.Currency(_invoice.AdjustedTotal)</dd>
+                            </div>
+                        </dl>
+
+                        <OsEyebrow Text="@L["Admin.Invoices.Detail.History"]" />
+                        <div class="os-table-wrap">
+                            <table class="os-table os-table--plain">
                                 <thead>
                                     <tr>
-                                        <th>@L["Admin.Invoices.Detail.ColType"]</th>
-                                        <th>@L["Admin.Invoices.Detail.ColReason"]</th>
-                                        <th>@L["Admin.Invoices.ColAmount"]</th>
-                                        <th>@L["Admin.Invoices.Detail.ColAppliedBy"]</th>
-                                        <th>@L["Admin.Invoices.ColDate"]</th>
+                                        <th scope="col">@L["Admin.Invoices.Detail.ColType"]</th>
+                                        <th scope="col">@L["Admin.Invoices.Detail.ColReason"]</th>
+                                        <th scope="col" class="os-table__num">@L["Admin.Invoices.ColAmount"]</th>
+                                        <th scope="col">@L["Admin.Invoices.Detail.ColAppliedBy"]</th>
+                                        <th scope="col">@L["Admin.Invoices.ColDate"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var adjustment in _invoice.Adjustments)
                                     {
                                         <tr>
-                                            <td>@AdjustmentTypeLabel(adjustment.Type)</td>
+                                            <td>
+                                                <OsStatusChip Tone="@(adjustment.Type == "Credit" ? StatusTone.Info : StatusTone.Warning)"
+                                                              Text="@AdjustmentTypeLabel(adjustment.Type)"
+                                                              Size="OsStatusChip.ChipSize.Sm" />
+                                            </td>
                                             <td>@adjustment.Reason</td>
-                                            <td>-@Formatting.Currency(adjustment.AmountNet)</td>
+                                            <td class="os-table__num"><span class="os-num">−@Formatting.Currency(adjustment.AmountNet)</span></td>
                                             <td>@adjustment.AppliedBy</td>
-                                            <td>@Formatting.DateTime(adjustment.AppliedAt.ToLocalTime())</td>
+                                            <td><span class="os-mono">@Formatting.DateTime(adjustment.AppliedAt.ToLocalTime())</span></td>
                                         </tr>
                                     }
                                 </tbody>
-                            </MudSimpleTable>
-                        </MudPaper>
-                    }
+                            </table>
+                        </div>
+                    </OsCard>
+                }
+            </div>
 
-                    <MudButton Href="@AdminInvoicing.GetPdfUrl(_invoice.OrderId)" Target="_blank"
-                               Variant="Variant.Outlined" Color="Color.Primary" Class="btn-pill-outline" Style="align-self:flex-start;"
-                               StartIcon="@Icons.Material.Outlined.PictureAsPdf">
-                        @L["Admin.Invoices.ViewInvoice"]
-                    </MudButton>
-                </MudStack>
-            </MudItem>
+            <aside class="pg-order__aside">
+                <OsCard Padding="OsCard.CardPadding.Lg" Class="pg-admin__rail-card">
+                    <OsEyebrow Text="@L["Admin.Invoices.Detail.ApplyDiscount"]" />
 
-            <MudItem xs="12" md="4">
-                <MudStack Spacing="4" Style="position:sticky;top:80px;">
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["Admin.Invoices.Detail.ApplyDiscount"]</MudText>
-                        <MudRadioGroup T="string" @bind-Value="_discountMode" Class="mb-2">
+                    @* A form, so the reason and a positive amount are enforced by the
+                       same validation the rest of the admin uses, not by a bool. *@
+                    <MudForm @ref="_discountForm" @bind-IsValid="_discountValid" Class="pg-admin__form">
+                        <MudRadioGroup T="string" @bind-Value="_discountMode">
                             <MudRadio T="string" Value="@("absolute")" Color="Color.Primary">@L["Admin.Invoices.Detail.DiscountModeAbsolute"]</MudRadio>
                             <MudRadio T="string" Value="@("percentage")" Color="Color.Primary">@L["Admin.Invoices.Detail.DiscountModePercentage"]</MudRadio>
                         </MudRadioGroup>
+
                         @if (_discountMode == "absolute")
                         {
-                            <MudNumericField T="decimal?" @bind-Value="_discountAmount" Label="@L["Admin.Invoices.Detail.AmountLabel"]"
-                                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.01m" Class="mb-2" />
+                            <MudNumericField T="decimal?" @bind-Value="_discountAmount"
+                                             Label="@L["Admin.Invoices.Detail.AmountLabel"]"
+                                             Variant="Variant.Outlined" ShrinkLabel="true" Margin="Margin.Dense"
+                                             Min="0.01m" Required="true" RequiredError="@L["Validation.Required"]" />
                         }
                         else
                         {
-                            <MudNumericField T="decimal?" @bind-Value="_discountPercentage" Label="@L["Admin.Invoices.Detail.PercentageLabel"]"
-                                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.01m" Max="100m" Class="mb-2" />
+                            <MudNumericField T="decimal?" @bind-Value="_discountPercentage"
+                                             Label="@L["Admin.Invoices.Detail.PercentageLabel"]"
+                                             Variant="Variant.Outlined" ShrinkLabel="true" Margin="Margin.Dense"
+                                             Min="0.01m" Max="100m" Required="true" RequiredError="@L["Validation.Required"]" />
                         }
-                        <MudTextField @bind-Value="_discountReason" Label="@L["Admin.Invoices.Detail.ReasonLabel"]"
-                                      Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Class="mb-3" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                                   Disabled="@(_busy || !CanSubmitDiscount)" OnClick="SubmitDiscountAsync">
-                            @L["Admin.Invoices.Detail.SubmitDiscount"]
-                        </MudButton>
-                    </MudPaper>
 
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["Admin.Invoices.Detail.IssueCredit"]</MudText>
-                        <MudNumericField T="decimal?" @bind-Value="_creditAmount" Label="@L["Admin.Invoices.Detail.AmountLabel"]"
-                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="0.01m" Class="mb-2" />
-                        <MudTextField @bind-Value="_creditReason" Label="@L["Admin.Invoices.Detail.ReasonLabel"]"
-                                      Variant="Variant.Outlined" Margin="Margin.Dense" Lines="2" Class="mb-3" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" FullWidth="true"
-                                   Disabled="@(_busy || !CanSubmitCredit)" OnClick="SubmitCreditAsync">
-                            @L["Admin.Invoices.Detail.SubmitCredit"]
-                        </MudButton>
-                    </MudPaper>
-                </MudStack>
-            </MudItem>
-        </MudGrid>
+                        <MudTextField T="string" @bind-Value="_discountReason"
+                                      Label="@L["Admin.Invoices.Detail.ReasonLabel"]"
+                                      Variant="Variant.Outlined" ShrinkLabel="true" Margin="Margin.Dense" Lines="2"
+                                      Required="true" RequiredError="@L["Validation.Required"]" />
+                    </MudForm>
+
+                    <OsButton FullWidth="true" Loading="_busy" Disabled="@(!_discountValid)"
+                              OnClick="SubmitDiscountAsync">
+                        @L["Admin.Invoices.Detail.SubmitDiscount"]
+                    </OsButton>
+                </OsCard>
+
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <OsEyebrow Text="@L["Admin.Invoices.Detail.IssueCredit"]" />
+
+                    <MudForm @ref="_creditForm" @bind-IsValid="_creditValid" Class="pg-admin__form">
+                        <MudNumericField T="decimal?" @bind-Value="_creditAmount"
+                                         Label="@L["Admin.Invoices.Detail.AmountLabel"]"
+                                         Variant="Variant.Outlined" ShrinkLabel="true" Margin="Margin.Dense"
+                                         Min="0.01m" Required="true" RequiredError="@L["Validation.Required"]" />
+                        <MudTextField T="string" @bind-Value="_creditReason"
+                                      Label="@L["Admin.Invoices.Detail.ReasonLabel"]"
+                                      Variant="Variant.Outlined" ShrinkLabel="true" Margin="Margin.Dense" Lines="2"
+                                      Required="true" RequiredError="@L["Validation.Required"]" />
+                    </MudForm>
+
+                    <OsButton FullWidth="true" Variant="OsButton.ButtonVariant.Secondary"
+                              Loading="_busy" Disabled="@(!_creditValid)"
+                              OnClick="SubmitCreditAsync">
+                        @L["Admin.Invoices.Detail.SubmitCredit"]
+                    </OsButton>
+                </OsCard>
+            </aside>
+        </div>
     }
-</MudContainer>
+</OsSection>
 
 @code {
     [Parameter] public Guid InvoiceId { get; set; }
@@ -175,20 +215,23 @@
     private bool _loading = true;
     private bool _busy;
 
+    private MudForm _discountForm = default!;
+    private bool _discountValid;
     private string _discountMode = "absolute";
     private decimal? _discountAmount;
     private decimal? _discountPercentage;
     private string _discountReason = string.Empty;
 
+    private MudForm _creditForm = default!;
+    private bool _creditValid;
     private decimal? _creditAmount;
     private string _creditReason = string.Empty;
 
-    private bool CanSubmitDiscount =>
-        !string.IsNullOrWhiteSpace(_discountReason) &&
-        ((_discountMode == "absolute" && _discountAmount is > 0) ||
-         (_discountMode == "percentage" && _discountPercentage is > 0));
-
-    private bool CanSubmitCredit => !string.IsNullOrWhiteSpace(_creditReason) && _creditAmount is > 0;
+    private IReadOnlyList<OsCrumb> Crumbs =>
+    [
+        new OsCrumb(L["Admin.Invoices.Title"], "/admin/invoices"),
+        new OsCrumb(_invoice?.InvoiceNumber ?? "—"),
+    ];
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -214,6 +257,9 @@
 
     private async Task SubmitDiscountAsync()
     {
+        await _discountForm.ValidateAsync();
+        if (!_discountForm.IsValid) return;
+
         _busy = true;
         try
         {
@@ -228,6 +274,7 @@
                 _discountAmount = null;
                 _discountPercentage = null;
                 _discountReason = string.Empty;
+                await _discountForm.ResetAsync();
             }
             else
             {
@@ -242,6 +289,9 @@
 
     private async Task SubmitCreditAsync()
     {
+        await _creditForm.ValidateAsync();
+        if (!_creditForm.IsValid) return;
+
         _busy = true;
         try
         {
@@ -252,6 +302,7 @@
                 _invoice = result.Value;
                 _creditAmount = null;
                 _creditReason = string.Empty;
+                await _creditForm.ResetAsync();
             }
             else
             {
@@ -264,25 +315,10 @@
         }
     }
 
-    private string StatusLabel(string s) => s switch
-    {
-        "Issued" => L["Admin.Invoices.StatusIssued"],
-        "Adjusted" => L["Admin.Invoices.StatusAdjusted"],
-        "CreditIssued" => L["Admin.Invoices.StatusCreditIssued"],
-        _ => s
-    };
-
-    private static Color StatusColor(string s) => s switch
-    {
-        "Adjusted" => Color.Warning,
-        "CreditIssued" => Color.Info,
-        _ => Color.Success
-    };
-
     private string AdjustmentTypeLabel(string type) => type switch
     {
         "Discount" => L["Admin.Invoices.Detail.TypeDiscount"],
         "Credit" => L["Admin.Invoices.Detail.TypeCredit"],
-        _ => type
+        _ => type,
     };
 }

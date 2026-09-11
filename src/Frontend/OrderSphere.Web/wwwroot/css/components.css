@@ -1293,4 +1293,64 @@
 
 
   .os-card__label { margin: 0 0 var(--os-space-3); font-size: inherit; font-weight: inherit; }
+
+  /* ======================================================================
+     Tables (the class sits on MudTable's root and on plain tables alike)
+     ====================================================================== */
+
+  /* Tables are the one place in the admin where a horizontal scroll is
+     acceptable; the page body must never scroll sideways because of one. */
+  .os-table-wrap { overflow-x: auto; }
+
+  .os-table__num { text-align: right; }
+  .os-table__end { text-align: right; white-space: nowrap; }
+
+  .os-table__strong { display: block; font-weight: 600; }
+
+  .os-table__sub {
+    display: block;
+    margin-top: 2px;
+    color: var(--os-muted);
+    font-size: var(--os-text-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 42ch;
+  }
+
+  .os-table__actions {
+    display: inline-flex;
+    gap: var(--os-space-2);
+    justify-content: flex-end;
+  }
+
+  /* A plain <table> that should read like the Mud ones (invoice adjustments). */
+  .os-table--plain {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--os-text-sm);
+  }
+
+  .os-table--plain th,
+  .os-table--plain td {
+    padding: var(--os-space-3) var(--os-space-4);
+    border-bottom: 1px solid var(--os-hairline);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .os-table--plain th {
+    border-bottom-color: var(--os-hairline-strong);
+    color: var(--os-muted);
+    font-family: var(--os-font-mono);
+    font-size: var(--os-text-xs);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .os-table--plain th.os-table__num,
+  .os-table--plain td.os-table__num { text-align: right; }
+
+  .os-table--plain tr:last-child td { border-bottom: none; }
 }

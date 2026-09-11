@@ -51,7 +51,7 @@ public sealed class MotionService(IJSRuntime js) : IMotionService, IAsyncDisposa
 
     public async ValueTask LockScrollAsync(bool locked) => await InvokeAsync("lockScroll", locked);
 
-    public async ValueTask FocusFirstInvalidAsync() => await InvokeAsync("focusFirstInvalid", null);
+    public async ValueTask FocusFirstInvalidAsync() => await InvokeAsync("focusFirstInvalid");
 
     public async ValueTask<bool> PrefersReducedMotionAsync()
     {

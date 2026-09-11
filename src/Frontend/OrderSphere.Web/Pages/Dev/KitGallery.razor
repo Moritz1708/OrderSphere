@@ -188,9 +188,82 @@ else
             </li>
         </ol>
     </OsSection>
+
+    @* The admin tables are behind a login, so the gallery carries one row of
+       every state they use — otherwise the table styling is unreviewable. *@
+    <OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Wide">
+        <OsEyebrow Text="12 / Data table" Class="mb-4" />
+        <MudTable Items="_rows" Hover="true" Elevation="0" Class="os-table" Breakpoint="Breakpoint.Md">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<KitRow, object>(r => r.Name)">Product</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<KitRow, object>(r => r.Sku)">SKU</MudTableSortLabel></MudTh>
+                <MudTh Class="os-table__num">Stock</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh Class="os-table__end">Action</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Product">
+                    <span class="os-table__strong">@context.Name</span>
+                    <span class="os-table__sub">@context.Note</span>
+                </MudTd>
+                <MudTd DataLabel="SKU"><span class="os-mono">@context.Sku</span></MudTd>
+                <MudTd DataLabel="Stock" Class="os-table__num"><span class="os-num">@context.Stock</span></MudTd>
+                <MudTd DataLabel="Status">
+                    <OsStatusChip Tone="StatusPresentation.StockTone(context.Stock)"
+                                  Text="@context.Stock.ToString()"
+                                  Size="OsStatusChip.ChipSize.Sm" />
+                </MudTd>
+                <MudTd DataLabel="Action" Class="os-table__end">
+                    <div class="os-table__actions">
+                        <OsIconButton Icon="@Icons.Material.Outlined.Edit"
+                                      Size="OsIconButton.IconButtonSize.Sm" AriaLabel="Edit" />
+                        <OsIconButton Icon="@Icons.Material.Outlined.Delete"
+                                      Size="OsIconButton.IconButtonSize.Sm" AriaLabel="Delete"
+                                      OnClick="DangerAsync" />
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="Rows per page" />
+            </PagerContent>
+        </MudTable>
+
+        <div class="os-table-wrap mt-6">
+            <table class="os-table--plain">
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Reason</th>
+                        <th scope="col" class="os-table__num">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><OsStatusChip Tone="StatusTone.Warning" Text="Discount" Size="OsStatusChip.ChipSize.Sm" /></td>
+                        <td>Goodwill after a late delivery</td>
+                        <td class="os-table__num"><span class="os-num">−12,00 €</span></td>
+                    </tr>
+                    <tr>
+                        <td><OsStatusChip Tone="StatusTone.Info" Text="Credit" Size="OsStatusChip.ChipSize.Sm" /></td>
+                        <td>Returned one of two items</td>
+                        <td class="os-table__num"><span class="os-num">−49,90 €</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </OsSection>
 }
 
 @code {
+    private sealed record KitRow(string Name, string Note, string Sku, int Stock);
+
+    private readonly IReadOnlyList<KitRow> _rows =
+    [
+        new("Aurora Desk Lamp", "Warm dimmable LED, walnut base", "LMP-0041", 24),
+        new("Field Notebook", "A5, dotted, 160 pages", "NTB-0112", 6),
+        new("Cable Organiser", "Recycled silicone, set of four", "ORG-0007", 0),
+    ];
+
     private int _qty = 2;
     private AddressForm _addressForm = default!;
     private readonly AddressFormModel _address = new();

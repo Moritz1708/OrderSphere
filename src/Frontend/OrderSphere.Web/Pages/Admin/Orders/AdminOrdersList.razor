@@ -5,92 +5,75 @@
 
 <PageTitle>@L["Admin.Orders.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
-        <MudStack Spacing="0">
-            <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Orders.Title"]</MudText>
-            <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Orders.Subtitle"]</MudText>
-        </MudStack>
-
+<AdminListShell Eyebrow="@L["Admin.Nav.Section"]"
+                Title="@L["Admin.Orders.Title"]"
+                Subtitle="@L["Admin.Orders.Subtitle"]"
+                Loading="_loading"
+                IsEmpty="@(_orders.Count == 0)"
+                EmptyIcon="@Icons.Material.Outlined.Inbox"
+                EmptyTitle="@L["Admin.Orders.None"]">
+    <Filters>
         <MudSelect T="string?" Value="_statusFilter" ValueChanged="OnStatusFilterChanged"
-                   Variant="Variant.Outlined" Style="min-width: 220px;"
-                   Clearable="true" Placeholder="@L["Admin.Orders.StatusFilter"]">
-            <MudSelectItem Value="@((string?)"Created")">@L["Admin.Orders.StatusCreated"]</MudSelectItem>
-            <MudSelectItem Value="@((string?)"Paid")">@L["Admin.Orders.StatusPaid"]</MudSelectItem>
-            <MudSelectItem Value="@((string?)"Shipped")">@L["Admin.Orders.StatusShipped"]</MudSelectItem>
-            <MudSelectItem Value="@((string?)"Delivered")">@L["Admin.Orders.StatusDelivered"]</MudSelectItem>
-            <MudSelectItem Value="@((string?)"Cancelled")">@L["Admin.Orders.StatusCancelled"]</MudSelectItem>
+                   Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true"
+                   Clearable="true" Placeholder="@L["Admin.Orders.StatusFilter"]"
+                   Class="pg-admin__filter">
+            <MudSelectItem Value="@((string?)"Created")">@L[StatusPresentation.OrderLabelKey("Created")]</MudSelectItem>
+            <MudSelectItem Value="@((string?)"Paid")">@L[StatusPresentation.OrderLabelKey("Paid")]</MudSelectItem>
+            <MudSelectItem Value="@((string?)"Shipped")">@L[StatusPresentation.OrderLabelKey("Shipped")]</MudSelectItem>
+            <MudSelectItem Value="@((string?)"Delivered")">@L[StatusPresentation.OrderLabelKey("Delivered")]</MudSelectItem>
+            <MudSelectItem Value="@((string?)"Cancelled")">@L[StatusPresentation.OrderLabelKey("Cancelled")]</MudSelectItem>
         </MudSelect>
-    </MudStack>
+    </Filters>
 
-    @if (_loading)
-    {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
-    }
-    else if (_orders.Count == 0)
-    {
-        <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.Inbox" IconClass="text-muted" Title="@L["Admin.Orders.None"]" TitleTypo="Typo.h6" />
-        </MudPaper>
-    }
-    else
-    {
-        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);overflow:hidden;">
-            <MudTable Items="_orders" Hover="true" Bordered="false" Dense="false">
-                <HeaderContent>
-                    <MudTh>@L["Admin.Orders.ColOrder"]</MudTh>
-                    <MudTh>@L["Admin.Orders.ColCustomer"]</MudTh>
-                    <MudTh>@L["Admin.Orders.ColDate"]</MudTh>
-                    <MudTh>@L["Admin.Orders.ColTracking"]</MudTh>
-                    <MudTh>@L["Admin.Orders.ColStatus"]</MudTh>
-                    <MudTh Style="text-align:right;">@L["Admin.Orders.ColTotal"]</MudTh>
-                    <MudTh Style="text-align:right;">@L["Admin.Orders.ColAction"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["Admin.Orders.ColOrder"]">
-                        <MudText Typo="Typo.body2" Class="os-mono">
-                            #@context.Id.ToString("N")[..8].ToUpperInvariant()
-                        </MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Orders.ColCustomer"]">
-                        <MudText Typo="Typo.body2">
-                            @context.ShippingAddress.FirstName @context.ShippingAddress.LastName
-                        </MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">@context.ShippingAddress.City</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Orders.ColDate"]">
-                        <MudText Typo="Typo.body2">
-                            @Formatting.DateTime(context.CreatedAt.ToLocalTime())
-                        </MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Orders.ColTracking"]">
-                        <MudText Typo="Typo.body2" Class="os-mono">@(context.TrackingNumber ?? "—")</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Orders.ColStatus"]">
-                        <MudChip T="string" Color="@StatusColor(context.Status)" Size="Size.Small"
-                                 Variant="Variant.Filled" Style="border-radius:100px;font-weight:600;">
-                            @StatusLabel(context.Status)
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Orders.ColTotal"]" Style="text-align:right;">
-                        <MudText Typo="Typo.body2" Style="font-weight:600;">
-                            @Formatting.Currency(context.Total)
-                        </MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Orders.ColAction"]" Style="text-align:right;">
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                   Href="@($"/admin/orders/{context.Id}")"
-                                   Style="border-radius:100px;">
-                            @L["Common.Details"]
-                        </MudButton>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
-    }
-</MudContainer>
+    <ChildContent>
+        <MudTable Items="_orders" Hover="true" Elevation="0" Class="os-table"
+                  RowsPerPage="25" Breakpoint="Breakpoint.Md">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<OrderDto, object>(o => o.Id)">@L["Admin.Orders.ColOrder"]</MudTableSortLabel></MudTh>
+                <MudTh>@L["Admin.Orders.ColCustomer"]</MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<OrderDto, object>(o => o.CreatedAt)">@L["Admin.Orders.ColDate"]</MudTableSortLabel></MudTh>
+                <MudTh>@L["Admin.Orders.ColTracking"]</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<OrderDto, object>(o => o.Status)">@L["Admin.Orders.ColStatus"]</MudTableSortLabel></MudTh>
+                <MudTh Class="os-table__num"><MudTableSortLabel SortBy="new Func<OrderDto, object>(o => o.Total)">@L["Admin.Orders.ColTotal"]</MudTableSortLabel></MudTh>
+                <MudTh Class="os-table__end">@L["Admin.Orders.ColAction"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@L["Admin.Orders.ColOrder"]">
+                    <span class="os-mono">#@context.Id.ToString("N")[..8].ToUpperInvariant()</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Orders.ColCustomer"]">
+                    <span class="os-table__strong">@context.ShippingAddress.FirstName @context.ShippingAddress.LastName</span>
+                    <span class="os-table__sub">@context.ShippingAddress.City</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Orders.ColDate"]">
+                    <span class="os-mono">@Formatting.DateTime(context.CreatedAt.ToLocalTime())</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Orders.ColTracking"]">
+                    <span class="os-mono">@(context.TrackingNumber ?? "—")</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Orders.ColStatus"]">
+                    <OsStatusChip Tone="StatusPresentation.OrderTone(context.Status)"
+                                  Text="@L[StatusPresentation.OrderLabelKey(context.Status)]"
+                                  Size="OsStatusChip.ChipSize.Sm"
+                                  Dot="true" />
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Orders.ColTotal"]" Class="os-table__num">
+                    <OsPrice Value="context.Total" Size="OsPrice.PriceSize.Sm" />
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Orders.ColAction"]" Class="os-table__end">
+                    <OsButton Href="@($"/admin/orders/{context.Id}")"
+                              Variant="OsButton.ButtonVariant.Secondary"
+                              Size="OsButton.ButtonSize.Sm">
+                        @L["Common.Details"]
+                    </OsButton>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="@L["Admin.Table.RowsPerPage"]" />
+            </PagerContent>
+        </MudTable>
+    </ChildContent>
+</AdminListShell>
 
 @code {
     private List<OrderDto> _orders = [];
@@ -125,21 +108,4 @@
             _loading = false;
         }
     }
-
-    private static Color StatusColor(string s) => s switch
-    {
-        "Paid" => Color.Info, "Shipped" => Color.Warning,
-        "Delivered" => Color.Success, "Cancelled" => Color.Error,
-        _ => Color.Default
-    };
-
-    private string StatusLabel(string s) => s switch
-    {
-        "Created"   => L["Admin.Orders.StatusCreated"],
-        "Paid"      => L["Admin.Orders.StatusPaid"],
-        "Shipped"   => L["Admin.Orders.StatusShipped"],
-        "Delivered" => L["Admin.Orders.StatusDelivered"],
-        "Cancelled" => L["Admin.Orders.StatusCancelled"],
-        _ => s
-    };
 }

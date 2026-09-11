@@ -59,4 +59,12 @@
   @media (max-width: 599.98px) { .os-hide-sm { display: none !important; } }
   @media (max-width: 959.98px) { .os-hide-md { display: none !important; } }
   @media (min-width: 960px) { .os-only-md { display: none !important; } }
+
+  /* Status tones as text colour. The chip component paints its own; these are
+     for a number or a word that has to carry the tone on its own. */
+  .os-tone-success { color: var(--os-success); }
+  .os-tone-warning { color: var(--os-warning); }
+  .os-tone-danger { color: var(--os-error); }
+  .os-tone-info { color: var(--os-accent-2); }
+  .os-tone-accent { color: var(--os-accent-ink); }
 }

@@ -799,21 +799,6 @@
   <data name="Admin.Orders.ColAction" xml:space="preserve">
     <value>Action</value>
   </data>
-  <data name="Admin.Orders.StatusCreated" xml:space="preserve">
-    <value>Received</value>
-  </data>
-  <data name="Admin.Orders.StatusPaid" xml:space="preserve">
-    <value>Paid</value>
-  </data>
-  <data name="Admin.Orders.StatusShipped" xml:space="preserve">
-    <value>Shipped</value>
-  </data>
-  <data name="Admin.Orders.StatusDelivered" xml:space="preserve">
-    <value>Delivered</value>
-  </data>
-  <data name="Admin.Orders.StatusCancelled" xml:space="preserve">
-    <value>Cancelled</value>
-  </data>
   <data name="Admin.OrderDetail.PageTitle" xml:space="preserve">
     <value>Order — Admin</value>
   </data>
@@ -1524,5 +1509,89 @@
   </data>
   <data name="Onboarding.FirstAddressHint" xml:space="preserve">
     <value>Your default address for delivery and invoicing.</value>
+  </data>
+  <data name="Admin.Nav.Section" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="Admin.Nav.Dashboard" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Admin.Nav.Orders" xml:space="preserve">
+    <value>Orders</value>
+  </data>
+  <data name="Admin.Nav.Invoices" xml:space="preserve">
+    <value>Invoices</value>
+  </data>
+  <data name="Admin.Nav.Products" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="Admin.Nav.Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="Admin.Nav.Coupons" xml:space="preserve">
+    <value>Coupons</value>
+  </data>
+  <data name="Admin.Nav.Reviews" xml:space="preserve">
+    <value>Reviews</value>
+  </data>
+  <data name="Admin.Nav.Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Admin.Nav.ToShop" xml:space="preserve">
+    <value>To the shop</value>
+  </data>
+  <data name="Common.NoResults" xml:space="preserve">
+    <value>No entries</value>
+  </data>
+  <data name="Common.Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Admin.Confirm.DeactivateCouponTitle" xml:space="preserve">
+    <value>Deactivate coupon?</value>
+  </data>
+  <data name="Admin.Confirm.DeactivateCouponBody" xml:space="preserve">
+    <value>“{0}” can no longer be redeemed.</value>
+  </data>
+  <data name="Admin.Confirm.CancelOrderTitle" xml:space="preserve">
+    <value>Cancel order?</value>
+  </data>
+  <data name="Admin.Confirm.CancelOrderBody" xml:space="preserve">
+    <value>Order {0} will be cancelled. This cannot be undone.</value>
+  </data>
+  <data name="Admin.Confirm.RejectReviewTitle" xml:space="preserve">
+    <value>Reject review?</value>
+  </data>
+  <data name="Admin.Confirm.RejectReviewBody" xml:space="preserve">
+    <value>The review will not be published.</value>
+  </data>
+  <data name="Admin.Confirm.DeleteCategoryTitle" xml:space="preserve">
+    <value>Delete category?</value>
+  </data>
+  <data name="Admin.Confirm.DeleteCategoryBody" xml:space="preserve">
+    <value>“{0}” will be deleted. Its products remain.</value>
+  </data>
+  <data name="Admin.Confirm.DeleteProductTitle" xml:space="preserve">
+    <value>Delete product?</value>
+  </data>
+  <data name="Admin.Confirm.DeleteProductBody" xml:space="preserve">
+    <value>“{0}” will be removed from the catalogue.</value>
+  </data>
+  <data name="Admin.Table.RowsPerPage" xml:space="preserve">
+    <value>Rows per page</value>
+  </data>
+  <data name="Admin.Coupons.Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="Admin.Reviews.Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="Theme.Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Theme.Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Common.Details" xml:space="preserve">
+    <value>Details</value>
   </data>
 </root>

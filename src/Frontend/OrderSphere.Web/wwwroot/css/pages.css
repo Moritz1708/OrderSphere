@@ -316,4 +316,163 @@
   /* ---- Onboarding ---- */
   .pg-onboarding .os-actionbar { margin-top: var(--os-space-5); justify-content: stretch; }
   .pg-onboarding .os-actionbar > * { flex: 1; }
+
+  /* ======================================================================
+     Admin — shell, lists, detail rails
+     ====================================================================== */
+
+  .pg-admin__bar {
+    border-bottom: 1px solid var(--os-hairline);
+    background-color: color-mix(in srgb, var(--os-canvas) 88%, transparent);
+    backdrop-filter: saturate(160%) blur(14px);
+  }
+
+  .pg-admin__brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--os-space-2);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .pg-admin__brand-name {
+    font-family: var(--os-font-display);
+    font-size: var(--os-text-xl);
+    line-height: 1;
+  }
+
+  .pg-admin__brand-tag {
+    font-family: var(--os-font-mono);
+    font-size: var(--os-text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--os-accent-ink);
+  }
+
+  .pg-admin__rail {
+    border-right: 1px solid var(--os-hairline);
+    background-color: var(--os-paper);
+  }
+
+  .pg-admin__nav { padding-block: var(--os-space-4); }
+
+  .pg-admin__rail-foot {
+    display: flex;
+    flex-direction: column;
+    gap: var(--os-space-2);
+    margin-top: auto;
+    padding: var(--os-space-4);
+    border-top: 1px solid var(--os-hairline);
+  }
+
+  /* ---- List frame ---- */
+
+  .pg-admin__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--os-space-3);
+    margin-bottom: var(--os-space-5);
+  }
+
+  .pg-admin__filter { min-width: min(320px, 100%); }
+
+  .pg-admin__search {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--os-space-3);
+    margin-bottom: var(--os-space-5);
+  }
+
+  .pg-admin__search > .mud-input-control { flex: 1; }
+
+  @media (max-width: 599.98px) {
+    .pg-admin__search { flex-direction: column; align-items: stretch; }
+  }
+
+  .pg-admin__invoice-number {
+    display: block;
+    margin-top: var(--os-space-1);
+    font-size: var(--os-text-xl);
+  }
+
+  /* ---- Dashboard ---- */
+
+  .pg-admin__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--os-space-4);
+  }
+
+  .pg-admin__panels {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--os-space-5);
+    margin-top: var(--os-space-6);
+    align-items: start;
+  }
+
+  @media (min-width: 960px) {
+    .pg-admin__panels { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  }
+
+  .pg-admin__row {
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--os-dur-1) var(--os-ease);
+  }
+
+  .pg-admin__row:hover { background-color: var(--os-sunk); }
+
+  /* ---- Detail rails ---- */
+
+  .pg-admin__rail-card { position: sticky; top: calc(var(--os-header-h) + var(--os-space-5)); }
+
+  @media (max-width: 959.98px) {
+    .pg-admin__rail-card { position: static; }
+  }
+
+  .pg-admin__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--os-space-3);
+  }
+
+  .pg-admin__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--os-space-3);
+    margin-bottom: var(--os-space-4);
+  }
+
+  .pg-admin__note {
+    margin: var(--os-space-4) 0 0;
+    padding-top: var(--os-space-3);
+    border-top: 1px solid var(--os-hairline);
+    color: var(--os-muted);
+    font-size: var(--os-text-sm);
+  }
+
+  /* The admin forms sit on the canvas, so the sticky action bar needs the
+     same ground colour to hide the content scrolling underneath it. */
+  .pg-admin-form { margin-bottom: var(--os-space-5); }
+
+  /* ---- Order/invoice head, shared with the customer order detail ---- */
+
+  .pg-order__number {
+    margin-top: var(--os-space-1);
+    font-size: var(--os-text-xl);
+    font-weight: 500;
+  }
+
+  .pg-order__placed { color: var(--os-muted); font-size: var(--os-text-sm); }
+
+  .pg-order__totals {
+    margin-top: var(--os-space-5);
+    padding-top: var(--os-space-4);
+    border-top: 1px solid var(--os-hairline);
+  }
+
+  .pg-timeline__dot.os-tone-info { border-color: var(--os-accent-2); }
+  .pg-timeline__dot.os-tone-accent { border-color: var(--os-accent); }
 }

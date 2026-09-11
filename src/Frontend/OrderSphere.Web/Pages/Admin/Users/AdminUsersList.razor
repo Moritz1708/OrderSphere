@@ -5,65 +5,75 @@
 
 <PageTitle>@L["Admin.Users.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudStack Spacing="0" Class="mb-6">
-        <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Users.Title"]</MudText>
-        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Users.Subtitle"]</MudText>
-    </MudStack>
+<AdminListShell Eyebrow="@L["Admin.Nav.Section"]"
+                Title="@L["Admin.Users.Title"]"
+                Subtitle="@L["Admin.Users.Subtitle"]"
+                Loading="_loading"
+                IsEmpty="@(_users.Count == 0)"
+                EmptyIcon="@Icons.Material.Outlined.Group"
+                EmptyTitle="@L["Admin.Users.None"]">
+    <Filters>
+        <MudTextField T="string" @bind-Value="_search" @bind-Value:after="StateHasChanged"
+                      Placeholder="@L["Common.Search"]"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Outlined.Search"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                      Class="pg-admin__filter" />
+    </Filters>
 
-    @if (_loading)
-    {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
-    }
-    else if (_users.Count == 0)
-    {
-        <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.Group" IconClass="text-muted" Title="@L["Admin.Users.None"]" TitleTypo="Typo.h6" />
-        </MudPaper>
-    }
-    else
-    {
-        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);overflow:hidden;">
-            <MudTable Items="_users" Hover="true" Dense="false">
-                <HeaderContent>
-                    <MudTh>@L["Admin.Users.ColName"]</MudTh>
-                    <MudTh>@L["Admin.Users.ColEmail"]</MudTh>
-                    <MudTh Style="text-align:center;">@L["Admin.Users.ColAddresses"]</MudTh>
-                    <MudTh>@L["Admin.Users.ColDarkMode"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["Admin.Users.ColName"]">
-                        <MudText Typo="Typo.body2" Style="font-weight:500;">@context.DisplayName</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted os-mono">
-                            @context.Subject[..8]…
-                        </MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Users.ColEmail"]">
-                        <MudText Typo="Typo.body2">@context.Email</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Users.ColAddresses"]" Style="text-align:center;">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.AddressCount</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Users.ColDarkMode"]">
-                        <MudIcon Icon="@(context.DarkModeEnabled ? Icons.Material.Outlined.DarkMode : Icons.Material.Outlined.LightMode)"
-                                 Size="Size.Small"
-                                 Color="@(context.DarkModeEnabled ? Color.Primary : Color.Default)" />
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
-    }
-</MudContainer>
+    <ChildContent>
+        <MudTable Items="Filtered" Hover="true" Elevation="0" Class="os-table"
+                  RowsPerPage="25" Breakpoint="Breakpoint.Md">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<AdminUserSummaryDto, object>(u => u.DisplayName)">@L["Admin.Users.ColName"]</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<AdminUserSummaryDto, object>(u => u.Email)">@L["Admin.Users.ColEmail"]</MudTableSortLabel></MudTh>
+                <MudTh Class="os-table__num"><MudTableSortLabel SortBy="new Func<AdminUserSummaryDto, object>(u => u.AddressCount)">@L["Admin.Users.ColAddresses"]</MudTableSortLabel></MudTh>
+                <MudTh>@L["Admin.Users.ColDarkMode"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@L["Admin.Users.ColName"]">
+                    <span class="os-table__strong">@context.DisplayName</span>
+                    <span class="os-table__sub os-mono">@context.Subject[..8]…</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Users.ColEmail"]">@context.Email</MudTd>
+                <MudTd DataLabel="@L["Admin.Users.ColAddresses"]" Class="os-table__num">
+                    <span class="os-num">@context.AddressCount</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Users.ColDarkMode"]">
+                    @* A chip, not an icon: an icon alone left the column unreadable for
+                       anyone who could not tell sun from moon at 18px. *@
+                    <OsStatusChip Tone="StatusTone.Neutral"
+                                  Size="OsStatusChip.ChipSize.Sm"
+                                  Text="@(context.DarkModeEnabled ? L["Theme.Dark"] : L["Theme.Light"])" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="@L["Admin.Table.RowsPerPage"]" />
+            </PagerContent>
+        </MudTable>
+    </ChildContent>
+</AdminListShell>
 
 @code {
     private List<AdminUserSummaryDto> _users = [];
     private bool _loading = true;
+    private string _search = string.Empty;
+
+    private IEnumerable<AdminUserSummaryDto> Filtered =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _users
+            : _users.Where(u =>
+                u.DisplayName.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+                u.Email.Contains(_search, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
-        try { var r = await AdminUsers.GetUsersAsync(); if (r.IsSuccess) _users = r.Value!; else Snackbar.ShowApiError(r.Error); }
+        try
+        {
+            var r = await AdminUsers.GetUsersAsync();
+            if (r.IsSuccess) _users = r.Value!;
+            else Snackbar.ShowApiError(r.Error);
+        }
         catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
