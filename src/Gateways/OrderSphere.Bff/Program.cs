@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.StaticFiles;
 using OrderSphere.Bff.Auth;
 using OrderSphere.Bff.Extensions;
 using OrderSphere.Bff.Hubs;
@@ -47,6 +48,21 @@ builder.Services.AddHttpClient("userprofile-status", c =>
 builder.Services.AddExchangeRates(builder.Configuration);
 
 builder.AddBffProxy();
+
+// index.html and everything under wwwroot/css|js ship without a fingerprint in
+// their URL. Without an explicit Cache-Control a browser is free to reuse them
+// heuristically, which serves the previous deployment's stylesheets against the
+// current markup. ETag revalidation is cheap; only the self-hosted fonts, whose
+// file names change when the file does, are cached hard.
+builder.Services.Configure<StaticFileOptions>(options =>
+    options.OnPrepareResponse = ctx =>
+    {
+        var path = ctx.Context.Request.Path.Value ?? string.Empty;
+        ctx.Context.Response.Headers.CacheControl =
+            path.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase)
+                ? "public,max-age=31536000,immutable"
+                : "no-cache";
+    });
 
 
 var app = builder.Build();
