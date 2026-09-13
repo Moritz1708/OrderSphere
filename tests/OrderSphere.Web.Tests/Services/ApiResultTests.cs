@@ -82,6 +82,29 @@ public sealed class ApiResultTests
         result.Error!.Kind.Should().Be(ApiErrorKind.Network);
     }
 
+    [Fact]
+    public async Task ToApiResult_WithoutServerMessage_UsesTheCurrentUiCulture()
+    {
+        var previous = System.Globalization.CultureInfo.CurrentUICulture;
+        try
+        {
+            using var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+
+            System.Globalization.CultureInfo.CurrentUICulture = new("en-US");
+            var english = await response.ToApiResultAsync();
+
+            System.Globalization.CultureInfo.CurrentUICulture = new("de-DE");
+            var german = await response.ToApiResultAsync();
+
+            english.Error!.Message.Should().Be("You don't have permission to do that.");
+            german.Error!.Message.Should().Be("Dafür fehlt dir die Berechtigung.");
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentUICulture = previous;
+        }
+    }
+
     private sealed class ThrowingHandler : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(

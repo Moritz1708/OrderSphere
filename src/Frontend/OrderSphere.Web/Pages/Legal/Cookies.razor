@@ -1,78 +1,24 @@
 @page "/cookies"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>Cookie-Richtlinie — OrderSphere</PageTitle>
+<PageTitle>@L["Cookies.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Cookie-Richtlinie
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Legal"]"
+               Title="@L["Cookies.Title"]"
+               Lede="@L["Cookies.Lede"]"
+               Notice="@L["Article.PlaceholderNotice"]"
+               Sections="_sections" />
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Elevation="0" Class="pa-8 surface-card-lg">
+@code {
+    private IReadOnlyList<ArticleSection> _sections = [];
 
-            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-6">
-                Platzhalter-Cookie-Richtlinie. Bitte vor Live-Schaltung mit der tatsächlich eingesetzten Cookie-Strategie abgleichen.
-            </MudAlert>
+    protected override void OnInitialized() => _sections =
+    [
+        Section("what", 1),
+        Section("which", 2),
+        Section("manage", 3),
+    ];
 
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Was sind Cookies?
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Cookies sind kleine Textdateien, die beim Besuch unserer Website auf deinem Gerät
-                gespeichert werden. Sie helfen uns, die Website funktional bereitzustellen und
-                deine Sitzung (z.B. Warenkorb, Login) zu verwalten.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Welche Cookies setzen wir?
-            </MudText>
-            <MudStack Spacing="3" Class="mb-6">
-                <MudPaper Elevation="0" Class="pa-4"
-                          Style="border-radius: 12px; border: 1px solid var(--mud-palette-divider);">
-                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                        Technisch notwendige Cookies
-                    </MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mt-1">
-                        Erforderlich für Login, Warenkorb und Sicherheit. Diese Cookies können
-                        nicht deaktiviert werden, da die Website sonst nicht korrekt funktioniert.
-                    </MudText>
-                </MudPaper>
-
-                <MudPaper Elevation="0" Class="pa-4"
-                          Style="border-radius: 12px; border: 1px solid var(--mud-palette-divider);">
-                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                        Statistik-Cookies (optional)
-                    </MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mt-1">
-                        Helfen uns zu verstehen, wie Besucher unsere Website nutzen, sodass
-                        wir sie verbessern können. Werden nur mit deiner Einwilligung gesetzt.
-                    </MudText>
-                </MudPaper>
-
-                <MudPaper Elevation="0" Class="pa-4"
-                          Style="border-radius: 12px; border: 1px solid var(--mud-palette-divider);">
-                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                        Marketing-Cookies (optional)
-                    </MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mt-1">
-                        Werden verwendet, um Werbung relevant für dich zu gestalten.
-                        Werden nur mit deiner Einwilligung gesetzt.
-                    </MudText>
-                </MudPaper>
-            </MudStack>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Cookie-Einstellungen verwalten
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Du kannst deine Einwilligung jederzeit über die Cookie-Einstellungen widerrufen
-                oder Cookies in deinem Browser löschen. Beachte, dass das Deaktivieren
-                bestimmter Cookies die Funktion der Website einschränken kann.
-            </MudText>
-        </MudPaper>
-    </MudContainer>
-</section>
+    private ArticleSection Section(string id, int n) =>
+        new(id, L[$"Cookies.S{n}.Title"], new MarkupString(L[$"Cookies.S{n}.Body"]));
+}

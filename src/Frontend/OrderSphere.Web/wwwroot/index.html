@@ -25,7 +25,6 @@
     <link href="css/base.css" rel="stylesheet" />
     <link href="css/mud-overrides.css" rel="stylesheet" />
     <link href="css/components.css" rel="stylesheet" />
-    <link href="css/legacy.css" rel="stylesheet" />
     <link href="css/pages.css" rel="stylesheet" />
     <link href="css/motion.css" rel="stylesheet" />
     <link href="css/utilities.css" rel="stylesheet" />
@@ -38,11 +37,18 @@
         </div>
     </div>
 
-    <!-- Static markup cannot resolve resources, so this one string ships bilingually. -->
-    <div id="blazor-error-ui">
-        Ein unerwarteter Fehler ist aufgetreten. &middot; An unexpected error occurred.
-        <a href="." class="reload">Neu laden / Reload</a>
-        <span class="dismiss">&times;</span>
+    <!-- Static markup cannot resolve resources, so this one string ships bilingually.
+         Blazor sets display:block on the outer element and wires .reload and .dismiss;
+         the layout lives on the inner element. -->
+    <div id="blazor-error-ui" role="alert">
+        <div class="os-error-ui">
+            <p class="os-error-ui__text">
+                <strong>Ein unerwarteter Fehler ist aufgetreten.</strong>
+                <span lang="en">An unexpected error occurred.</span>
+            </p>
+            <a href="." class="reload os-error-ui__reload">Neu laden &middot; Reload</a>
+            <button type="button" class="dismiss os-error-ui__dismiss" aria-label="Schlie&szlig;en / Close">&times;</button>
+        </div>
     </div>
 
     <script src="_framework/blazor.webassembly.js"></script>

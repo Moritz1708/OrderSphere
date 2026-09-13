@@ -1651,4 +1651,352 @@
   <data name="Common.Details" xml:space="preserve">
     <value>Details</value>
   </data>
+  <data name="Article.Toc" xml:space="preserve">
+    <value>Auf dieser Seite</value>
+  </data>
+  <data name="Article.PlaceholderNotice" xml:space="preserve">
+    <value>Platzhaltertext. Vor der Live-Schaltung durch eine rechtlich geprüfte Fassung ersetzen.</value>
+  </data>
+  <data name="ApiError.Network" xml:space="preserve">
+    <value>Keine Verbindung zum Server. Bitte versuche es erneut.</value>
+  </data>
+  <data name="ApiError.UnexpectedResponse" xml:space="preserve">
+    <value>Unerwartete Antwort vom Server.</value>
+  </data>
+  <data name="ApiError.Validation" xml:space="preserve">
+    <value>Die Eingabe ist ungültig.</value>
+  </data>
+  <data name="ApiError.Unauthorized" xml:space="preserve">
+    <value>Bitte melde dich an, um fortzufahren.</value>
+  </data>
+  <data name="ApiError.Forbidden" xml:space="preserve">
+    <value>Dafür fehlt dir die Berechtigung.</value>
+  </data>
+  <data name="ApiError.NotFound" xml:space="preserve">
+    <value>Die angeforderten Daten wurden nicht gefunden.</value>
+  </data>
+  <data name="ApiError.Conflict" xml:space="preserve">
+    <value>Die Aktion steht im Konflikt mit dem aktuellen Stand.</value>
+  </data>
+  <data name="ApiError.Server" xml:space="preserve">
+    <value>Auf dem Server ist ein Fehler aufgetreten. Bitte versuche es später erneut.</value>
+  </data>
+  <data name="ApiError.Unknown" xml:space="preserve">
+    <value>Die Aktion konnte nicht ausgeführt werden.</value>
+  </data>
+  <data name="Privacy.PageTitle" xml:space="preserve">
+    <value>Datenschutz — OrderSphere</value>
+  </data>
+  <data name="Privacy.Title" xml:space="preserve">
+    <value>Datenschutzerklärung</value>
+  </data>
+  <data name="Privacy.Lede" xml:space="preserve">
+    <value>Welche Daten wir erheben, wozu wir sie verarbeiten und welche Rechte du hast.</value>
+  </data>
+  <data name="Privacy.S1.Title" xml:space="preserve">
+    <value>Verantwortlicher</value>
+  </data>
+  <data name="Privacy.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;Verantwortlich für die Datenverarbeitung auf dieser Website ist die OrderSphere GmbH, Musterstraße 1, 12345 Musterstadt. Kontakt: &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S2.Title" xml:space="preserve">
+    <value>Erhebung und Speicherung personenbezogener Daten</value>
+  </data>
+  <data name="Privacy.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;Wir erheben personenbezogene Daten ausschließlich, wenn du sie uns aktiv übermittelst, etwa bei der Registrierung, einer Bestellung oder einer Kontaktaufnahme.&lt;/p&gt;&lt;p&gt;Erhoben werden Name, E-Mail-Adresse, Lieferanschrift und Zahlungsdaten, soweit sie zur Abwicklung deiner Bestellung nötig sind.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S3.Title" xml:space="preserve">
+    <value>Zwecke der Datenverarbeitung</value>
+  </data>
+  <data name="Privacy.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;Die Verarbeitung erfolgt&lt;/p&gt;&lt;ul&gt;&lt;li&gt;zur Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO),&lt;/li&gt;&lt;li&gt;zur Erfüllung gesetzlicher Pflichten (lit. c) und&lt;/li&gt;&lt;li&gt;auf Basis berechtigter Interessen (lit. f), etwa zur Verbesserung unseres Angebots.&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="Privacy.S4.Title" xml:space="preserve">
+    <value>Cookies</value>
+  </data>
+  <data name="Privacy.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;Wir verwenden technisch notwendige Cookies, damit die Website funktioniert, etwa für Login und Warenkorb. Details findest du in unserer &lt;a href="cookies"&gt;Cookie-Richtlinie&lt;/a&gt;.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S5.Title" xml:space="preserve">
+    <value>Deine Rechte</value>
+  </data>
+  <data name="Privacy.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;Du hast jederzeit das Recht auf&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Auskunft (Art. 15 DSGVO),&lt;/li&gt;&lt;li&gt;Berichtigung (Art. 16),&lt;/li&gt;&lt;li&gt;Löschung (Art. 17),&lt;/li&gt;&lt;li&gt;Einschränkung der Verarbeitung (Art. 18),&lt;/li&gt;&lt;li&gt;Datenübertragbarkeit (Art. 20) und&lt;/li&gt;&lt;li&gt;Widerspruch (Art. 21).&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Wende dich dazu an &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S6.Title" xml:space="preserve">
+    <value>Speicherdauer</value>
+  </data>
+  <data name="Privacy.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Wir speichern deine Daten nur so lange, wie es für die genannten Zwecke erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen, zum Beispiel nach HGB oder AO.&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.PageTitle" xml:space="preserve">
+    <value>Impressum — OrderSphere</value>
+  </data>
+  <data name="Imprint.Title" xml:space="preserve">
+    <value>Impressum</value>
+  </data>
+  <data name="Imprint.Lede" xml:space="preserve">
+    <value>Anbieterkennzeichnung nach deutschem Recht.</value>
+  </data>
+  <data name="Imprint.S1.Title" xml:space="preserve">
+    <value>Angaben gemäß § 5 DDG</value>
+  </data>
+  <data name="Imprint.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;OrderSphere GmbH&lt;br /&gt;Musterstraße 1&lt;br /&gt;12345 Musterstadt&lt;br /&gt;Deutschland&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S2.Title" xml:space="preserve">
+    <value>Vertreten durch</value>
+  </data>
+  <data name="Imprint.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;Max Mustermann (Geschäftsführer)&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S3.Title" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="Imprint.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;Telefon: &lt;a href="tel:+49123456789"&gt;+49 (0) 123 456 789&lt;/a&gt;&lt;br /&gt;E-Mail: &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S4.Title" xml:space="preserve">
+    <value>Registereintrag</value>
+  </data>
+  <data name="Imprint.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;Eintragung im Handelsregister&lt;br /&gt;Registergericht: Amtsgericht Musterstadt&lt;br /&gt;Registernummer: HRB 00000&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S5.Title" xml:space="preserve">
+    <value>Umsatzsteuer-ID</value>
+  </data>
+  <data name="Imprint.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: DE000000000&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S6.Title" xml:space="preserve">
+    <value>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</value>
+  </data>
+  <data name="Imprint.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Max Mustermann&lt;br /&gt;Musterstraße 1&lt;br /&gt;12345 Musterstadt&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.PageTitle" xml:space="preserve">
+    <value>AGB — OrderSphere</value>
+  </data>
+  <data name="Terms.Title" xml:space="preserve">
+    <value>Allgemeine Geschäftsbedingungen</value>
+  </data>
+  <data name="Terms.Lede" xml:space="preserve">
+    <value>Die Regeln, die für jede Bestellung bei OrderSphere gelten.</value>
+  </data>
+  <data name="Terms.S1.Title" xml:space="preserve">
+    <value>Geltungsbereich</value>
+  </data>
+  <data name="Terms.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge, die zwischen der OrderSphere GmbH und ihren Kundinnen und Kunden über den Online-Shop ordersphere.dev geschlossen werden.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S2.Title" xml:space="preserve">
+    <value>Vertragsschluss</value>
+  </data>
+  <data name="Terms.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;Mit dem Klick auf „Bestellung abschließen“ gibst du eine verbindliche Bestellung der Waren im Warenkorb ab. Der Kaufvertrag kommt zustande, sobald wir deine Bestellung per E-Mail bestätigen oder die Ware versenden.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S3.Title" xml:space="preserve">
+    <value>Preise und Versandkosten</value>
+  </data>
+  <data name="Terms.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;Alle Preise verstehen sich inklusive der gesetzlichen Mehrwertsteuer. Versandkosten werden im Bestellprozess gesondert ausgewiesen.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S4.Title" xml:space="preserve">
+    <value>Lieferung</value>
+  </data>
+  <data name="Terms.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;Die Lieferung erfolgt an die von dir angegebene Lieferadresse. Die Lieferzeit beträgt innerhalb Deutschlands in der Regel 2–5 Werktage.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S5.Title" xml:space="preserve">
+    <value>Zahlung</value>
+  </data>
+  <data name="Terms.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;Wir akzeptieren die im Bestellprozess angebotenen Zahlungsarten.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S6.Title" xml:space="preserve">
+    <value>Widerrufsrecht</value>
+  </data>
+  <data name="Terms.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Verbraucherinnen und Verbrauchern steht ein gesetzliches Widerrufsrecht von 14 Tagen zu. Wie der Widerruf abläuft, beschreibt die Seite &lt;a href="returns"&gt;Rückgabe &amp;amp; Widerruf&lt;/a&gt;.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S7.Title" xml:space="preserve">
+    <value>Gewährleistung</value>
+  </data>
+  <data name="Terms.S7.Body" xml:space="preserve">
+    <value>&lt;p&gt;Es gelten die gesetzlichen Gewährleistungsrechte.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S8.Title" xml:space="preserve">
+    <value>Schlussbestimmungen</value>
+  </data>
+  <data name="Terms.S8.Body" xml:space="preserve">
+    <value>&lt;p&gt;Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Sollten einzelne Bestimmungen unwirksam sein, bleibt der übrige Vertrag wirksam.&lt;/p&gt;</value>
+  </data>
+  <data name="Cookies.PageTitle" xml:space="preserve">
+    <value>Cookie-Richtlinie — OrderSphere</value>
+  </data>
+  <data name="Cookies.Title" xml:space="preserve">
+    <value>Cookie-Richtlinie</value>
+  </data>
+  <data name="Cookies.Lede" xml:space="preserve">
+    <value>Welche Cookies wir setzen und wie du sie steuerst.</value>
+  </data>
+  <data name="Cookies.S1.Title" xml:space="preserve">
+    <value>Was sind Cookies?</value>
+  </data>
+  <data name="Cookies.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;Cookies sind kleine Textdateien, die beim Besuch unserer Website auf deinem Gerät gespeichert werden. Sie halten die Website funktionsfähig und verwalten deine Sitzung, etwa Login und Warenkorb.&lt;/p&gt;</value>
+  </data>
+  <data name="Cookies.S2.Title" xml:space="preserve">
+    <value>Welche Cookies setzen wir?</value>
+  </data>
+  <data name="Cookies.S2.Body" xml:space="preserve">
+    <value>&lt;dl&gt;&lt;dt&gt;Technisch notwendig&lt;/dt&gt;&lt;dd&gt;Erforderlich für Login, Warenkorb und Sicherheit. Diese Cookies lassen sich nicht deaktivieren, da die Website sonst nicht korrekt funktioniert.&lt;/dd&gt;&lt;dt&gt;Statistik (optional)&lt;/dt&gt;&lt;dd&gt;Zeigen uns, wie Besucherinnen und Besucher die Website nutzen, damit wir sie verbessern können. Nur mit deiner Einwilligung.&lt;/dd&gt;&lt;dt&gt;Marketing (optional)&lt;/dt&gt;&lt;dd&gt;Machen Werbung für dich relevanter. Nur mit deiner Einwilligung.&lt;/dd&gt;&lt;/dl&gt;</value>
+  </data>
+  <data name="Cookies.S3.Title" xml:space="preserve">
+    <value>Cookie-Einstellungen verwalten</value>
+  </data>
+  <data name="Cookies.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;Du kannst deine Einwilligung jederzeit widerrufen oder Cookies in deinem Browser löschen. Wenn du bestimmte Cookies deaktivierst, funktioniert die Website unter Umständen nur eingeschränkt.&lt;/p&gt;</value>
+  </data>
+  <data name="Faq.PageTitle" xml:space="preserve">
+    <value>FAQ — OrderSphere</value>
+  </data>
+  <data name="Faq.Title" xml:space="preserve">
+    <value>Häufige Fragen</value>
+  </data>
+  <data name="Faq.Lede" xml:space="preserve">
+    <value>Antworten auf die wichtigsten Fragen rund um deine Bestellung.</value>
+  </data>
+  <data name="Faq.Q1" xml:space="preserve">
+    <value>Wie lange dauert die Lieferung?</value>
+  </data>
+  <data name="Faq.A1" xml:space="preserve">
+    <value>Innerhalb Deutschlands beträgt die Lieferzeit in der Regel 2–5 Werktage. Nach dem Versand bekommst du einen Tracking-Link per E-Mail.</value>
+  </data>
+  <data name="Faq.Q2" xml:space="preserve">
+    <value>Welche Zahlungsmethoden akzeptiert ihr?</value>
+  </data>
+  <data name="Faq.A2" xml:space="preserve">
+    <value>Die verfügbaren Zahlungsarten siehst du im Checkout.</value>
+  </data>
+  <data name="Faq.Q3" xml:space="preserve">
+    <value>Wie kann ich meine Bestellung stornieren?</value>
+  </data>
+  <data name="Faq.A3" xml:space="preserve">
+    <value>Solange deine Bestellung noch nicht versendet wurde, kannst du sie unter „Meine Bestellungen“ stornieren. Danach nutzt du dein Widerrufsrecht.</value>
+  </data>
+  <data name="Faq.Q4" xml:space="preserve">
+    <value>Was passiert, wenn ein Artikel beschädigt ankommt?</value>
+  </data>
+  <data name="Faq.A4" xml:space="preserve">
+    <value>Melde dich innerhalb von 14 Tagen per E-Mail bei uns. Wir prüfen den Fall und schicken dir kostenfrei Ersatz oder erstatten den Kaufpreis.</value>
+  </data>
+  <data name="Faq.Q5" xml:space="preserve">
+    <value>Wie funktioniert die Rückgabe?</value>
+  </data>
+  <data name="Faq.A5" xml:space="preserve">
+    <value>Du hast 14 Tage Widerrufsrecht. Den Ablauf beschreibt die Seite „Rückgabe &amp; Widerruf“; das Rücksende-Etikett ist kostenlos.</value>
+  </data>
+  <data name="Faq.Q6" xml:space="preserve">
+    <value>Liefert ihr auch ins Ausland?</value>
+  </data>
+  <data name="Faq.A6" xml:space="preserve">
+    <value>Aktuell liefern wir nach Deutschland und Österreich. Weitere Länder sind in Planung.</value>
+  </data>
+  <data name="Faq.Q7" xml:space="preserve">
+    <value>Wie ändere ich meine Daten?</value>
+  </data>
+  <data name="Faq.A7" xml:space="preserve">
+    <value>In deinem Profil kannst du Kontaktdaten und Lieferadressen jederzeit anpassen.</value>
+  </data>
+  <data name="Faq.Q8" xml:space="preserve">
+    <value>Ist mein Bezahlvorgang sicher?</value>
+  </data>
+  <data name="Faq.A8" xml:space="preserve">
+    <value>Ja. Alle Zahlungen laufen über verschlüsselte Verbindungen, und wir speichern keine vollständigen Kreditkartendaten auf unseren Servern.</value>
+  </data>
+  <data name="Faq.MoreTitle" xml:space="preserve">
+    <value>Frage nicht dabei?</value>
+  </data>
+  <data name="Faq.MoreBody" xml:space="preserve">
+    <value>Schreib uns — wir antworten innerhalb von 24 Stunden.</value>
+  </data>
+  <data name="Faq.MoreCta" xml:space="preserve">
+    <value>Zum Kontakt</value>
+  </data>
+  <data name="Contact.PageTitle" xml:space="preserve">
+    <value>Kontakt — OrderSphere</value>
+  </data>
+  <data name="Contact.Title" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="Contact.Lede" xml:space="preserve">
+    <value>Wir sind für dich da — auf dem Weg, der dir am liebsten ist.</value>
+  </data>
+  <data name="Contact.EmailTitle" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="Contact.EmailHint" xml:space="preserve">
+    <value>Antwort innerhalb von 24 Stunden.</value>
+  </data>
+  <data name="Contact.PhoneTitle" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="Contact.PhoneHours" xml:space="preserve">
+    <value>Mo.–Fr. 9:00–18:00 Uhr</value>
+  </data>
+  <data name="Contact.AddressTitle" xml:space="preserve">
+    <value>Adresse</value>
+  </data>
+  <data name="Contact.FormTitle" xml:space="preserve">
+    <value>Nachricht senden</value>
+  </data>
+  <data name="Contact.FormNotice" xml:space="preserve">
+    <value>Das Kontaktformular ist noch in Vorbereitung. Bis dahin erreichst du uns am schnellsten per E-Mail.</value>
+  </data>
+  <data name="Contact.FormCta" xml:space="preserve">
+    <value>E-Mail schreiben</value>
+  </data>
+  <data name="Returns.PageTitle" xml:space="preserve">
+    <value>Rückgabe — OrderSphere</value>
+  </data>
+  <data name="Returns.Title" xml:space="preserve">
+    <value>Rückgabe &amp; Widerruf</value>
+  </data>
+  <data name="Returns.Lede" xml:space="preserve">
+    <value>14 Tage Widerrufsrecht. Das Rücksende-Etikett geht auf uns.</value>
+  </data>
+  <data name="Returns.StepsTitle" xml:space="preserve">
+    <value>So gibst du zurück</value>
+  </data>
+  <data name="Returns.Step1.Title" xml:space="preserve">
+    <value>Rückgabe anmelden</value>
+  </data>
+  <data name="Returns.Step1.Body" xml:space="preserve">
+    <value>Schreib uns eine kurze E-Mail an support@ordersphere.dev mit deiner Bestellnummer und dem Grund der Rückgabe.</value>
+  </data>
+  <data name="Returns.Step2.Title" xml:space="preserve">
+    <value>Versandetikett erhalten</value>
+  </data>
+  <data name="Returns.Step2.Body" xml:space="preserve">
+    <value>Innerhalb eines Werktags bekommst du ein kostenloses Rücksende-Etikett. Ausdrucken und auf das Paket kleben.</value>
+  </data>
+  <data name="Returns.Step3.Title" xml:space="preserve">
+    <value>Paket abgeben</value>
+  </data>
+  <data name="Returns.Step3.Body" xml:space="preserve">
+    <value>Gib das Paket in einer Filiale unseres Versandpartners ab. Die Quittung ist dein Beleg.</value>
+  </data>
+  <data name="Returns.Step4.Title" xml:space="preserve">
+    <value>Erstattung</value>
+  </data>
+  <data name="Returns.Step4.Body" xml:space="preserve">
+    <value>Sobald das Paket bei uns ist, prüfen wir die Ware und erstatten den Kaufpreis innerhalb von 5 Werktagen.</value>
+  </data>
+  <data name="Returns.NotesTitle" xml:space="preserve">
+    <value>Wichtige Hinweise</value>
+  </data>
+  <data name="Returns.NotesBody" xml:space="preserve">
+    <value>&lt;ul&gt;&lt;li&gt;Die Widerrufsfrist beträgt 14 Tage ab Erhalt der Ware.&lt;/li&gt;&lt;li&gt;Sende Artikel möglichst in der Originalverpackung zurück.&lt;/li&gt;&lt;li&gt;Das gesetzliche Widerrufsrecht und unsere Kulanzregelung sind voneinander unabhängig.&lt;/li&gt;&lt;li&gt;Die vollständigen Bedingungen stehen in unseren &lt;a href="terms"&gt;AGB&lt;/a&gt;.&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
 </root>

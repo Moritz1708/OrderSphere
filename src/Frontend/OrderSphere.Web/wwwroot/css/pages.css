@@ -487,4 +487,31 @@
 
   .pg-timeline__dot.os-tone-info { border-color: var(--os-accent-2); }
   .pg-timeline__dot.os-tone-accent { border-color: var(--os-accent); }
+
+  /* ---- Routing shell (App.razor) ---- */
+
+  .pg-route-authorizing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+
+  .pg-notfound { text-align: center; }
+  .pg-notfound .os-eyebrow { justify-content: center; }
+  .pg-notfound__title { margin-top: var(--os-space-4); }
+
+  .pg-notfound__body {
+    margin: var(--os-space-4) 0 0;
+    color: var(--os-muted);
+    font-size: var(--os-text-lg);
+  }
+
+  .pg-notfound__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--os-space-3);
+    justify-content: center;
+    margin-top: var(--os-space-6);
+  }
 }

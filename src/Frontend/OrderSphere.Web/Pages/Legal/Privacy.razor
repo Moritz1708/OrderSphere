@@ -1,74 +1,27 @@
 @page "/privacy"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>Datenschutz — OrderSphere</PageTitle>
+<PageTitle>@L["Privacy.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Datenschutzerklärung
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Legal"]"
+               Title="@L["Privacy.Title"]"
+               Lede="@L["Privacy.Lede"]"
+               Notice="@L["Article.PlaceholderNotice"]"
+               Sections="_sections" />
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Elevation="0" Class="pa-8 surface-card-lg">
+@code {
+    private IReadOnlyList<ArticleSection> _sections = [];
 
-            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-6">
-                Platzhalter-Datenschutzerklärung. Vor Live-Schaltung durch eine geprüfte Version ersetzen.
-            </MudAlert>
+    protected override void OnInitialized() => _sections =
+    [
+        Section("controller", 1),
+        Section("collection", 2),
+        Section("purposes", 3),
+        Section("cookies", 4),
+        Section("rights", 5),
+        Section("retention", 6),
+    ];
 
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                1. Verantwortlicher
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Verantwortlich für die Datenverarbeitung auf dieser Website ist die OrderSphere GmbH,
-                Musterstraße 1, 12345 Musterstadt. Kontakt: support@ordersphere.dev
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                2. Erhebung und Speicherung personenbezogener Daten
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Wir erheben personenbezogene Daten ausschließlich, wenn du sie uns aktiv übermittelst,
-                z.B. bei der Registrierung, Bestellung oder Kontaktaufnahme. Erhoben werden Name,
-                E-Mail-Adresse, Lieferanschrift und Zahlungsdaten zur Abwicklung deiner Bestellung.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                3. Zwecke der Datenverarbeitung
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Die Verarbeitung erfolgt zur Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO),
-                zur Erfüllung gesetzlicher Pflichten (lit. c) sowie auf Basis berechtigter Interessen (lit. f),
-                etwa zur Verbesserung unseres Angebots.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                4. Cookies
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Wir verwenden technisch notwendige Cookies, um die Funktion der Website sicherzustellen
-                (z.B. Login, Warenkorb). Details findest du in unserer
-                <MudLink Href="/cookies">Cookie-Richtlinie</MudLink>.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                5. Deine Rechte
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Du hast jederzeit das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16),
-                Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20)
-                und Widerspruch (Art. 21). Wende dich dazu an support@ordersphere.dev.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                6. Speicherdauer
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Wir speichern deine Daten nur so lange, wie es für die genannten Zwecke erforderlich ist
-                oder gesetzliche Aufbewahrungspflichten (z.B. nach HGB oder AO) bestehen.
-            </MudText>
-        </MudPaper>
-    </MudContainer>
-</section>
+    private ArticleSection Section(string id, int n) =>
+        new(id, L[$"Privacy.S{n}.Title"], new MarkupString(L[$"Privacy.S{n}.Body"]));
+}

@@ -1,73 +1,32 @@
 @page "/faq"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>FAQ — OrderSphere</PageTitle>
+<PageTitle>@L["Faq.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Häufige Fragen
-        </MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" Class="hero-subtitle-muted mt-2">
-            Antworten auf die wichtigsten Fragen rund um deine Bestellung.
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Service"]"
+               Title="@L["Faq.Title"]"
+               Lede="@L["Faq.Lede"]">
+    <MudExpansionPanels MultiExpansion="true" Elevation="0" Gutters="false" Class="os-faq">
+        @for (var i = 1; i <= QuestionCount; i++)
+        {
+            // The panel body renders after the loop has finished; it needs its own copy.
+            var n = i;
+            <MudExpansionPanel Text="@L[$"Faq.Q{n}"]">
+                <p class="os-faq__answer">@L[$"Faq.A{n}"]</p>
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Elevation="0" Class="pa-4 surface-card-lg">
-            <MudExpansionPanels MultiExpansion="true" Elevation="0" Gutters="false">
-                @foreach (var entry in _faq)
-                {
-                    <MudExpansionPanel>
-                        <TitleContent>
-                            <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                                @entry.Question
-                            </MudText>
-                        </TitleContent>
-                        <ChildContent>
-                            <MudText Typo="Typo.body1" Class="text-muted">
-                                @entry.Answer
-                            </MudText>
-                        </ChildContent>
-                    </MudExpansionPanel>
-                }
-            </MudExpansionPanels>
-        </MudPaper>
-
-        <MudStack AlignItems="AlignItems.Center" Class="mt-8">
-            <MudText Typo="Typo.body1" Class="text-muted mb-4">
-                Frage nicht dabei? Wir helfen dir gerne weiter.
-            </MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
-                       Href="/contact" StartIcon="@Icons.Material.Outlined.SupportAgent"
-                       Class="btn-pill">
-                Zum Kontakt
-            </MudButton>
-        </MudStack>
-    </MudContainer>
-</section>
+    <OsCard Surface="OsCard.CardSurface.Sunk" Padding="OsCard.CardPadding.Lg" Class="os-article__cta">
+        <div>
+            <h2 class="os-article__cta-title">@L["Faq.MoreTitle"]</h2>
+            <p class="os-muted">@L["Faq.MoreBody"]</p>
+        </div>
+        <OsButton Href="/contact" EndIcon="@Icons.Material.Outlined.ArrowForward">@L["Faq.MoreCta"]</OsButton>
+    </OsCard>
+</ArticleLayout>
 
 @code {
-    private readonly List<FaqEntry> _faq =
-    [
-        new("Wie lange dauert die Lieferung?",
-            "Innerhalb Deutschlands beträgt die Lieferzeit in der Regel 2–5 Werktage. Du erhältst nach dem Versand einen Tracking-Link per E-Mail."),
-        new("Welche Zahlungsmethoden akzeptiert ihr?",
-            "Wir akzeptieren Rechnung, Kreditkarte und PayPal. Die verfügbaren Optionen werden dir im Checkout angezeigt."),
-        new("Wie kann ich meine Bestellung stornieren?",
-            "Solange deine Bestellung noch nicht versendet wurde, kannst du sie unter 'Meine Bestellungen' stornieren. Andernfalls nutze bitte das Widerrufsrecht."),
-        new("Was passiert, wenn ein Artikel beschädigt ankommt?",
-            "Melde dich innerhalb von 14 Tagen per E-Mail bei uns. Wir prüfen den Fall und schicken dir kostenfrei Ersatz oder erstatten den Kaufpreis."),
-        new("Wie funktioniert die Rückgabe?",
-            "Du hast 14 Tage Widerrufsrecht. Details findest du auf unserer Rückgabe-Seite. Den Versandschein stellen wir dir kostenlos zur Verfügung."),
-        new("Liefert ihr auch ins Ausland?",
-            "Aktuell liefern wir nach Deutschland und Österreich. Weitere Länder sind in Planung."),
-        new("Wie kann ich meine Daten ändern?",
-            "Im Bereich Einstellungen kannst du deine Kontaktdaten und Lieferadresse jederzeit anpassen."),
-        new("Ist mein Bezahlvorgang sicher?",
-            "Ja. Alle Zahlungen werden über verschlüsselte Verbindungen abgewickelt. Wir speichern keine vollständigen Kreditkartendaten auf unseren Servern.")
-    ];
-
-    private sealed record FaqEntry(string Question, string Answer);
+    // Faq.Q1..Q8 / Faq.A1..A8 in AppStrings.
+    private const int QuestionCount = 8;
 }

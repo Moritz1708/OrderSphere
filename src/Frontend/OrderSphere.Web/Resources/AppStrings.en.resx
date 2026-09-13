@@ -1651,4 +1651,352 @@
   <data name="Common.Details" xml:space="preserve">
     <value>Details</value>
   </data>
+  <data name="Article.Toc" xml:space="preserve">
+    <value>On this page</value>
+  </data>
+  <data name="Article.PlaceholderNotice" xml:space="preserve">
+    <value>Placeholder text. Replace with a legally reviewed version before going live.</value>
+  </data>
+  <data name="ApiError.Network" xml:space="preserve">
+    <value>Can't reach the server. Please try again.</value>
+  </data>
+  <data name="ApiError.UnexpectedResponse" xml:space="preserve">
+    <value>Unexpected response from the server.</value>
+  </data>
+  <data name="ApiError.Validation" xml:space="preserve">
+    <value>The input is invalid.</value>
+  </data>
+  <data name="ApiError.Unauthorized" xml:space="preserve">
+    <value>Please sign in to continue.</value>
+  </data>
+  <data name="ApiError.Forbidden" xml:space="preserve">
+    <value>You don't have permission to do that.</value>
+  </data>
+  <data name="ApiError.NotFound" xml:space="preserve">
+    <value>The requested data could not be found.</value>
+  </data>
+  <data name="ApiError.Conflict" xml:space="preserve">
+    <value>The action conflicts with the current state.</value>
+  </data>
+  <data name="ApiError.Server" xml:space="preserve">
+    <value>Something went wrong on the server. Please try again later.</value>
+  </data>
+  <data name="ApiError.Unknown" xml:space="preserve">
+    <value>The action could not be completed.</value>
+  </data>
+  <data name="Privacy.PageTitle" xml:space="preserve">
+    <value>Privacy — OrderSphere</value>
+  </data>
+  <data name="Privacy.Title" xml:space="preserve">
+    <value>Privacy policy</value>
+  </data>
+  <data name="Privacy.Lede" xml:space="preserve">
+    <value>What data we collect, why we process it, and which rights you have.</value>
+  </data>
+  <data name="Privacy.S1.Title" xml:space="preserve">
+    <value>Controller</value>
+  </data>
+  <data name="Privacy.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;The controller responsible for data processing on this website is OrderSphere GmbH, Musterstraße 1, 12345 Musterstadt, Germany. Contact: &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S2.Title" xml:space="preserve">
+    <value>Collection and storage of personal data</value>
+  </data>
+  <data name="Privacy.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;We only collect personal data that you actively provide, for example when you register, place an order or contact us.&lt;/p&gt;&lt;p&gt;This covers your name, email address, delivery address and payment details, as far as they are needed to process your order.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S3.Title" xml:space="preserve">
+    <value>Purposes of processing</value>
+  </data>
+  <data name="Privacy.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;We process data&lt;/p&gt;&lt;ul&gt;&lt;li&gt;to perform a contract (Art. 6(1)(b) GDPR),&lt;/li&gt;&lt;li&gt;to comply with legal obligations (Art. 6(1)(c)), and&lt;/li&gt;&lt;li&gt;on the basis of legitimate interests (Art. 6(1)(f)), for example to improve our service.&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="Privacy.S4.Title" xml:space="preserve">
+    <value>Cookies</value>
+  </data>
+  <data name="Privacy.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;We use strictly necessary cookies so the website works, for example for sign-in and the cart. See our &lt;a href="cookies"&gt;cookie policy&lt;/a&gt; for details.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S5.Title" xml:space="preserve">
+    <value>Your rights</value>
+  </data>
+  <data name="Privacy.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;You have the right at any time to&lt;/p&gt;&lt;ul&gt;&lt;li&gt;access (Art. 15 GDPR),&lt;/li&gt;&lt;li&gt;rectification (Art. 16),&lt;/li&gt;&lt;li&gt;erasure (Art. 17),&lt;/li&gt;&lt;li&gt;restriction of processing (Art. 18),&lt;/li&gt;&lt;li&gt;data portability (Art. 20), and&lt;/li&gt;&lt;li&gt;object (Art. 21).&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;To exercise them, write to &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S6.Title" xml:space="preserve">
+    <value>Retention</value>
+  </data>
+  <data name="Privacy.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;We keep your data only as long as the purposes above require, or as long as statutory retention periods apply, for example under German commercial and tax law (HGB, AO).&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.PageTitle" xml:space="preserve">
+    <value>Imprint — OrderSphere</value>
+  </data>
+  <data name="Imprint.Title" xml:space="preserve">
+    <value>Imprint</value>
+  </data>
+  <data name="Imprint.Lede" xml:space="preserve">
+    <value>Provider identification as required by German law.</value>
+  </data>
+  <data name="Imprint.S1.Title" xml:space="preserve">
+    <value>Information pursuant to § 5 DDG</value>
+  </data>
+  <data name="Imprint.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;OrderSphere GmbH&lt;br /&gt;Musterstraße 1&lt;br /&gt;12345 Musterstadt&lt;br /&gt;Germany&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S2.Title" xml:space="preserve">
+    <value>Represented by</value>
+  </data>
+  <data name="Imprint.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;Max Mustermann (Managing Director)&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S3.Title" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Imprint.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;Phone: &lt;a href="tel:+49123456789"&gt;+49 (0) 123 456 789&lt;/a&gt;&lt;br /&gt;Email: &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S4.Title" xml:space="preserve">
+    <value>Commercial register</value>
+  </data>
+  <data name="Imprint.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;Entered in the commercial register&lt;br /&gt;Register court: Amtsgericht Musterstadt&lt;br /&gt;Register number: HRB 00000&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S5.Title" xml:space="preserve">
+    <value>VAT ID</value>
+  </data>
+  <data name="Imprint.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;VAT identification number pursuant to § 27a of the German VAT Act: DE000000000&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S6.Title" xml:space="preserve">
+    <value>Responsible for content pursuant to § 18(2) MStV</value>
+  </data>
+  <data name="Imprint.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Max Mustermann&lt;br /&gt;Musterstraße 1&lt;br /&gt;12345 Musterstadt&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.PageTitle" xml:space="preserve">
+    <value>Terms — OrderSphere</value>
+  </data>
+  <data name="Terms.Title" xml:space="preserve">
+    <value>Terms and conditions</value>
+  </data>
+  <data name="Terms.Lede" xml:space="preserve">
+    <value>The rules that apply to every order placed with OrderSphere.</value>
+  </data>
+  <data name="Terms.S1.Title" xml:space="preserve">
+    <value>Scope</value>
+  </data>
+  <data name="Terms.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;These terms and conditions apply to all contracts concluded between OrderSphere GmbH and its customers through the online shop ordersphere.dev.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S2.Title" xml:space="preserve">
+    <value>Formation of contract</value>
+  </data>
+  <data name="Terms.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;By clicking “Place order” you submit a binding order for the goods in your cart. The contract is concluded once we confirm your order by email or ship the goods.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S3.Title" xml:space="preserve">
+    <value>Prices and shipping costs</value>
+  </data>
+  <data name="Terms.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;All prices include statutory VAT. Shipping costs are shown separately during checkout.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S4.Title" xml:space="preserve">
+    <value>Delivery</value>
+  </data>
+  <data name="Terms.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;We deliver to the address you provide. Delivery within Germany usually takes 2–5 business days.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S5.Title" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="Terms.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;We accept the payment methods offered during checkout.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S6.Title" xml:space="preserve">
+    <value>Right of withdrawal</value>
+  </data>
+  <data name="Terms.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Consumers have a statutory right of withdrawal of 14 days. How to withdraw is described on the &lt;a href="returns"&gt;returns &amp;amp; withdrawal&lt;/a&gt; page.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S7.Title" xml:space="preserve">
+    <value>Warranty</value>
+  </data>
+  <data name="Terms.S7.Body" xml:space="preserve">
+    <value>&lt;p&gt;Statutory warranty rights apply.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S8.Title" xml:space="preserve">
+    <value>Final provisions</value>
+  </data>
+  <data name="Terms.S8.Body" xml:space="preserve">
+    <value>&lt;p&gt;The law of the Federal Republic of Germany applies, excluding the UN Convention on Contracts for the International Sale of Goods. Should individual provisions be invalid, the remainder of the contract stays in effect.&lt;/p&gt;</value>
+  </data>
+  <data name="Cookies.PageTitle" xml:space="preserve">
+    <value>Cookie policy — OrderSphere</value>
+  </data>
+  <data name="Cookies.Title" xml:space="preserve">
+    <value>Cookie policy</value>
+  </data>
+  <data name="Cookies.Lede" xml:space="preserve">
+    <value>Which cookies we set and how you control them.</value>
+  </data>
+  <data name="Cookies.S1.Title" xml:space="preserve">
+    <value>What are cookies?</value>
+  </data>
+  <data name="Cookies.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;Cookies are small text files stored on your device when you visit our website. They keep the website working and manage your session, such as sign-in and cart.&lt;/p&gt;</value>
+  </data>
+  <data name="Cookies.S2.Title" xml:space="preserve">
+    <value>Which cookies do we set?</value>
+  </data>
+  <data name="Cookies.S2.Body" xml:space="preserve">
+    <value>&lt;dl&gt;&lt;dt&gt;Strictly necessary&lt;/dt&gt;&lt;dd&gt;Required for sign-in, the cart and security. They cannot be switched off, because the website would not work correctly without them.&lt;/dd&gt;&lt;dt&gt;Statistics (optional)&lt;/dt&gt;&lt;dd&gt;Show us how visitors use the website so we can improve it. Only with your consent.&lt;/dd&gt;&lt;dt&gt;Marketing (optional)&lt;/dt&gt;&lt;dd&gt;Make advertising more relevant to you. Only with your consent.&lt;/dd&gt;&lt;/dl&gt;</value>
+  </data>
+  <data name="Cookies.S3.Title" xml:space="preserve">
+    <value>Managing cookie settings</value>
+  </data>
+  <data name="Cookies.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;You can withdraw your consent at any time or delete cookies in your browser. Disabling certain cookies may limit how the website works.&lt;/p&gt;</value>
+  </data>
+  <data name="Faq.PageTitle" xml:space="preserve">
+    <value>FAQ — OrderSphere</value>
+  </data>
+  <data name="Faq.Title" xml:space="preserve">
+    <value>Frequently asked questions</value>
+  </data>
+  <data name="Faq.Lede" xml:space="preserve">
+    <value>Answers to the most common questions about your order.</value>
+  </data>
+  <data name="Faq.Q1" xml:space="preserve">
+    <value>How long does delivery take?</value>
+  </data>
+  <data name="Faq.A1" xml:space="preserve">
+    <value>Delivery within Germany usually takes 2–5 business days. Once your order ships, you receive a tracking link by email.</value>
+  </data>
+  <data name="Faq.Q2" xml:space="preserve">
+    <value>Which payment methods do you accept?</value>
+  </data>
+  <data name="Faq.A2" xml:space="preserve">
+    <value>The available payment methods are shown at checkout.</value>
+  </data>
+  <data name="Faq.Q3" xml:space="preserve">
+    <value>How do I cancel my order?</value>
+  </data>
+  <data name="Faq.A3" xml:space="preserve">
+    <value>As long as your order has not shipped, you can cancel it under “My orders”. After that, use your right of withdrawal.</value>
+  </data>
+  <data name="Faq.Q4" xml:space="preserve">
+    <value>What if an item arrives damaged?</value>
+  </data>
+  <data name="Faq.A4" xml:space="preserve">
+    <value>Email us within 14 days. We review the case and either send a free replacement or refund the purchase price.</value>
+  </data>
+  <data name="Faq.Q5" xml:space="preserve">
+    <value>How do returns work?</value>
+  </data>
+  <data name="Faq.A5" xml:space="preserve">
+    <value>You have a 14-day right of withdrawal. The “Returns &amp; withdrawal” page describes the steps; the return label is free.</value>
+  </data>
+  <data name="Faq.Q6" xml:space="preserve">
+    <value>Do you ship internationally?</value>
+  </data>
+  <data name="Faq.A6" xml:space="preserve">
+    <value>We currently ship to Germany and Austria. More countries are planned.</value>
+  </data>
+  <data name="Faq.Q7" xml:space="preserve">
+    <value>How do I change my details?</value>
+  </data>
+  <data name="Faq.A7" xml:space="preserve">
+    <value>You can update your contact details and delivery addresses in your profile at any time.</value>
+  </data>
+  <data name="Faq.Q8" xml:space="preserve">
+    <value>Is my payment secure?</value>
+  </data>
+  <data name="Faq.A8" xml:space="preserve">
+    <value>Yes. All payments run over encrypted connections, and we never store full card details on our servers.</value>
+  </data>
+  <data name="Faq.MoreTitle" xml:space="preserve">
+    <value>Question not listed?</value>
+  </data>
+  <data name="Faq.MoreBody" xml:space="preserve">
+    <value>Write to us — we reply within 24 hours.</value>
+  </data>
+  <data name="Faq.MoreCta" xml:space="preserve">
+    <value>Contact us</value>
+  </data>
+  <data name="Contact.PageTitle" xml:space="preserve">
+    <value>Contact — OrderSphere</value>
+  </data>
+  <data name="Contact.Title" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Contact.Lede" xml:space="preserve">
+    <value>We're here for you — whichever way suits you best.</value>
+  </data>
+  <data name="Contact.EmailTitle" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Contact.EmailHint" xml:space="preserve">
+    <value>Reply within 24 hours.</value>
+  </data>
+  <data name="Contact.PhoneTitle" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Contact.PhoneHours" xml:space="preserve">
+    <value>Mon–Fri, 9 am–6 pm CET</value>
+  </data>
+  <data name="Contact.AddressTitle" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Contact.FormTitle" xml:space="preserve">
+    <value>Send a message</value>
+  </data>
+  <data name="Contact.FormNotice" xml:space="preserve">
+    <value>The contact form is still in preparation. Until then, email is the fastest way to reach us.</value>
+  </data>
+  <data name="Contact.FormCta" xml:space="preserve">
+    <value>Write an email</value>
+  </data>
+  <data name="Returns.PageTitle" xml:space="preserve">
+    <value>Returns — OrderSphere</value>
+  </data>
+  <data name="Returns.Title" xml:space="preserve">
+    <value>Returns &amp; withdrawal</value>
+  </data>
+  <data name="Returns.Lede" xml:space="preserve">
+    <value>14-day right of withdrawal. The return label is on us.</value>
+  </data>
+  <data name="Returns.StepsTitle" xml:space="preserve">
+    <value>How to return an item</value>
+  </data>
+  <data name="Returns.Step1.Title" xml:space="preserve">
+    <value>Register the return</value>
+  </data>
+  <data name="Returns.Step1.Body" xml:space="preserve">
+    <value>Send a short email to support@ordersphere.dev with your order number and the reason for the return.</value>
+  </data>
+  <data name="Returns.Step2.Title" xml:space="preserve">
+    <value>Receive the label</value>
+  </data>
+  <data name="Returns.Step2.Body" xml:space="preserve">
+    <value>Within one business day you receive a free return label. Print it and attach it to the parcel.</value>
+  </data>
+  <data name="Returns.Step3.Title" xml:space="preserve">
+    <value>Drop off the parcel</value>
+  </data>
+  <data name="Returns.Step3.Body" xml:space="preserve">
+    <value>Drop the parcel off at one of our shipping partner's branches. Keep the receipt as proof.</value>
+  </data>
+  <data name="Returns.Step4.Title" xml:space="preserve">
+    <value>Refund</value>
+  </data>
+  <data name="Returns.Step4.Body" xml:space="preserve">
+    <value>Once the parcel arrives, we check the goods and refund the purchase price within 5 business days.</value>
+  </data>
+  <data name="Returns.NotesTitle" xml:space="preserve">
+    <value>Good to know</value>
+  </data>
+  <data name="Returns.NotesBody" xml:space="preserve">
+    <value>&lt;ul&gt;&lt;li&gt;The withdrawal period is 14 days from receipt of the goods.&lt;/li&gt;&lt;li&gt;Where possible, return items in their original packaging.&lt;/li&gt;&lt;li&gt;The statutory right of withdrawal and our goodwill policy are independent of each other.&lt;/li&gt;&lt;li&gt;The full conditions are in our &lt;a href="terms"&gt;terms and conditions&lt;/a&gt;.&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
 </root>

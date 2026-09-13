@@ -22,7 +22,7 @@
                     <RedirectToLogin />
                 </NotAuthorized>
                 <Authorizing>
-                    <div class="os-route-authorizing">
+                    <div class="pg-route-authorizing">
                         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
                     </div>
                 </Authorizing>
@@ -32,19 +32,15 @@
         <NotFound>
             <PageTitle>@L["NotFound.PageTitle"]</PageTitle>
             <LayoutView Layout="typeof(Layout.MainLayout)">
-                <section class="os-notfound">
-                    <span class="os-eyebrow">404</span>
-                    <h1 class="os-notfound__title">@L["NotFound.Title"]</h1>
-                    <p class="os-notfound__body">@L["NotFound.Body"]</p>
-                    <div class="os-notfound__actions">
-                        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">
-                            @L["NotFound.GoHome"]
-                        </MudButton>
-                        <MudButton Href="/shop" Variant="Variant.Text" Color="Color.Default">
-                            @L["Nav.Shop"]
-                        </MudButton>
+                <OsSection Width="OsSection.SectionWidth.Narrow" Padding="OsSection.SectionPadding.Lg" Class="pg-notfound">
+                    <OsEyebrow Text="404" />
+                    <OsDisplay As="h1" Size="OsDisplay.DisplaySize.D1" Class="pg-notfound__title">@L["NotFound.Title"]</OsDisplay>
+                    <p class="pg-notfound__body">@L["NotFound.Body"]</p>
+                    <div class="pg-notfound__actions">
+                        <OsButton Href="/">@L["NotFound.GoHome"]</OsButton>
+                        <OsButton Href="/shop" Variant="OsButton.ButtonVariant.Ghost">@L["Nav.Shop"]</OsButton>
                     </div>
-                </section>
+                </OsSection>
             </LayoutView>
         </NotFound>
     </Router>
