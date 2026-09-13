@@ -4,14 +4,20 @@
 
 @* Language and display currency in one popover. They were two separate header
    icons; both are "how do I want this rendered" settings and both need the same
-   full reload, so they belong together. *@
+   full reload, so they belong together.
+   Since MudBlazor 9 a custom activator is not wired automatically; it has to call
+   the MenuContext itself, otherwise the click goes nowhere. *@
 <MudMenu AnchorOrigin="Origin.BottomRight"
          TransformOrigin="Origin.TopRight"
-         Dense="true">
+         Dense="true"
+         @bind-Open="_open">
     <ActivatorContent>
         <OsIconButton Icon="@Icons.Material.Outlined.Language"
                       AriaLabel="@L["Locale.Label"]"
-                      Title="@($"{CurrentCultureName} · {CurrentCurrencyCode}")" />
+                      Title="@($"{CurrentCultureName} · {CurrentCurrencyCode}")"
+                      aria-haspopup="menu"
+                      aria-expanded="@(_open ? "true" : "false")"
+                      OnClick="@(e => context.ToggleAsync(e))" />
     </ActivatorContent>
     <ChildContent>
         <MudListSubheader>@L["Language.Label"]</MudListSubheader>
@@ -48,6 +54,7 @@
 </MudMenu>
 
 @code {
+    private bool _open;
     private string _culture = SupportedCultures.Default;
     private string _currency = SupportedCurrencies.Default;
 
