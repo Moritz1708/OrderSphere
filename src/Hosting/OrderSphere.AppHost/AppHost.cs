@@ -1,7 +1,11 @@
 using Azure.Provisioning.KeyVault;
+using Azure.Provisioning.PostgreSql;
+using Azure.Provisioning.RedisEnterprise;
 using Azure.Provisioning.Resources;
 using Azure.Provisioning.Search;
+using Azure.Provisioning.ServiceBus;
 using Azure.Provisioning.Storage;
+using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -106,27 +110,92 @@ var oidcAuthority = builder.AddParameter("oidc-authority");
 
 const string OidcAudience = "https://api.ordersphere.dev";
 
-// Deploy as container in all environments — avoids Azure PostgreSQL Flexible Server
-// offer restrictions on VS Enterprise subscriptions. pgAdmin is only added locally.
-var postgresServer = builder.AddPostgres("postgres")
-    .WithLifetime(ContainerLifetime.Persistent);
+// Some subscriptions (e.g. certain VS Enterprise offers — see ordersphere-dev) reject Azure
+// PostgreSQL Flexible Server, so the container deployment stays the default for every azd
+// environment. Environments whose subscription supports Flexible Server opt in explicitly —
+// this trades the always-on container's Container-Apps compute cost for the much cheaper
+// Flexible Server Burstable tier, which only pays off when the workload can also scale to
+// zero elsewhere (see the postprovision Container Apps scaling step in azure.yaml):
+//   azd env set Deployment__UseManagedPostgres true
+var useManagedPostgres = builder.Configuration.GetValue("Deployment:UseManagedPostgres", false);
 
-if (!builder.ExecutionContext.IsPublishMode)
-    postgresServer.WithPgAdmin();
+IResourceBuilder<IResourceWithConnectionString> postgres;
+IResourceBuilder<IResourceWithConnectionString> catalogDb;
+IResourceBuilder<IResourceWithConnectionString> orderingDb;
+IResourceBuilder<IResourceWithConnectionString> basketDb;
+IResourceBuilder<IResourceWithConnectionString> paymentDb;
+IResourceBuilder<IResourceWithConnectionString> userProfileDb;
+IResourceBuilder<IResourceWithConnectionString> webhooksDb;
+IResourceBuilder<IResourceWithConnectionString> notificationDb;
+IResourceBuilder<IResourceWithConnectionString> invoicingDb;
+IResourceBuilder<IResourceWithConnectionString> advisoryDb;
+IResourceBuilder<IResourceWithConnectionString> partnersDb;
 
-var postgres = postgresServer.AddDatabase("ordersphere-db");
-var catalogDb = postgresServer.AddDatabase("catalog-db");
-var orderingDb = postgresServer.AddDatabase("ordering-db");
-var basketDb = postgresServer.AddDatabase("basket-db");
-var paymentDb = postgresServer.AddDatabase("payment-db");
-var userProfileDb = postgresServer.AddDatabase("userprofile-db");
-var webhooksDb = postgresServer.AddDatabase("webhooks-db");
-var notificationDb = postgresServer.AddDatabase("notification-db");
-var invoicingDb = postgresServer.AddDatabase("invoicing-db");
-var advisoryDb = postgresServer.AddDatabase("advisory-db");
-var partnersDb = postgresServer.AddDatabase("partners-db");
+if (useManagedPostgres)
+{
+    // Burstable B1ms: cheapest Flexible Server compute tier (~$14.50/month), no zone-redundant
+    // HA (single instance — acceptable for a budget-constrained, non-critical deployment).
+    var flexibleServer = builder.AddAzurePostgresFlexibleServer("postgres")
+        .ConfigureInfrastructure(infra =>
+        {
+            var server = infra.GetProvisionableResources().OfType<PostgreSqlFlexibleServer>().Single();
+            server.Sku = new PostgreSqlFlexibleServerSku
+            {
+                Name = "Standard_B1ms",
+                Tier = PostgreSqlFlexibleServerSkuTier.Burstable,
+            };
+        });
 
+    flexibleServer.RunAsContainer(c =>
+    {
+        c.WithLifetime(ContainerLifetime.Persistent);
+        if (!builder.ExecutionContext.IsPublishMode)
+            c.WithPgAdmin();
+    });
+
+    postgres = flexibleServer.AddDatabase("ordersphere-db");
+    catalogDb = flexibleServer.AddDatabase("catalog-db");
+    orderingDb = flexibleServer.AddDatabase("ordering-db");
+    basketDb = flexibleServer.AddDatabase("basket-db");
+    paymentDb = flexibleServer.AddDatabase("payment-db");
+    userProfileDb = flexibleServer.AddDatabase("userprofile-db");
+    webhooksDb = flexibleServer.AddDatabase("webhooks-db");
+    notificationDb = flexibleServer.AddDatabase("notification-db");
+    invoicingDb = flexibleServer.AddDatabase("invoicing-db");
+    advisoryDb = flexibleServer.AddDatabase("advisory-db");
+    partnersDb = flexibleServer.AddDatabase("partners-db");
+}
+else
+{
+    var containerServer = builder.AddPostgres("postgres")
+        .WithLifetime(ContainerLifetime.Persistent);
+
+    if (!builder.ExecutionContext.IsPublishMode)
+        containerServer.WithPgAdmin();
+
+    postgres = containerServer.AddDatabase("ordersphere-db");
+    catalogDb = containerServer.AddDatabase("catalog-db");
+    orderingDb = containerServer.AddDatabase("ordering-db");
+    basketDb = containerServer.AddDatabase("basket-db");
+    paymentDb = containerServer.AddDatabase("payment-db");
+    userProfileDb = containerServer.AddDatabase("userprofile-db");
+    webhooksDb = containerServer.AddDatabase("webhooks-db");
+    notificationDb = containerServer.AddDatabase("notification-db");
+    invoicingDb = containerServer.AddDatabase("invoicing-db");
+    advisoryDb = containerServer.AddDatabase("advisory-db");
+    partnersDb = containerServer.AddDatabase("partners-db");
+}
+
+// Basic tier: no Topics/Subscriptions or scheduled messages anywhere in this codebase (verified
+// by grep, including the Outbox Scheduling/ folder) — fan-out happens application-side across
+// point-to-point queues (see docs/architecture.md), so Basic's queue-only feature set is
+// sufficient. Saves the $10/month Standard base-unit fee over the previous (implicit) default.
 var serviceBus = builder.AddAzureServiceBus("azure-service-bus")
+    .ConfigureInfrastructure(infra =>
+    {
+        var ns = infra.GetProvisionableResources().OfType<ServiceBusNamespace>().Single();
+        ns.Sku = new ServiceBusSku { Name = ServiceBusSkuName.Basic };
+    })
     .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
 
 serviceBus.AddServiceBusQueue("orders")
@@ -234,7 +303,16 @@ serviceBus.AddServiceBusQueue("erasure-advisory")
         cfg.MaxDeliveryCount = 5;
     });
 
+// Balanced B0: smallest Azure Managed Redis SKU (~$14/month) — pinned explicitly since the
+// integration's default tier is larger/pricier. Used as a rebuildable cache (Catalog, Advisory
+// semantic cache) and for the BFF's session/auth ticket store and distributed-lock primitive
+// (see docs/architecture.md); no HA/geo-replication at this tier, acceptable for the budget target.
 var redis = builder.AddAzureManagedRedis("redis")
+    .ConfigureInfrastructure(infra =>
+    {
+        var cluster = infra.GetProvisionableResources().OfType<RedisEnterpriseCluster>().Single();
+        cluster.Sku = new RedisEnterpriseSku { Name = RedisEnterpriseSkuName.BalancedB0 };
+    })
     .RunAsContainer(c => c.WithLifetime(ContainerLifetime.Persistent));
 
 
