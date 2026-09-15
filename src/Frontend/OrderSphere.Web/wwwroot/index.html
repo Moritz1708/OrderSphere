@@ -3,33 +3,56 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F7F5F0" />
     <title>OrderSphere</title>
     <base href="/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    <link href="OrderSphere.Web.styles.css" rel="stylesheet" />
-    <link href="app.css" rel="stylesheet" />
+
+    <!-- Sets data-theme and lang before the first paint. Must stay ahead of the
+         stylesheets, and must stay an external file: the production CSP allows
+         no inline script. -->
+    <script src="js/theme-boot.js"></script>
+
+    <!-- app.css @imports MudBlazor into the lowest cascade layer; preloading it
+         removes the extra round trip that import would otherwise cost. -->
+    <link rel="preload" as="style" href="_content/MudBlazor/MudBlazor.min.css" />
+    <link rel="preload" as="font" type="font/woff2" href="fonts/InstrumentSerif-Regular.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="fonts/Manrope-Regular.woff2" crossorigin />
+
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="css/tokens.css" rel="stylesheet" />
+    <link href="css/fonts.css" rel="stylesheet" />
+    <link href="css/base.css" rel="stylesheet" />
+    <link href="css/mud-overrides.css" rel="stylesheet" />
+    <link href="css/components.css" rel="stylesheet" />
+    <link href="css/pages.css" rel="stylesheet" />
+    <link href="css/motion.css" rel="stylesheet" />
+    <link href="css/utilities.css" rel="stylesheet" />
 </head>
 <body>
     <div id="app">
-        <div style="display:flex;justify-content:center;align-items:center;height:100vh;">
-            <svg style="width:48px;height:48px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#e0e0e0" stroke-width="3"/>
-                <path d="M12 2a10 10 0 0 1 10 10" stroke="#6260FF" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-            <style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+        <div id="os-boot">
+            <div class="os-boot__mark">OrderSphere</div>
+            <div class="os-boot__bar"></div>
         </div>
     </div>
-    <div id="blazor-error-ui" style="display:none;">
-        Ein unerwarteter Fehler ist aufgetreten.
-        <a href="." class="reload">Neu laden</a>
-        <span class="dismiss">✕</span>
+
+    <!-- Static markup cannot resolve resources, so this one string ships bilingually.
+         Blazor sets display:block on the outer element and wires .reload and .dismiss;
+         the layout lives on the inner element. -->
+    <div id="blazor-error-ui" role="alert">
+        <div class="os-error-ui">
+            <p class="os-error-ui__text">
+                <strong>Ein unerwarteter Fehler ist aufgetreten.</strong>
+                <span lang="en">An unexpected error occurred.</span>
+            </p>
+            <a href="." class="reload os-error-ui__reload">Neu laden &middot; Reload</a>
+            <button type="button" class="dismiss os-error-ui__dismiss" aria-label="Schlie&szlig;en / Close">&times;</button>
+        </div>
     </div>
+
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script src="voice-interop.js"></script>
+    <script src="js/voice-interop.js"></script>
 </body>
 </html>

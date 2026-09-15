@@ -1,0 +1,36 @@
+@* Money in the mono face with tabular figures, so columns of prices line up. *@
+
+<span class="@CssClass" @attributes="AdditionalAttributes">
+    <span class="os-price__value">@Formatting.Currency(Value)</span>
+    @if (Original is { } original && original > Value)
+    {
+        <s class="os-price__orig" aria-label="@L["Price.OriginalAria", Formatting.Currency(original)]">@Formatting.Currency(original)</s>
+    }
+</span>
+
+@code {
+    public enum PriceSize { Sm, Md, Lg, Display }
+
+    [Parameter, EditorRequired] public decimal Value { get; set; }
+
+    /// <summary>A previous price, rendered struck through when higher than <see cref="Value"/>.</summary>
+    [Parameter] public decimal? Original { get; set; }
+
+    [Parameter] public PriceSize Size { get; set; } = PriceSize.Md;
+    [Parameter] public bool Muted { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [Inject] private IStringLocalizer<AppStrings> L { get; set; } = default!;
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-price",
+            $"os-price--{Size.ToString().ToLowerInvariant()}",
+            Muted ? "os-price--muted" : null,
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+}

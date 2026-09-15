@@ -1,89 +1,30 @@
 @page "/terms"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>AGB — OrderSphere</PageTitle>
+<PageTitle>@L["Terms.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Allgemeine Geschäftsbedingungen
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Legal"]"
+               Title="@L["Terms.Title"]"
+               Lede="@L["Terms.Lede"]"
+               Notice="@L["Article.PlaceholderNotice"]"
+               NumberFormat="§ {0}"
+               Sections="_sections" />
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Elevation="0" Class="pa-8 surface-card-lg">
+@code {
+    private IReadOnlyList<ArticleSection> _sections = [];
 
-            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-6">
-                Platzhalter-AGB. Vor Live-Schaltung durch geprüfte AGB ersetzen.
-            </MudAlert>
+    protected override void OnInitialized() => _sections =
+    [
+        Section("scope", 1),
+        Section("contract", 2),
+        Section("prices", 3),
+        Section("delivery", 4),
+        Section("payment", 5),
+        Section("withdrawal", 6),
+        Section("warranty", 7),
+        Section("final", 8),
+    ];
 
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 1 Geltungsbereich
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge, die zwischen
-                der OrderSphere GmbH und ihren Kundinnen und Kunden über den Online-Shop
-                ordersphere.dev geschlossen werden.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 2 Vertragsschluss
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Mit dem Anklicken des Buttons "Bestellung abschließen" gibst du eine verbindliche
-                Bestellung der im Warenkorb befindlichen Waren ab. Der Kaufvertrag kommt zustande,
-                sobald wir deine Bestellung per E-Mail bestätigen oder die Ware versenden.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 3 Preise und Versandkosten
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Alle Preise verstehen sich inklusive der gesetzlichen Mehrwertsteuer.
-                Versandkosten werden im Bestellprozess gesondert ausgewiesen.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 4 Lieferung
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Die Lieferung erfolgt an die von dir angegebene Lieferadresse.
-                Die Lieferzeit beträgt in der Regel 2–5 Werktage innerhalb Deutschlands.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 5 Zahlung
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Wir akzeptieren die im Bestellprozess angebotenen Zahlungsarten
-                (z.B. Rechnung, Kreditkarte, PayPal).
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 6 Widerrufsrecht
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Verbrauchern steht ein gesetzliches Widerrufsrecht von 14 Tagen zu.
-                Details zum Widerrufsrecht und zu den Folgen des Widerrufs findest du
-                in unserer separaten Widerrufsbelehrung.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 7 Gewährleistung
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Es gelten die gesetzlichen Gewährleistungsrechte.
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                § 8 Schlussbestimmungen
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des
-                UN-Kaufrechts. Sollten einzelne Bestimmungen unwirksam sein, bleibt
-                der übrige Vertrag wirksam.
-            </MudText>
-        </MudPaper>
-    </MudContainer>
-</section>
+    private ArticleSection Section(string id, int n) =>
+        new(id, L[$"Terms.S{n}.Title"], new MarkupString(L[$"Terms.S{n}.Body"]));
+}

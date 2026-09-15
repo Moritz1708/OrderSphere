@@ -1,3 +1,19 @@
+@implements IDisposable
+@inject ThemeState ThemeState
+@inject IStringLocalizer<AppStrings> L
+
+@* The four MudBlazor providers live here, above the router, so both layouts
+   share one instance each. Dark mode is a palette switch on this provider; the
+   CSS side follows html[data-theme], set before first paint by theme-boot.js.
+   System preference is sampled once at boot and never overrides a stored
+   choice, hence ObserveSystemDarkModeChange="false". *@
+<MudThemeProvider Theme="ThemeState.Theme"
+                  IsDarkMode="ThemeState.IsDarkMode"
+                  ObserveSystemDarkModeChange="false" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 <CascadingAuthenticationState>
     <Router AppAssembly="typeof(App).Assembly">
         <Found Context="routeData">
@@ -6,7 +22,7 @@
                     <RedirectToLogin />
                 </NotAuthorized>
                 <Authorizing>
-                    <div style="display:flex;justify-content:center;align-items:center;min-height:60vh;">
+                    <div class="pg-route-authorizing">
                         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
                     </div>
                 </Authorizing>
@@ -14,16 +30,26 @@
             <FocusOnNavigate RouteData="routeData" Selector="h1" />
         </Found>
         <NotFound>
-            <PageTitle>404 – OrderSphere</PageTitle>
+            <PageTitle>@L["NotFound.PageTitle"]</PageTitle>
             <LayoutView Layout="typeof(Layout.MainLayout)">
-                <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding: var(--os-section-py-md) 0;">
-                    <MudText Typo="Typo.h3" Style="font-weight:700;">404</MudText>
-                    <MudText Typo="Typo.body1" Class="text-muted mt-2">Seite nicht gefunden.</MudText>
-                    <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-6">
-                        Zur Startseite
-                    </MudButton>
-                </MudContainer>
+                <OsSection Width="OsSection.SectionWidth.Narrow" Padding="OsSection.SectionPadding.Lg" Class="pg-notfound">
+                    <OsEyebrow Text="404" />
+                    <OsDisplay As="h1" Size="OsDisplay.DisplaySize.D1" Class="pg-notfound__title">@L["NotFound.Title"]</OsDisplay>
+                    <p class="pg-notfound__body">@L["NotFound.Body"]</p>
+                    <div class="pg-notfound__actions">
+                        <OsButton Href="/">@L["NotFound.GoHome"]</OsButton>
+                        <OsButton Href="/shop" Variant="OsButton.ButtonVariant.Ghost">@L["Nav.Shop"]</OsButton>
+                    </div>
+                </OsSection>
             </LayoutView>
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    protected override void OnInitialized() => ThemeState.OnChange += OnThemeChanged;
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => ThemeState.OnChange -= OnThemeChanged;
+}

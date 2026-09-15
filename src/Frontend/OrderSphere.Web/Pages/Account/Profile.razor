@@ -2,167 +2,112 @@
 @attribute [Authorize]
 @inject IUserProfileClient UserProfile
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Profile.PageTitle"]</PageTitle>
 
-<PageHero Title="@L["Account.MyProfile"]" Subtitle="@L["Profile.HeroSubtitle"]" />
+<OsPageHeader Title="@L["Account.MyProfile"]" Subtitle="@L["Profile.HeroSubtitle"]" Narrow="true" />
 
-<section style="padding:48px 0 var(--os-section-py-md);">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        @if (_loading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Class="py-12">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudStack>
-        }
-        else if (_profile is not null)
-        {
-            <MudGrid Spacing="4">
-                <!-- Profile -->
-                <MudItem xs="12">
-                    <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                        <MudText Typo="Typo.h6" Style="font-weight:600;" Class="mb-4">@L["Profile.PersonalData"]</MudText>
-                        <MudGrid Spacing="3">
-                            <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="@L["Profile.DisplayName"]" Variant="Variant.Outlined"
-                                              FullWidth="true" @bind-Value="_displayName" />
-                            </MudItem>
-                            <MudItem xs="12" md="6">
-                                <MudTextField T="string" Label="@L["Address.Email"]" Variant="Variant.Outlined"
-                                              FullWidth="true" @bind-Value="_email" />
-                            </MudItem>
-                        </MudGrid>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                   Class="btn-pill mt-4" Disabled="_saving"
-                                   OnClick="SaveProfileAsync">
-                            @if (_saving)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            }
-                            @L["Common.Save"]
-                        </MudButton>
-                    </MudPaper>
-                </MudItem>
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Narrow">
+    @if (_loading)
+    {
+        <OsListSkeleton Rows="3" />
+    }
+    else if (_profile is not null)
+    {
+        <div class="os-stack">
+            <OsCard Padding="OsCard.CardPadding.Lg">
+                <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-5">@L["Profile.PersonalData"]</OsDisplay>
+                <div class="os-form-grid">
+                    <MudTextField T="string" @bind-Value="_displayName"
+                                  Label="@L["Profile.DisplayName"]"
+                                  Variant="Variant.Outlined" ShrinkLabel="true" />
+                    <MudTextField T="string" @bind-Value="_email"
+                                  Label="@L["Address.Email"]"
+                                  Variant="Variant.Outlined" ShrinkLabel="true"
+                                  InputType="InputType.Email" />
+                </div>
+                <OsButton OnClick="SaveProfileAsync" Loading="_saving" Class="mt-5">
+                    @L["Common.Save"]
+                </OsButton>
+            </OsCard>
 
-                <!-- Addresses -->
-                <MudItem xs="12">
-                    <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-                            <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Profile.Addresses"]</MudText>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Outlined.Add"
-                                       Class="btn-pill"
-                                       OnClick="() => _showAddAddress = !_showAddAddress">
-                                @L["Common.Add"]
-                            </MudButton>
-                        </MudStack>
+            <OsCard Padding="OsCard.CardPadding.Lg">
+                <div class="os-card__head">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Profile.Addresses"]</OsDisplay>
+                    <OsButton Variant="OsButton.ButtonVariant.Secondary"
+                              Size="OsButton.ButtonSize.Sm"
+                              StartIcon="@Icons.Material.Outlined.Add"
+                              OnClick="() => _showAddAddress = !_showAddAddress">
+                        @L["Common.Add"]
+                    </OsButton>
+                </div>
 
-                        @if (_showAddAddress)
+                @if (_showAddAddress)
+                {
+                    <OsCard Surface="OsCard.CardSurface.Sunk" Class="mb-5">
+                        <AddressForm @ref="_addressForm" Model="_newAddress" ShowLabel="true" />
+                        <div class="os-card__actions">
+                            <OsButton OnClick="AddAddressAsync" Loading="_addingAddress">@L["Common.Save"]</OsButton>
+                            <OsButton Variant="OsButton.ButtonVariant.Ghost" OnClick="() => _showAddAddress = false">
+                                @L["Common.Cancel"]
+                            </OsButton>
+                        </div>
+                    </OsCard>
+                }
+
+                @if (!_profile.Addresses.Any())
+                {
+                    <OsEmptyState Icon="@Icons.Material.Outlined.Home" Title="@L["Profile.NoAddresses"]" Compact="true" />
+                }
+                else
+                {
+                    <div class="os-rows">
+                        @foreach (var addr in _profile.Addresses)
                         {
-                            <MudPaper Elevation="0" Class="surface-card pa-4 mb-4">
-                                <MudGrid Spacing="2">
-                                    <MudItem xs="12" md="6">
-                                        <MudTextField T="string" Label="@L["Profile.AddressLabel"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.Label" />
-                                    </MudItem>
-                                    <MudItem xs="12" md="6">
-                                        <MudTextField T="string" Label="@L["Address.FirstName"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.FirstName" />
-                                    </MudItem>
-                                    <MudItem xs="12" md="6">
-                                        <MudTextField T="string" Label="@L["Address.LastName"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.LastName" />
-                                    </MudItem>
-                                    <MudItem xs="12">
-                                        <MudTextField T="string" Label="@L["Address.Street"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.Street" />
-                                    </MudItem>
-                                    <MudItem xs="4">
-                                        <MudTextField T="string" Label="@L["Address.PostalCode"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.PostalCode" />
-                                    </MudItem>
-                                    <MudItem xs="5">
-                                        <MudTextField T="string" Label="@L["Address.City"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.City" />
-                                    </MudItem>
-                                    <MudItem xs="3">
-                                        <MudTextField T="string" Label="@L["Address.Country"]" Variant="Variant.Outlined"
-                                                      FullWidth="true" @bind-Value="_newAddress.Country" />
-                                    </MudItem>
-                                </MudGrid>
-                                <MudStack Row="true" Spacing="2" Class="mt-3">
-                                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                               Class="btn-pill" OnClick="AddAddressAsync">
-                                        @L["Common.Save"]
-                                    </MudButton>
-                                    <MudButton Variant="Variant.Text"
-                                               OnClick="() => _showAddAddress = false">
-                                        @L["Common.Cancel"]
-                                    </MudButton>
-                                </MudStack>
-                            </MudPaper>
+                            <div class="os-row">
+                                <div class="os-row__main">
+                                    <span class="os-row__title">
+                                        @addr.Label
+                                        @if (addr.IsDefault)
+                                        {
+                                            <OsStatusChip Tone="StatusTone.Accent" Text="@L["Profile.DefaultAddress"]" Size="OsStatusChip.ChipSize.Sm" Class="ml-2" />
+                                        }
+                                    </span>
+                                    <span>@addr.FirstName @addr.LastName</span>
+                                    <span class="os-row__meta">@addr.Street, @addr.PostalCode @addr.City, @addr.Country</span>
+                                </div>
+                                <div class="os-row__end">
+                                    @if (!addr.IsDefault)
+                                    {
+                                        <OsIconButton Icon="@Icons.Material.Outlined.Star"
+                                                      AriaLabel="@L["Profile.SetDefault"]"
+                                                      OnClick="@(() => SetDefaultAsync(addr.Id))" />
+                                    }
+                                    <OsIconButton Icon="@Icons.Material.Outlined.Delete"
+                                                  AriaLabel="@L["Profile.DeleteAddressAria"]"
+                                                  OnClick="@(() => DeleteAddressAsync(addr))" />
+                                </div>
+                            </div>
                         }
-
-                        @if (!_profile.Addresses.Any())
-                        {
-                            <MudText Typo="Typo.body2" Class="text-muted">
-                                @L["Profile.NoAddresses"]
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudStack Spacing="3">
-                                @foreach (var addr in _profile.Addresses)
-                                {
-                                    <MudPaper Elevation="0" Class="surface-card pa-4">
-                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                                            <MudStack Spacing="0">
-                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                                    <MudText Typo="Typo.subtitle2" Style="font-weight:600;">@addr.Label</MudText>
-                                                    @if (addr.IsDefault)
-                                                    {
-                                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary">@L["Profile.DefaultAddress"]</MudChip>
-                                                    }
-                                                </MudStack>
-                                                <MudText Typo="Typo.body2">@addr.FirstName @addr.LastName</MudText>
-                                                <MudText Typo="Typo.caption" Class="text-muted">
-                                                    @addr.Street, @addr.PostalCode @addr.City, @addr.Country
-                                                </MudText>
-                                            </MudStack>
-                                            <MudStack Row="true" Spacing="1">
-                                                @if (!addr.IsDefault)
-                                                {
-                                                    <MudIconButton Icon="@Icons.Material.Outlined.Star"
-                                                                   Size="Size.Small"
-                                                                   OnClick="@(() => SetDefaultAsync(addr.Id))"
-                                                                   aria-label="@L["Profile.SetDefault"]" />
-                                                }
-                                                <MudIconButton Icon="@Icons.Material.Outlined.Delete"
-                                                               Color="Color.Error" Size="Size.Small"
-                                                               aria-label="@L["Profile.DeleteAddressAria"]"
-                                                               OnClick="@(() => DeleteAddressAsync(addr.Id))" />
-                                            </MudStack>
-                                        </MudStack>
-                                    </MudPaper>
-                                }
-                            </MudStack>
-                        }
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-        }
-    </MudContainer>
-</section>
+                    </div>
+                }
+            </OsCard>
+        </div>
+    }
+</OsSection>
 
 @code {
     private ProfileDto? _profile;
     private bool _loading = true;
     private bool _saving;
+    private bool _addingAddress;
     private bool _showAddAddress;
     private string _displayName = string.Empty;
     private string _email = string.Empty;
 
+    private AddressForm _addressForm = default!;
     private readonly AddressFormModel _newAddress = new();
 
     protected override async Task OnInitializedAsync()
@@ -172,7 +117,7 @@
             var result = await UserProfile.GetOrCreateProfileAsync();
             _profile = result.Value;
             if (!result.IsSuccess)
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             if (_profile is not null)
             {
                 _displayName = _profile.DisplayName;
@@ -194,11 +139,11 @@
             if (result.IsSuccess)
             {
                 _profile = result.Value;
-                Snackbar.Add(L["Profile.Saved"], Severity.Success);
+                Snackbar.ShowSuccess(L["Profile.Saved"]);
             }
             else
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             }
         }
         finally
@@ -209,32 +154,51 @@
 
     private async Task AddAddressAsync()
     {
-        var req = new CreateAddressRequest(
-            _newAddress.Label, _newAddress.FirstName, _newAddress.LastName,
-            _newAddress.Street, _newAddress.City, _newAddress.PostalCode,
-            _newAddress.Country, false);
-
-        var result = await UserProfile.AddAddressAsync(req);
-        if (!result.IsSuccess)
-        {
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+        if (!await _addressForm.ValidateAsync())
             return;
+
+        _addingAddress = true;
+        try
+        {
+            var result = await UserProfile.AddAddressAsync(_newAddress.ToCreateAddressRequest());
+            if (!result.IsSuccess)
+            {
+                Snackbar.ShowApiError(result.Error);
+                return;
+            }
+
+            _showAddAddress = false;
+            _newAddress.Clear();
+            await ReloadProfileAsync();
+            Snackbar.ShowSuccess(L["Profile.AddressSaved"]);
         }
-        _showAddAddress = false;
-        _profile = (await UserProfile.GetOrCreateProfileAsync()).Value;
-        Snackbar.Add(L["Profile.AddressSaved"], Severity.Success);
+        finally
+        {
+            _addingAddress = false;
+        }
     }
 
-    private async Task DeleteAddressAsync(Guid id)
+    private async Task DeleteAddressAsync(AddressDto address)
     {
-        var result = await UserProfile.DeleteAddressAsync(id);
+        var confirmed = await ConfirmDialog.ShowAsync(
+            Dialogs,
+            L["Profile.DeleteAddressTitle"],
+            L["Profile.DeleteAddressMessage", address.Label],
+            L["Common.Delete"],
+            danger: true);
+
+        if (!confirmed)
+            return;
+
+        var result = await UserProfile.DeleteAddressAsync(address.Id);
         if (!result.IsSuccess)
         {
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+            Snackbar.ShowApiError(result.Error);
             return;
         }
-        _profile = (await UserProfile.GetOrCreateProfileAsync()).Value;
-        Snackbar.Add(L["Profile.AddressDeleted"], Severity.Info);
+
+        await ReloadProfileAsync();
+        Snackbar.ShowInfo(L["Profile.AddressDeleted"]);
     }
 
     private async Task SetDefaultAsync(Guid id)
@@ -242,20 +206,13 @@
         var result = await UserProfile.SetDefaultAddressAsync(id);
         if (!result.IsSuccess)
         {
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+            Snackbar.ShowApiError(result.Error);
             return;
         }
-        _profile = (await UserProfile.GetOrCreateProfileAsync()).Value;
+
+        await ReloadProfileAsync();
     }
 
-    private sealed class AddressFormModel
-    {
-        public string Label      { get; set; } = string.Empty;
-        public string FirstName  { get; set; } = string.Empty;
-        public string LastName   { get; set; } = string.Empty;
-        public string Street     { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
-        public string City       { get; set; } = string.Empty;
-        public string Country    { get; set; } = "Deutschland";
-    }
+    private async Task ReloadProfileAsync() =>
+        _profile = (await UserProfile.GetOrCreateProfileAsync()).Value;
 }

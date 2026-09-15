@@ -3,73 +3,21 @@ namespace OrderSphere.Web.Tests.Services;
 public sealed class ThemeStateTests
 {
     [Fact]
-    public void DefaultBrand_IsElectric()
+    public void Default_IsLightMode()
     {
         var sut = new ThemeState();
 
-        sut.CurrentBrand.Id.Should().Be("electric");
-        sut.Theme.Should().NotBeNull();
+        sut.IsDarkMode.Should().BeFalse();
     }
 
     [Fact]
-    public void AvailableBrands_AreAllSix()
+    public void Theme_IsSharedAcrossInstances()
     {
-        var sut = new ThemeState();
+        var first = ThemeState.Theme;
+        var second = ThemeState.Theme;
 
-        sut.AvailableBrands.Select(b => b.Id)
-           .Should().Equal("electric", "lime", "sage", "royal", "solar", "mint");
-    }
-
-    [Fact]
-    public void SetBrand_Lime_SwitchesBrandAndRebuildsTheme()
-    {
-        var sut = new ThemeState();
-        var before = sut.Theme;
-
-        sut.SetBrand("lime");
-
-        sut.CurrentBrand.Id.Should().Be("lime");
-        sut.CurrentBrand.Primary.Should().Be("#9FE870");
-        sut.Theme.Should().NotBeSameAs(before, "the MudTheme is rebuilt for the new brand");
-    }
-
-    [Fact]
-    public void SetBrand_RaisesOnChange()
-    {
-        var sut = new ThemeState();
-        var raised = false;
-        sut.OnChange += () => raised = true;
-
-        sut.SetBrand("royal");
-
-        raised.Should().BeTrue();
-    }
-
-    [Fact]
-    public void SetBrand_UnknownId_IsNoOp()
-    {
-        var sut = new ThemeState();
-        var before = sut.Theme;
-        var raised = false;
-        sut.OnChange += () => raised = true;
-
-        sut.SetBrand("purple");
-
-        sut.CurrentBrand.Id.Should().Be("electric");
-        sut.Theme.Should().BeSameAs(before);
-        raised.Should().BeFalse();
-    }
-
-    [Fact]
-    public void SetBrand_SameBrand_DoesNotRaiseOnChange()
-    {
-        var sut = new ThemeState();
-        var raised = false;
-        sut.OnChange += () => raised = true;
-
-        sut.SetBrand("electric");
-
-        raised.Should().BeFalse();
+        second.Should().BeSameAs(first,
+            "the theme no longer varies at runtime, so it is built once");
     }
 
     [Fact]
@@ -83,6 +31,17 @@ public sealed class ThemeStateTests
 
         sut.IsDarkMode.Should().BeTrue();
         raised.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Toggle_Twice_ReturnsToLight()
+    {
+        var sut = new ThemeState();
+
+        sut.Toggle();
+        sut.Toggle();
+
+        sut.IsDarkMode.Should().BeFalse();
     }
 
     [Fact]
@@ -111,70 +70,71 @@ public sealed class ThemeStateTests
         raised.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData("lime", "#163300")]
-    [InlineData("sage", "#03363D")]
-    [InlineData("solar", "#141D38")]
-    [InlineData("mint", "#000000")]
-    public void LightPrimaryBrands_HaveDarkContrastText(string brandId, string expectedContrast)
+    [Fact]
+    public void PaletteLight_UsesTheEditorialAccentAndInk()
     {
-        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
+        var palette = ThemeState.Theme.PaletteLight;
 
-        brand.PrimaryContrastText.Should().Be(expectedContrast);
+        palette.Primary.Should().Be(new MudColor(DesignTokens.Light.Accent));
+        palette.Background.Should().Be(new MudColor(DesignTokens.Light.Canvas));
+        palette.Surface.Should().Be(new MudColor(DesignTokens.Light.Paper));
+        palette.TextPrimary.Should().Be(new MudColor(DesignTokens.Light.Ink));
     }
 
-    [Theory]
-    [InlineData("lime", "#163300")]
-    [InlineData("sage", "#03363D")]
-    [InlineData("solar", "#141D38")]
-    [InlineData("mint", "#000000")]
-    public void LightPrimaryBrands_HaveDarkPrimaryText(string brandId, string expectedPrimaryText)
+    [Fact]
+    public void PaletteDark_UsesTheLiftedAccentAndInvertedSurfaces()
     {
-        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
+        var palette = ThemeState.Theme.PaletteDark;
 
-        brand.PrimaryText.Should().Be(expectedPrimaryText);
+        palette.Primary.Should().Be(new MudColor(DesignTokens.Dark.Accent));
+        palette.Background.Should().Be(new MudColor(DesignTokens.Dark.Canvas));
+        palette.Surface.Should().Be(new MudColor(DesignTokens.Dark.Paper));
+        palette.TextPrimary.Should().Be(new MudColor(DesignTokens.Dark.Ink));
     }
 
-    [Theory]
-    [InlineData("electric")]
-    [InlineData("royal")]
-    public void DarkPrimaryBrands_UseOwnPrimaryAsPrimaryText(string brandId)
+    [Fact]
+    public void Palettes_DoNotRepurposeTertiary()
     {
-        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
-
-        brand.PrimaryText.Should().Be(brand.Primary);
+        // The multi-brand system used Tertiary as a "brand text" slot; it is a
+        // genuine cobalt accent now, matching Info.
+        ThemeState.Theme.PaletteLight.Tertiary.Should().Be(new MudColor(DesignTokens.Light.Accent2));
+        ThemeState.Theme.PaletteLight.Info.Should().Be(new MudColor(DesignTokens.Light.Accent2));
     }
 
-    [Theory]
-    [InlineData("electric")]
-    [InlineData("lime")]
-    [InlineData("sage")]
-    [InlineData("royal")]
-    [InlineData("solar")]
-    [InlineData("mint")]
-    public void PrimaryText_MeetsContrastRatioAgainstWhite(string brandId)
+    [Fact]
+    public void Shadows_AreAllNone()
     {
-        var brand = ThemeState.Brands.Single(b => b.Id == brandId);
-
-        ContrastRatioAgainstWhite(brand.PrimaryText).Should().BeGreaterThanOrEqualTo(4.5,
-            $"{brand.Name}'s PrimaryText must stay legible as brand-colored text on light surfaces");
+        // Separation comes from hairlines and one hover shadow, never elevation.
+        ThemeState.Theme.Shadows.Elevation.Should().OnlyContain(s => s == "none");
     }
 
-    private static double ContrastRatioAgainstWhite(string hex)
+    [Fact]
+    public void Ripple_IsDisabled()
     {
-        var luminance = RelativeLuminance(hex);
-        return 1.05 / (luminance + 0.05);
+        ThemeState.Theme.PaletteLight.RippleOpacity.Should().Be(0);
+        ThemeState.Theme.PaletteDark.RippleOpacity.Should().Be(0);
     }
 
-    private static double RelativeLuminance(string hex)
+    [Fact]
+    public void Typography_UsesSerifForDisplayAndManropeForBody()
     {
-        var r = Convert.ToInt32(hex.Substring(1, 2), 16) / 255.0;
-        var g = Convert.ToInt32(hex.Substring(3, 2), 16) / 255.0;
-        var b = Convert.ToInt32(hex.Substring(5, 2), 16) / 255.0;
-
-        return 0.2126 * Linearize(r) + 0.7152 * Linearize(g) + 0.0722 * Linearize(b);
+        ThemeState.Theme.Typography.H1!.FontFamily.Should().StartWith(["Instrument Serif"]);
+        ThemeState.Theme.Typography.H2!.FontFamily.Should().StartWith(["Instrument Serif"]);
+        ThemeState.Theme.Typography.Default!.FontFamily.Should().StartWith(["Manrope"]);
+        ThemeState.Theme.Typography.Button!.FontFamily.Should().StartWith(["Manrope"]);
     }
 
-    private static double Linearize(double channel) =>
-        channel <= 0.03928 ? channel / 12.92 : Math.Pow((channel + 0.055) / 1.055, 2.4);
+    [Fact]
+    public void Typography_NeverUppercasesButtons()
+    {
+        ThemeState.Theme.Typography.Button!.TextTransform.Should().Be("none");
+    }
+
+    [Fact]
+    public void Layout_MatchesTheHeaderHeightUsedByCss()
+    {
+        // A mismatch here reopens the old 72px-vs-64px content-offset bug.
+        ThemeState.Theme.LayoutProperties.AppbarHeight.Should().Be(DesignTokens.Layout.HeaderHeight);
+        ThemeState.Theme.LayoutProperties.DefaultBorderRadius.Should().Be(DesignTokens.Layout.RadiusControl);
+    }
 }

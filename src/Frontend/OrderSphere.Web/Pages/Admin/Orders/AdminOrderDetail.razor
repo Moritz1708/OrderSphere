@@ -1,189 +1,178 @@
 @page "/admin/orders/{OrderId:guid}"
 @inject IAdminOrderingClient AdminOrdering
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
+@inject IDialogService Dialogs
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Admin.OrderDetail.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Outlined.ArrowBack"
-               Href="/admin/orders" Class="mb-4">
-        @L["Admin.OrderDetail.BackToList"]
-    </MudButton>
+<OsPageHeader Eyebrow="@L["Admin.Nav.Section"]"
+              Title="@Heading"
+              Breadcrumbs="Crumbs"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm">
+    <Actions>
+        @if (_order is not null)
+        {
+            <OsStatusChip Tone="StatusPresentation.OrderTone(_order.Status)"
+                          Text="@L[StatusPresentation.OrderLabelKey(_order.Status)]"
+                          Dot="true" />
+        }
+    </Actions>
+</OsPageHeader>
 
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Wide">
     @if (_loading)
     {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
+        <OsDetailSkeleton />
     }
     else if (_order is null)
     {
-        <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.OrderDetail.NotFound"]" TitleTypo="Typo.h6" />
-        </MudPaper>
+        <OsEmptyState Icon="@Icons.Material.Outlined.SearchOff"
+                      Title="@L["Admin.OrderDetail.NotFound"]"
+                      ActionText="@L["Admin.OrderDetail.BackToList"]"
+                      ActionHref="/admin/orders" />
     }
     else
     {
-        <MudGrid>
-            <MudItem xs="12" md="8">
-                <MudStack Spacing="4">
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-                            <MudStack Spacing="0">
-                                <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.OrderDetail.Order"]</MudText>
-                                <MudText Typo="Typo.h5" Class="os-mono" Style="font-weight:700;">
-                                    #@_order.Id.ToString("N")[..8].ToUpperInvariant()
-                                </MudText>
-                                <MudText Typo="Typo.caption" Class="text-muted">
-                                    @Formatting.DateTime(_order.CreatedAt.ToLocalTime())
-                                </MudText>
-                            </MudStack>
-                            <MudChip T="string" Color="@StatusColor(_order.Status)" Size="Size.Medium"
-                                     Variant="Variant.Filled" Style="border-radius:100px;font-weight:600;">
-                                @StatusLabel(_order.Status)
-                            </MudChip>
-                        </MudStack>
+        <div class="pg-order">
+            <div class="pg-order__main os-stack">
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <div class="os-card__head">
+                        <div>
+                            <OsEyebrow Text="@L["Admin.OrderDetail.Order"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                            <div class="pg-order__number os-mono">#@ShortId</div>
+                            <div class="pg-order__placed os-mono">@Formatting.DateTime(_order.CreatedAt.ToLocalTime())</div>
+                        </div>
                         @if (!string.IsNullOrWhiteSpace(_order.TrackingNumber))
                         {
-                            <MudDivider Class="mb-3" />
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Color="Color.Primary" />
-                                <MudText Typo="Typo.body1" Class="os-mono" Style="font-weight:600;">@_order.TrackingNumber</MudText>
-                            </MudStack>
+                            <div class="pg-order__tracking">
+                                <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Size="Size.Small" />
+                                <span class="os-mono">@_order.TrackingNumber</span>
+                            </div>
                         }
-                    </MudPaper>
+                    </div>
+                </OsCard>
 
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["Admin.OrderDetail.Items"]</MudText>
-                        <MudStack Spacing="3">
-                            @foreach (var line in _order.Items)
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Admin.OrderDetail.Items"]</OsDisplay>
+
+                    <div class="os-rows">
+                        @foreach (var line in _order.Items)
+                        {
+                            <div class="os-row" @key="line.ProductId">
+                                <div class="os-row__main">
+                                    <span class="os-row__title">@line.ProductName</span>
+                                    <span class="os-row__meta os-mono">
+                                        @line.Quantity × @Formatting.Currency(line.Price)
+                                    </span>
+                                </div>
+                                <div class="os-row__end">
+                                    <OsPrice Value="@(line.Price * line.Quantity)" Size="OsPrice.PriceSize.Sm" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <dl class="os-kv pg-order__totals">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["OrderSummary.Subtotal"]</dt>
+                            <dd class="os-kv__val os-num">@Formatting.Currency(Subtotal)</dd>
+                        </div>
+                        @if (_order.DiscountAmount > 0)
+                        {
+                            <div class="os-kv__row">
+                                <dt class="os-kv__key">
+                                    @L["OrderSummary.Discount"]
+                                    @if (_order.CouponCode is { } couponCode)
+                                    {
+                                        <span class="os-mono">(@couponCode)</span>
+                                    }
+                                </dt>
+                                <dd class="os-kv__val os-num os-tone-success">−@Formatting.Currency(_order.DiscountAmount)</dd>
+                            </div>
+                        }
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["OrderSummary.Shipping"]</dt>
+                            <dd class="os-kv__val os-num">
+                                @(_order.ShippingCost > 0 ? Formatting.Currency(_order.ShippingCost) : L["OrderSummary.Free"])
+                            </dd>
+                        </div>
+                        <div class="os-kv__row os-kv__row--total">
+                            <dt class="os-kv__key">@L["Admin.OrderDetail.Total"]</dt>
+                            <dd class="os-kv__val">@Formatting.Currency(_order.Total)</dd>
+                        </div>
+                    </dl>
+                </OsCard>
+
+                @if (_order.StatusHistory is { Count: > 0 } history)
+                {
+                    <OsCard Padding="OsCard.CardPadding.Lg">
+                        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["OrderDetail.Timeline"]</OsDisplay>
+                        <ol class="pg-timeline">
+                            @foreach (var (entry, index) in history.Select((e, i) => (e, i)))
                             {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body1" Style="font-weight:500;">@line.ProductName</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted">
-                                            @line.Quantity × @Formatting.Currency(line.Price)
-                                        </MudText>
-                                    </MudStack>
-                                    <MudText Typo="Typo.body1" Style="font-weight:600;">
-                                        @Formatting.Currency(line.Price * line.Quantity)
-                                    </MudText>
-                                </MudStack>
+                                <li class="pg-timeline__item @(index == history.Count - 1 ? "is-current" : null)">
+                                    <span class="pg-timeline__dot os-tone-@StatusPresentation.OrderTone(entry.Status).ToString().ToLowerInvariant()" aria-hidden="true"></span>
+                                    <span class="pg-timeline__label">@L[StatusPresentation.OrderLabelKey(entry.Status)]</span>
+                                    <time class="pg-timeline__time os-mono" datetime="@entry.OccurredAt.ToString("o")">
+                                        @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
+                                    </time>
+                                </li>
                             }
-                        </MudStack>
-                        <MudDivider Class="my-4" />
-                        <MudStack Spacing="2">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["OrderSummary.Subtotal"]</MudText>
-                                <MudText Typo="Typo.body2">@Formatting.Currency(Subtotal)</MudText>
-                            </MudStack>
-                            @if (_order.DiscountAmount > 0)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                    <MudText Typo="Typo.body2" Class="text-muted">
-                                        @L["OrderSummary.Discount"] @(_order.CouponCode is { } c ? $"({c})" : "")
-                                    </MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Success">−@Formatting.Currency(_order.DiscountAmount)</MudText>
-                                </MudStack>
-                            }
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["OrderSummary.Shipping"]</MudText>
-                                @if (_order.ShippingCost > 0)
-                                {
-                                    <MudText Typo="Typo.body2">@Formatting.Currency(_order.ShippingCost)</MudText>
-                                }
-                                else
-                                {
-                                    <MudText Typo="Typo.body2" Class="shipping-free">@L["OrderSummary.Free"]</MudText>
-                                }
-                            </MudStack>
-                            <MudDivider />
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Admin.OrderDetail.Total"]</MudText>
-                                <MudText Typo="Typo.h5" Style="font-weight:700;color:var(--os-primary-text);">
-                                    @Formatting.Currency(_order.Total)
-                                </MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
+                        </ol>
+                    </OsCard>
+                }
 
-                    @if (_order.StatusHistory is { Count: > 0 } history)
-                    {
-                        <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                            <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["OrderDetail.Timeline"]</MudText>
-                            <MudTimeline TimelinePosition="TimelinePosition.Start">
-                                @foreach (var entry in history)
-                                {
-                                    <MudTimelineItem Color="@StatusColor(entry.Status)" Size="Size.Small">
-                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@StatusLabel(entry.Status)</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted">
-                                            @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
-                                        </MudText>
-                                    </MudTimelineItem>
-                                }
-                            </MudTimeline>
-                        </MudPaper>
-                    }
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Admin.OrderDetail.ShippingAddress"]</OsDisplay>
+                    <address class="pg-order__address">
+                        @_order.ShippingAddress.FirstName @_order.ShippingAddress.LastName<br />
+                        @_order.ShippingAddress.Street<br />
+                        @_order.ShippingAddress.PostalCode @_order.ShippingAddress.City<br />
+                        @_order.ShippingAddress.Country
+                    </address>
+                </OsCard>
+            </div>
 
-                    <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
-                            <MudIcon Icon="@Icons.Material.Outlined.LocationOn" Color="Color.Primary" />
-                            <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Admin.OrderDetail.ShippingAddress"]</MudText>
-                        </MudStack>
-                        <MudText Typo="Typo.body2" Style="line-height:1.6;">
-                            @_order.ShippingAddress.FirstName @_order.ShippingAddress.LastName<br />
-                            @_order.ShippingAddress.Street<br />
-                            @_order.ShippingAddress.PostalCode @_order.ShippingAddress.City<br />
-                            @_order.ShippingAddress.Country
-                        </MudText>
-                    </MudPaper>
-                </MudStack>
-            </MudItem>
+            <aside class="pg-order__aside">
+                <OsCard Padding="OsCard.CardPadding.Lg" Class="pg-admin__rail-card">
+                    <OsEyebrow Text="@L["Admin.OrderDetail.Actions"]" />
 
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);position:sticky;top:80px;">
-                    <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["Admin.OrderDetail.Actions"]</MudText>
-                    <MudStack Spacing="2">
-                        <MudButton Variant="Variant.Filled" Color="Color.Warning" FullWidth="true"
-                                   StartIcon="@Icons.Material.Outlined.LocalShipping"
-                                   Disabled="@(_order.Status != "Paid" || _busy)"
-                                   OnClick="MarkShippedAsync">
+                    <div class="pg-admin__actions">
+                        <OsButton Variant="OsButton.ButtonVariant.Secondary" FullWidth="true"
+                                  StartIcon="@Icons.Material.Outlined.LocalShipping"
+                                  Disabled="@(_order.Status != "Paid" || _busy)"
+                                  OnClick="MarkShippedAsync">
                             @L["Admin.OrderDetail.MarkShipped"]
-                        </MudButton>
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true"
-                                   StartIcon="@Icons.Material.Outlined.HomeWork"
-                                   Disabled="@(_order.Status != "Shipped" || _busy)"
-                                   OnClick="MarkDeliveredAsync">
+                        </OsButton>
+                        <OsButton Variant="OsButton.ButtonVariant.Secondary" FullWidth="true"
+                                  StartIcon="@Icons.Material.Outlined.HomeWork"
+                                  Disabled="@(_order.Status != "Shipped" || _busy)"
+                                  OnClick="MarkDeliveredAsync">
                             @L["Admin.OrderDetail.MarkDelivered"]
-                        </MudButton>
-                        <MudDivider Class="my-2" />
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true"
-                                   StartIcon="@Icons.Material.Outlined.Cancel"
-                                   Disabled="@(_order.Status is "Delivered" or "Cancelled" || _busy)"
-                                   OnClick="CancelAsync">
+                        </OsButton>
+                        <OsButton Variant="OsButton.ButtonVariant.Danger" FullWidth="true"
+                                  StartIcon="@Icons.Material.Outlined.Cancel"
+                                  Disabled="@(_order.Status is "Delivered" or "Cancelled" || _busy)"
+                                  OnClick="CancelAsync">
                             @L["Admin.OrderDetail.Cancel"]
-                        </MudButton>
-                    </MudStack>
+                        </OsButton>
+                    </div>
 
                     @if (_order.Status == "Cancelled")
                     {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
-                            @L["Admin.OrderDetail.CancelledNote"]
-                        </MudAlert>
+                        <p class="pg-admin__note">@L["Admin.OrderDetail.CancelledNote"]</p>
                     }
                     else if (_order.Status == "Delivered")
                     {
-                        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mt-4">
-                            @L["Admin.OrderDetail.DeliveredNote"]
-                        </MudAlert>
+                        <p class="pg-admin__note">@L["Admin.OrderDetail.DeliveredNote"]</p>
                     }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
+                </OsCard>
+            </aside>
+        </div>
     }
-</MudContainer>
+</OsSection>
 
 @code {
     [Parameter] public Guid OrderId { get; set; }
@@ -192,17 +181,33 @@
     private bool _loading = true;
     private bool _busy;
 
+    private string ShortId => OrderId.ToString("N")[..8].ToUpperInvariant();
+    private string Heading => $"#{ShortId}";
+
+    private IReadOnlyList<OsCrumb> Crumbs =>
+    [
+        new OsCrumb(L["Admin.Orders.Title"], "/admin/orders"),
+        new OsCrumb(Heading),
+    ];
+
     private decimal Subtotal => _order?.Items.Sum(i => i.Quantity * i.Price) ?? 0m;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
     {
-        try { var r = await AdminOrdering.GetOrderByIdAsync(OrderId); _order = r.Value; if (!r.IsSuccess) Snackbar.Add(r.Error!.Message, Severity.Error); }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        try
+        {
+            var r = await AdminOrdering.GetOrderByIdAsync(OrderId);
+            _order = r.Value;
+            if (!r.IsSuccess) Snackbar.ShowApiError(r.Error);
+        }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
-    private async Task MarkShippedAsync() => await UpdateStatusAsync(2); // Shipped
-    private async Task MarkDeliveredAsync() => await UpdateStatusAsync(3); // Delivered
+    private Task MarkShippedAsync() => UpdateStatusAsync(2);   // Shipped
+    private Task MarkDeliveredAsync() => UpdateStatusAsync(3); // Delivered
 
     private async Task UpdateStatusAsync(int status)
     {
@@ -210,38 +215,45 @@
         try
         {
             var result = await AdminOrdering.UpdateStatusAsync(OrderId, status);
-            if (result.IsSuccess) { Snackbar.Add(L["Admin.OrderDetail.StatusUpdated"], Severity.Success); _order = (await AdminOrdering.GetOrderByIdAsync(OrderId)).Value; }
-            else Snackbar.Add(result.Error!.Message, Severity.Error);
+            if (result.IsSuccess)
+            {
+                Snackbar.ShowSuccess(L["Admin.OrderDetail.StatusUpdated"]);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.ShowApiError(result.Error);
+            }
         }
         finally { _busy = false; }
     }
 
+    // Cancelling refunds and restocks; there is no undo, so it asks first.
     private async Task CancelAsync()
     {
+        var confirmed = await ConfirmDialog.ShowAsync(
+            Dialogs,
+            L["Admin.Confirm.CancelOrderTitle"],
+            L["Admin.Confirm.CancelOrderBody", ShortId],
+            L["Admin.OrderDetail.Cancel"],
+            danger: true);
+
+        if (!confirmed) return;
+
         _busy = true;
         try
         {
             var result = await AdminOrdering.CancelOrderAsync(OrderId);
-            if (result.IsSuccess) { Snackbar.Add(L["Admin.OrderDetail.OrderCancelled"], Severity.Success); _order = (await AdminOrdering.GetOrderByIdAsync(OrderId)).Value; }
-            else Snackbar.Add(result.Error!.Message, Severity.Error);
+            if (result.IsSuccess)
+            {
+                Snackbar.ShowSuccess(L["Admin.OrderDetail.OrderCancelled"]);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.ShowApiError(result.Error);
+            }
         }
         finally { _busy = false; }
     }
-
-    private static Color StatusColor(string s) => s switch
-    {
-        "Paid" => Color.Info, "Shipped" => Color.Warning,
-        "Delivered" => Color.Success, "Cancelled" => Color.Error,
-        _ => Color.Default
-    };
-
-    private string StatusLabel(string s) => s switch
-    {
-        "Created"   => L["Admin.Orders.StatusCreated"],
-        "Paid"      => L["Admin.Orders.StatusPaid"],
-        "Shipped"   => L["Admin.Orders.StatusShipped"],
-        "Delivered" => L["Admin.Orders.StatusDelivered"],
-        "Cancelled" => L["Admin.Orders.StatusCancelled"],
-        _ => s
-    };
 }

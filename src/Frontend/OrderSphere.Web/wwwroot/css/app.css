@@ -1,0 +1,7 @@
+/* Entry stylesheet. Declares the cascade order and pulls MudBlazor into the
+   lowest layer so every OrderSphere rule wins without !important or a
+   specificity war. MudThemeProvider's inline <style> stays un-layered and
+   keeps ownership of --mud-palette-*. */
+@layer mud, tokens, base, overrides, components, pages, motion, utilities;
+
+@import url("/_content/MudBlazor/MudBlazor.min.css") layer(mud);

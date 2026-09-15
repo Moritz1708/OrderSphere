@@ -30,4 +30,10 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\OrderSphere.BuildingBlocks.Auditing\OrderSphere.BuildingBlocks.Auditing.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Invoice PDF fonts (SIL OFL 1.1, licences alongside). Fixed logical names so the
+         renderer can find them without depending on MSBuild's resource-name mangling. -->
+    <EmbeddedResource Include="Pdf\Fonts\*.ttf" LogicalName="InvoicingFonts.%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

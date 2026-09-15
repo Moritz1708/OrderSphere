@@ -28,4 +28,11 @@
     <ProjectReference Include="..\..\src\Frontend\OrderSphere.Web\OrderSphere.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- TokensCssSyncTests reads this to prove the CSS and C# palettes agree. -->
+    <Content Include="..\..\src\Frontend\OrderSphere.Web\wwwroot\css\tokens.css"
+             Link="assets\tokens.css"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

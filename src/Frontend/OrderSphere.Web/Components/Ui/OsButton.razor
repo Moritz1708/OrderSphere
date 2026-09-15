@@ -1,0 +1,93 @@
+@* The editorial button. A native <button>/<a> rather than a MudButton wrapper:
+   Mud's markup needs roughly six selectors per variant to neutralise, carries a
+   Material ripple, and has no loading state. Native markup gives exact control,
+   real aria-busy, and stable selectors for tests. *@
+
+@if (Href is not null)
+{
+    <a href="@(Disabled || Loading ? null : Href)"
+       target="@Target"
+       class="@CssClass"
+       aria-disabled="@((Disabled || Loading) ? "true" : null)"
+       aria-busy="@(Loading ? "true" : null)"
+       aria-label="@AriaLabel"
+       tabindex="@((Disabled || Loading) ? "-1" : null)"
+       @attributes="AdditionalAttributes">
+        @RenderInner()
+    </a>
+}
+else
+{
+    <button type="@Type"
+            class="@CssClass"
+            disabled="@(Disabled || Loading)"
+            aria-busy="@(Loading ? "true" : null)"
+            aria-label="@AriaLabel"
+            @onclick="OnClick"
+            @attributes="AdditionalAttributes">
+        @RenderInner()
+    </button>
+}
+
+@code {
+    public enum ButtonVariant { Primary, Secondary, Ghost, Danger }
+
+    public enum ButtonSize { Sm, Md, Lg }
+
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Primary;
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Md;
+
+    /// <summary>Renders an anchor instead of a button. Mutually exclusive with <see cref="OnClick"/>.</summary>
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Target { get; set; }
+
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string Type { get; set; } = "button";
+
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Shows a spinner and blocks interaction. Implies <see cref="Disabled"/>.</summary>
+    [Parameter] public bool Loading { get; set; }
+
+    [Parameter] public string? StartIcon { get; set; }
+    [Parameter] public string? EndIcon { get; set; }
+    [Parameter] public bool FullWidth { get; set; }
+
+    /// <summary>Required when the label is an icon alone.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-btn",
+            $"os-btn--{Variant.ToString().ToLowerInvariant()}",
+            $"os-btn--{Size.ToString().ToLowerInvariant()}",
+            FullWidth ? "os-btn--full" : null,
+            Loading ? "is-loading" : null,
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private RenderFragment RenderInner() =>@<text>
+        @if (Loading)
+        {
+            <span class="os-btn__spinner" aria-hidden="true"></span>
+        }
+        else if (StartIcon is not null)
+        {
+            <MudIcon Icon="@StartIcon" Class="os-btn__icon" />
+        }
+
+        <span class="os-btn__label">@ChildContent</span>
+
+        @if (EndIcon is not null && !Loading)
+        {
+            <MudIcon Icon="@EndIcon" Class="os-btn__icon" />
+        }
+    </text>;
+}

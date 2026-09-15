@@ -3,89 +3,125 @@
 @inject IOrderingClient Ordering
 @inject CartState CartState
 @inject ISnackbar Snackbar
+@inject IMotionService Motion
 @inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Checkout.PageTitle"]</PageTitle>
 
-<PageHero Eyebrow="@L["Checkout.Eyebrow"]"
-          Title="@L["Checkout.Title"]"
-          Subtitle="@L["Checkout.Subtitle"]" />
+<OsPageHeader Eyebrow="@L["Checkout.Eyebrow"]"
+              Title="@L["Checkout.Title"]"
+              Subtitle="@L["Checkout.Subtitle"]"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm" />
 
-<section style="padding:48px 0 var(--os-section-py-md);">
-    <MudContainer>
-        <MudGrid Spacing="4">
-            <!-- Left: form -->
-            <MudItem xs="12" lg="8">
-                <MudStack Spacing="4">
-                    <CheckoutAddressForm Model="_model" />
+<OsSection Padding="OsSection.SectionPadding.Sm">
+    <div class="pg-checkout">
+        <div class="pg-checkout__steps">
+            @* 01 — where it goes *@
+            <section class="pg-step" aria-labelledby="step-address">
+                <span class="pg-step__num os-mono" aria-hidden="true">01</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="step-address">@L["Address.Title"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Checkout.AddressHint"]</p>
+                    <AddressForm @ref="_addressForm" Model="_model.Address" ShowEmail="true" />
+                </div>
+            </section>
+
+            @* 02 — how it is paid *@
+            <section class="pg-step" aria-labelledby="step-payment">
+                <span class="pg-step__num os-mono" aria-hidden="true">02</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="step-payment">@L["Payment.Title"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Checkout.PaymentHint"]</p>
                     <CheckoutPaymentForm Model="_model" />
-                </MudStack>
-            </MudItem>
+                </div>
+            </section>
 
-            <!-- Right: order summary -->
-            <MudItem xs="12" lg="4">
-                <OrderSummary Title="@L["Checkout.Summary"]"
-                              ShowLineItems="true"
-                              Items="_cartItems"
-                              Subtotal="Subtotal"
-                              Discount="_discount"
-                              ShippingCost="Shipping"
-                              StickyTop="100px">
-                    <CouponSlot>
-                        @if (string.IsNullOrEmpty(_appliedCoupon))
-                        {
-                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-                                <MudTextField T="string" @bind-Value="_couponInput"
-                                              Placeholder="@L["Checkout.CouponPlaceholder"]"
-                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                                           OnClick="ApplyCouponAsync" Disabled="_couponValidating">
-                                    @L["Checkout.CouponApply"]
-                                </MudButton>
-                            </MudStack>
-                        }
-                        else
-                        {
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Filled"
-                                         Icon="@Icons.Material.Outlined.LocalOffer">@_appliedCoupon</MudChip>
-                                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="RemoveCoupon">
-                                    @L["Checkout.CouponRemove"]
-                                </MudButton>
-                            </MudStack>
-                        }
-                        @if (!string.IsNullOrEmpty(_couponMessage))
-                        {
-                            <MudText Typo="Typo.caption" Class="text-muted">@_couponMessage</MudText>
-                        }
-                        <MudDivider />
-                    </CouponSlot>
-                    <Actions>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                   FullWidth="true" Class="btn-pill my-4" Size="Size.Large"
-                                   Disabled="_submitting"
-                                   OnClick="SubmitAsync">
-                            @if (_submitting)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            }
-                            @L["Checkout.Submit"]
-                        </MudButton>
+            @* 03 — what is being ordered *@
+            <section class="pg-step" aria-labelledby="step-review">
+                <span class="pg-step__num os-mono" aria-hidden="true">03</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="step-review">@L["Checkout.ReviewTitle"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Checkout.ReviewHint"]</p>
 
-                        <MudText Typo="Typo.caption" Class="text-muted">
-                            @L["Checkout.TermsNote"]
-                        </MudText>
-                    </Actions>
-                </OrderSummary>
-            </MudItem>
-        </MudGrid>
-    </MudContainer>
-</section>
+                    <dl class="os-kv pg-checkout__review">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Checkout.ReviewItems"]</dt>
+                            <dd class="os-kv__val os-num">@_cartItems.Sum(i => i.Quantity)</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Checkout.ReviewShipTo"]</dt>
+                            <dd class="os-kv__val">@ShipTo</dd>
+                        </div>
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["Payment.Title"]</dt>
+                            <dd class="os-kv__val">@L[PaymentLabelKey]</dd>
+                        </div>
+                    </dl>
+
+                    <p class="pg-step__note">@L["Checkout.TermsNote"]</p>
+                </div>
+            </section>
+        </div>
+
+        <div class="pg-checkout__aside">
+            <OrderSummary Title="@L["Checkout.Summary"]"
+                          ShowLineItems="true"
+                          Items="_cartItems"
+                          Subtotal="Subtotal"
+                          Discount="_discount"
+                          ShippingCost="Shipping">
+                <CouponSlot>
+                    @if (string.IsNullOrEmpty(_appliedCoupon))
+                    {
+                        <div class="os-coupon">
+                            <MudTextField T="string" @bind-Value="_couponInput"
+                                          Placeholder="@L["Checkout.CouponPlaceholder"]"
+                                          Variant="Variant.Outlined" Margin="Margin.Dense"
+                                          Class="os-coupon__input" />
+                            <OsButton Variant="OsButton.ButtonVariant.Secondary"
+                                      OnClick="ApplyCouponAsync"
+                                      Loading="_couponValidating">
+                                @L["Checkout.CouponApply"]
+                            </OsButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="os-coupon os-coupon--applied">
+                            <OsStatusChip Tone="StatusTone.Success" Text="@_appliedCoupon" Dot="true" />
+                            <OsButton Variant="OsButton.ButtonVariant.Ghost"
+                                      Size="OsButton.ButtonSize.Sm"
+                                      OnClick="RemoveCoupon">
+                                @L["Checkout.CouponRemove"]
+                            </OsButton>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(_couponMessage))
+                    {
+                        <p class="os-coupon__message">@_couponMessage</p>
+                    }
+                </CouponSlot>
+                <Actions>
+                    <OsButton FullWidth="true"
+                              Size="OsButton.ButtonSize.Lg"
+                              Loading="_submitting"
+                              Disabled="@(_cartItems.Count == 0)"
+                              OnClick="SubmitAsync"
+                              Class="mt-4">
+                        @L["Checkout.Submit"]
+                    </OsButton>
+                </Actions>
+            </OrderSummary>
+        </div>
+    </div>
+</OsSection>
 
 @code {
     [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
+    private AddressForm _addressForm = default!;
     private List<CartItemDto> _cartItems = [];
     private bool _submitting;
 
@@ -106,6 +142,39 @@
     // Estimate; the worker recomputes shipping authoritatively from the (pre-discount) subtotal.
     private decimal Shipping => ShippingEstimate.For(Subtotal);
 
+    private string PaymentLabelKey => _model.PaymentMethod switch
+    {
+        1 => "Payment.PayPal",
+        2 => "Payment.Invoice",
+        _ => "Payment.CreditCard",
+    };
+
+    private string ShipTo
+    {
+        get
+        {
+            var a = _model.Address;
+            var name = $"{a.FirstName} {a.LastName}".Trim();
+            var place = string.Join(" ", new[] { a.PostalCode, a.City }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            var parts = new[] { name, a.Street, place }.Where(s => !string.IsNullOrWhiteSpace(s));
+            return parts.Any() ? string.Join(", ", parts) : L["Checkout.ReviewShipToPending"];
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await (AuthState ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
+        _model.Address.Email = state.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+
+        _cartItems = CartState.Cart?.Items ?? [];
+        if (!_cartItems.Any())
+        {
+            var cart = await Ordering.GetCartAsync();
+            if (cart.IsSuccess)
+                _cartItems = cart.Value!.Items;
+        }
+    }
+
     private async Task ApplyCouponAsync()
     {
         var code = _couponInput?.Trim() ?? string.Empty;
@@ -117,7 +186,7 @@
             var result = await Ordering.ValidateCouponAsync(code, Subtotal);
             if (!result.IsSuccess)
             {
-                _couponMessage = result.Error!.Message;
+                _couponMessage = result.Error?.Message;
                 _appliedCoupon = null;
                 _discount = 0;
                 return;
@@ -125,16 +194,8 @@
 
             var dto = result.Value!;
             _couponMessage = dto.Message;
-            if (dto.IsValid)
-            {
-                _appliedCoupon = code;
-                _discount = dto.DiscountAmount;
-            }
-            else
-            {
-                _appliedCoupon = null;
-                _discount = 0;
-            }
+            _appliedCoupon = dto.IsValid ? code : null;
+            _discount = dto.IsValid ? dto.DiscountAmount : 0;
         }
         finally
         {
@@ -150,28 +211,13 @@
         _couponInput = string.Empty;
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        var state = await (AuthState ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
-        var email = state.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
-        _model.Email = email;
-
-        _cartItems = CartState.Cart?.Items ?? [];
-        if (!_cartItems.Any())
-        {
-            var cart = await Ordering.GetCartAsync();
-            if (cart.IsSuccess)
-                _cartItems = cart.Value!.Items;
-        }
-    }
-
     private async Task SubmitAsync()
     {
-        if (string.IsNullOrWhiteSpace(_model.FirstName) || string.IsNullOrWhiteSpace(_model.LastName) ||
-            string.IsNullOrWhiteSpace(_model.Street) || string.IsNullOrWhiteSpace(_model.City) ||
-            string.IsNullOrWhiteSpace(_model.PostalCode) || string.IsNullOrWhiteSpace(_model.Email))
+        // Field-level errors come from the form itself; a toast would only repeat them.
+        // The summary can sit far from the address step, so move focus to the first problem.
+        if (!await _addressForm.ValidateAsync())
         {
-            Snackbar.Add(L["Checkout.RequiredFields"], Severity.Warning);
+            await Motion.FocusFirstInvalidAsync();
             return;
         }
 
@@ -180,16 +226,12 @@
         {
             // Identity fields (CustomerId, CustomerEmail, CustomerName) are derived
             // from the JWT token server-side and not included in the request body.
-            var request = new CheckoutRequest(
-                new CheckoutAddress(_model.FirstName, _model.LastName, _model.Street,
-                    _model.City, _model.PostalCode, _model.Country),
-                _model.PaymentMethod,
-                _appliedCoupon);
+            var request = new CheckoutRequest(_model.Address.ToCheckoutAddress(), _model.PaymentMethod, _appliedCoupon);
 
             var result = await Ordering.CheckoutAsync(request, _idempotencyKey);
             if (!result.IsSuccess)
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
                 return;
             }
 

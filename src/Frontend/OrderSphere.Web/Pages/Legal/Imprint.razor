@@ -1,72 +1,28 @@
 @page "/imprint"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>Impressum — OrderSphere</PageTitle>
+<PageTitle>@L["Imprint.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Impressum
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Legal"]"
+               Title="@L["Imprint.Title"]"
+               Lede="@L["Imprint.Lede"]"
+               Notice="@L["Article.PlaceholderNotice"]"
+               Numbered="false"
+               Sections="_sections" />
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Elevation="0" Class="pa-8 surface-card-lg">
+@code {
+    private IReadOnlyList<ArticleSection> _sections = [];
 
-            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-6">
-                Platzhalter. Bitte trage vor Live-Schaltung deine echten Angaben gemäß § 5 TMG ein.
-            </MudAlert>
+    protected override void OnInitialized() => _sections =
+    [
+        Section("provider", 1),
+        Section("representation", 2),
+        Section("contact", 3),
+        Section("register", 4),
+        Section("vat", 5),
+        Section("editorial", 6),
+    ];
 
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Angaben gemäß § 5 TMG
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                OrderSphere GmbH<br />
-                Musterstraße 1<br />
-                12345 Musterstadt<br />
-                Deutschland
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Vertreten durch
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Max Mustermann (Geschäftsführer)
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Kontakt
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Telefon: +49 (0) 123 456 789<br />
-                E-Mail: support@ordersphere.dev
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Registereintrag
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Eintragung im Handelsregister<br />
-                Registergericht: Amtsgericht Musterstadt<br />
-                Registernummer: HRB 00000
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Umsatzsteuer-ID
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6">
-                Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: DE000000000
-            </MudText>
-
-            <MudText Typo="Typo.h5" Class="mb-3" Style="font-weight: 600;">
-                Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Max Mustermann<br />
-                Musterstraße 1<br />
-                12345 Musterstadt
-            </MudText>
-        </MudPaper>
-    </MudContainer>
-</section>
+    private ArticleSection Section(string id, int n) =>
+        new(id, L[$"Imprint.S{n}.Title"], new MarkupString(L[$"Imprint.S{n}.Body"]));
+}

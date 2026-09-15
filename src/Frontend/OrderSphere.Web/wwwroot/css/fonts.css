@@ -1,0 +1,61 @@
+/* Self-hosted webfonts. The production CSP is `font-src 'self' data:`, so no CDN
+   may be used. Licences (SIL OFL 1.1) sit next to the files in /fonts. */
+@layer tokens {
+
+  @font-face {
+    font-family: "Instrument Serif";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/fonts/InstrumentSerif-Regular.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "Instrument Serif";
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/fonts/InstrumentSerif-Italic.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/fonts/Manrope-Regular.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("/fonts/Manrope-SemiBold.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("/fonts/Manrope-Bold.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("/fonts/Manrope-ExtraBold.woff2") format("woff2");
+  }
+
+  /* Variable: one file covers 100-900. */
+  @font-face {
+    font-family: "Geist Mono";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+  }
+}

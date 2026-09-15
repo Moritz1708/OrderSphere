@@ -1,0 +1,39 @@
+@implements IDisposable
+@inject NavigationManager Nav
+
+@* Re-keying the wrapper on every path change recreates the subtree, which replays
+   the CSS enter animation in motion.css. A query-string change (/search?q=…) keeps
+   the same key on purpose: the page is meant to update in place, not remount, and
+   remounting would discard its OnParametersSetAsync state.
+
+   Blazor WebAssembly applies render batches synchronously with no public hook, so
+   document.startViewTransition cannot wrap them — see ADR 0013. *@
+<div class="os-page" @key="_path">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string _path = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _path = PathOf(Nav.Uri);
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        var next = PathOf(e.Location);
+        if (next == _path)
+            return;
+
+        _path = next;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private static string PathOf(string uri) => new Uri(uri).AbsolutePath;
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

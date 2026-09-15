@@ -1,0 +1,77 @@
+@* Product media with an editorial fallback. Most seeded products have no image;
+   instead of a grey icon box each gets a deterministic duotone field (hue from
+   the product id) with its initial in the serif italic — distinct, calm, and
+   the same on every visit. *@
+
+@if (!string.IsNullOrWhiteSpace(Url))
+{
+    <div class="os-pimg @Class" style="@Style" @attributes="AdditionalAttributes">
+        <img src="@Url" alt="@AltText" loading="@(Eager ? "eager" : "lazy")" decoding="async" />
+    </div>
+}
+else
+{
+    <div class="os-pimg os-ph @Class"
+         style="@Style;--ph-hue:@Hue"
+         role="img"
+         aria-label="@AltText"
+         @attributes="AdditionalAttributes">
+        <span class="os-ph__initial" aria-hidden="true">@InitialText</span>
+    </div>
+}
+
+@code {
+    /// <summary>The usual input. Sets url, alt text, seed and initial in one go.</summary>
+    [Parameter] public ProductDto? Product { get; set; }
+
+    [Parameter] public string? ImageUrl { get; set; }
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public Guid? Seed { get; set; }
+    [Parameter] public string? Initial { get; set; }
+
+    /// <summary>CSS aspect ratio, e.g. "4/3" or "4/5".</summary>
+    [Parameter] public string Ratio { get; set; } = "4/3";
+
+    /// <summary>Above-the-fold media should not lazy-load.</summary>
+    [Parameter] public bool Eager { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string? Url => ImageUrl ?? Product?.ImageUrl;
+    private string AltText => Name ?? Product?.Name ?? string.Empty;
+    private string Style => $"aspect-ratio:{Ratio}";
+
+    private string InitialText
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Initial))
+                return Initial[..1];
+
+            var source = Name ?? Product?.Name;
+            return string.IsNullOrWhiteSpace(source) ? "·" : source.Trim()[..1].ToUpperInvariant();
+        }
+    }
+
+    private int Hue
+    {
+        get
+        {
+            var id = Seed ?? Product?.Id ?? Guid.Empty;
+
+            // FNV-1a over all sixteen bytes. Taking only the first four made every
+            // seeded category share a hue, because their ids differ late in the Guid.
+            uint hash = 2166136261;
+            foreach (var b in id.ToByteArray())
+            {
+                hash ^= b;
+                hash *= 16777619;
+            }
+
+            return (int)(hash % 360);
+        }
+    }
+}

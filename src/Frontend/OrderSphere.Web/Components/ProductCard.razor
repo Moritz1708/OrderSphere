@@ -1,39 +1,31 @@
 @inject IStringLocalizer<AppStrings> L
 
-<MudPaper Elevation="0"
-          Class="product-card"
-          @onclick="HandleOpen"
-          role="button"
-          tabindex="0">
+@* Catalogue tile. The whole card opens the product; the add button stops the
+   click from bubbling so it can act on its own. *@
+<article class="os-card os-card--paper os-card--pad-none os-product-card"
+         role="button"
+         tabindex="0"
+         aria-label="@Product.Name"
+         @onclick="HandleOpen"
+         @onkeydown="HandleKeyDown">
 
-    <div class="product-card-image" style="display:flex;align-items:center;justify-content:center;background:var(--mud-palette-background-grey);">
-        @if (!string.IsNullOrWhiteSpace(Product.ImageUrl))
-        {
-            <img src="@Product.ImageUrl" alt="@Product.Name"
-                 style="max-height:100%;max-width:100%;object-fit:contain;" />
-        }
-        else
-        {
-            <MudIcon Icon="@Icons.Material.Outlined.Inventory2"
-                     Style="font-size:64px;color:var(--mud-palette-divider);" />
-        }
+    <div class="os-product-card__image">
+        <OsProductImage Product="Product" />
         @if (Product.Stock == 0)
         {
-            <div style="position:absolute;top:12px;left:12px;">
-                <MudChip T="string" Size="Size.Small" Color="Color.Error"
-                         Style="font-size:0.6875rem;font-weight:600;">
-                    @L["Common.SoldOut"]
-                </MudChip>
-            </div>
+            <span class="os-product-card__flag">
+                <OsStatusChip Tone="StatusTone.Danger" Text="@L["Common.SoldOut"]" Size="OsStatusChip.ChipSize.Sm" />
+            </span>
         }
     </div>
 
-    <div class="product-card-content" style="padding:16px;display:flex;flex-direction:column;gap:6px;flex:1;">
+    <div class="os-product-card__body">
         @if (ShowCategory && !string.IsNullOrWhiteSpace(Product.CategoryName))
         {
-            <span class="product-card-category">@Product.CategoryName</span>
+            <OsEyebrow Text="@Product.CategoryName" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
         }
-        <MudText Typo="Typo.body1" Style="font-weight:600;line-height:1.3;">@Product.Name</MudText>
+
+        <h3 class="os-product-card__name">@Product.Name</h3>
 
         @if (Product.ReviewCount > 0)
         {
@@ -42,27 +34,22 @@
 
         @if (!string.IsNullOrWhiteSpace(Product.Description))
         {
-            <MudText Typo="Typo.body2" Class="text-muted"
-                     Style="flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                @Product.Description
-            </MudText>
+            <p class="os-product-card__desc os-clamp-2">@Product.Description</p>
         }
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-            <span class="os-mono" style="font-size:1rem;font-weight:600;">
-                @Formatting.Currency(Product.Price)
-            </span>
-            <span @onclick:stopPropagation="true">
-                <MudIconButton Icon="@Icons.Material.Outlined.Add"
-                               aria-label="@L["Common.AddToCart"]"
-                               Disabled="@(Product.Stock == 0)"
-                               OnClick="HandleAdd"
-                               Size="Size.Small"
-                               Class="product-add-btn" />
+        <div class="os-product-card__foot">
+            <OsPrice Value="Product.Price" />
+            <span @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                <OsIconButton Icon="@Icons.Material.Outlined.Add"
+                              AriaLabel="@L["Common.AddToCart"]"
+                              Variant="OsIconButton.IconButtonVariant.Secondary"
+                              Class="product-add-btn"
+                              Disabled="@(Product.Stock == 0)"
+                              OnClick="HandleAdd" />
             </span>
         </div>
     </div>
-</MudPaper>
+</article>
 
 @code {
     [Parameter, EditorRequired] public ProductDto Product { get; set; } = default!;
@@ -71,5 +58,9 @@
     [Parameter] public bool ShowCategory { get; set; }
 
     private Task HandleOpen() => OnOpen.InvokeAsync(Product);
+
     private Task HandleAdd() => OnAdd.InvokeAsync(Product);
+
+    private Task HandleKeyDown(KeyboardEventArgs e) =>
+        e.Key is "Enter" or " " ? HandleOpen() : Task.CompletedTask;
 }

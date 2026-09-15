@@ -1,0 +1,70 @@
+/* A deliberately small utility set. Anything that recurs as a visual pattern
+   becomes an Os* component or a component class instead of a utility. */
+@layer utilities {
+
+  .os-mono { font-family: var(--os-font-mono); }
+  .os-serif { font-family: var(--os-font-display); }
+
+  .os-num {
+    font-family: var(--os-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .os-muted { color: var(--os-muted); }
+  .os-ink { color: var(--os-ink); }
+  .os-accent-text { color: var(--os-accent-ink); }
+
+  .os-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .os-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .os-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .os-hairline-top { border-top: 1px solid var(--os-hairline); }
+  .os-hairline-bottom { border-bottom: 1px solid var(--os-hairline); }
+
+  .os-sticky {
+    position: sticky;
+    top: calc(var(--os-header-h) + var(--os-space-5));
+  }
+
+  @media (max-width: 599.98px) { .os-hide-sm { display: none !important; } }
+  @media (max-width: 959.98px) { .os-hide-md { display: none !important; } }
+  @media (min-width: 960px) { .os-only-md { display: none !important; } }
+
+  /* Status tones as text colour. The chip component paints its own; these are
+     for a number or a word that has to carry the tone on its own. */
+  .os-tone-success { color: var(--os-success); }
+  .os-tone-warning { color: var(--os-warning); }
+  .os-tone-danger { color: var(--os-error); }
+  .os-tone-info { color: var(--os-accent-2); }
+  .os-tone-accent { color: var(--os-accent-ink); }
+}

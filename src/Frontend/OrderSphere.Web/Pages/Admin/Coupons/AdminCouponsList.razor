@@ -1,125 +1,121 @@
 @page "/admin/coupons"
 @inject IAdminOrderingClient AdminOrdering
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Admin.Coupons.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
-        <MudStack Spacing="0">
-            <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Coupons.Title"]</MudText>
-            <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Coupons.Subtitle"]</MudText>
-        </MudStack>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                   StartIcon="@Icons.Material.Outlined.Add"
-                   OnClick="OpenCreate"
-                   Style="border-radius:100px;">
+<AdminListShell Eyebrow="@L["Admin.Nav.Section"]"
+                Title="@L["Admin.Coupons.Title"]"
+                Subtitle="@L["Admin.Coupons.Subtitle"]"
+                Loading="_loading"
+                IsEmpty="@(_coupons.Count == 0)"
+                EmptyIcon="@Icons.Material.Outlined.LocalOffer"
+                EmptyTitle="@L["Admin.Coupons.None"]"
+                EmptyActionText="@L["Admin.Coupons.New"]"
+                OnEmptyAction="@(_ => OpenCreate())">
+    <Actions>
+        <OsButton OnClick="OpenCreate" StartIcon="@Icons.Material.Outlined.Add">
             @L["Admin.Coupons.New"]
-        </MudButton>
-    </MudStack>
+        </OsButton>
+    </Actions>
 
-    @if (_loading)
-    {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
-    }
-    else if (_coupons.Count == 0)
-    {
-        <MudPaper Elevation="0" Class="pa-12 text-center" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.LocalOffer" IconClass="text-muted" Title="@L["Admin.Coupons.None"]" TitleTypo="Typo.h6" />
-        </MudPaper>
-    }
-    else
-    {
-        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);overflow:hidden;">
-            <MudTable Items="_coupons" Hover="true">
-                <HeaderContent>
-                    <MudTh>@L["Admin.Coupons.ColCode"]</MudTh>
-                    <MudTh>@L["Admin.Coupons.ColDiscount"]</MudTh>
-                    <MudTh>@L["Admin.Coupons.ColMinSubtotal"]</MudTh>
-                    <MudTh>@L["Admin.Coupons.ColValidity"]</MudTh>
-                    <MudTh Style="text-align:center;">@L["Admin.Coupons.ColUsage"]</MudTh>
-                    <MudTh>@L["Admin.Coupons.ColStatus"]</MudTh>
-                    <MudTh Style="text-align:right;">@L["Admin.Coupons.ColAction"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColCode"]">
-                        <MudText Typo="Typo.body2" Class="os-mono" Style="font-weight:600;">@context.Code</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColDiscount"]">@DiscountLabel(context)</MudTd>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColMinSubtotal"]">
-                        @(context.MinSubtotal is { } min ? Formatting.Currency(min) : "—")
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColValidity"]">@ValidityLabel(context)</MudTd>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColUsage"]" Style="text-align:center;">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@UsageLabel(context)</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColStatus"]">
-                        <MudChip T="string"
-                                 Color="@(context.IsActive ? Color.Success : Color.Default)"
-                                 Size="Size.Small" Variant="Variant.Filled"
-                                 Style="border-radius:100px;">
-                            @(context.IsActive ? L["Common.Active"] : L["Common.Inactive"])
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="@L["Admin.Coupons.ColAction"]" Style="text-align:right;">
-                        <MudIconButton Icon="@Icons.Material.Outlined.Edit"
-                                       Color="Color.Primary" Size="Size.Small"
-                                       OnClick="@(() => OpenEdit(context))"
-                                       aria-label="@L["Admin.EditCouponAria"]" />
-                        <MudIconButton Icon="@Icons.Material.Outlined.Block"
-                                       Color="Color.Error" Size="Size.Small"
-                                       Disabled="@(!context.IsActive)"
-                                       OnClick="@(() => DeactivateAsync(context))"
-                                       aria-label="@L["Admin.DeactivateCouponAria"]" />
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
-    }
+    <ChildContent>
+        <MudTable Items="_coupons" Hover="true" Elevation="0" Class="os-table"
+                  RowsPerPage="25" Breakpoint="Breakpoint.Md">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<AdminCouponDto, object>(c => c.Code)">@L["Admin.Coupons.ColCode"]</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<AdminCouponDto, object>(c => c.Value)">@L["Admin.Coupons.ColDiscount"]</MudTableSortLabel></MudTh>
+                <MudTh>@L["Admin.Coupons.ColMinSubtotal"]</MudTh>
+                <MudTh>@L["Admin.Coupons.ColValidity"]</MudTh>
+                <MudTh Class="os-table__num"><MudTableSortLabel SortBy="new Func<AdminCouponDto, object>(c => c.RedeemedCount)">@L["Admin.Coupons.ColUsage"]</MudTableSortLabel></MudTh>
+                <MudTh>@L["Admin.Coupons.ColStatus"]</MudTh>
+                <MudTh Class="os-table__end">@L["Admin.Coupons.ColAction"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@L["Admin.Coupons.ColCode"]">
+                    <span class="os-mono os-table__strong">@context.Code</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Coupons.ColDiscount"]">
+                    <span class="os-num">@DiscountLabel(context)</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Coupons.ColMinSubtotal"]">
+                    <span class="os-num">@(context.MinSubtotal is { } min ? Formatting.Currency(min) : "—")</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Coupons.ColValidity"]">
+                    <span class="os-mono">@ValidityLabel(context)</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Coupons.ColUsage"]" Class="os-table__num">
+                    <span class="os-num">@UsageLabel(context)</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Coupons.ColStatus"]">
+                    <OsStatusChip Tone="StatusPresentation.ActiveTone(context.IsActive)"
+                                  Text="@(context.IsActive ? L["Common.Active"] : L["Common.Inactive"])"
+                                  Size="OsStatusChip.ChipSize.Sm" />
+                </MudTd>
+                <MudTd DataLabel="@L["Admin.Coupons.ColAction"]" Class="os-table__end">
+                    <div class="os-table__actions">
+                        <OsIconButton Icon="@Icons.Material.Outlined.Edit"
+                                      Size="OsIconButton.IconButtonSize.Sm"
+                                      OnClick="@(() => OpenEdit(context))"
+                                      AriaLabel="@L["Admin.EditCouponAria"]" />
+                        <OsIconButton Icon="@Icons.Material.Outlined.Block"
+                                      Size="OsIconButton.IconButtonSize.Sm"
+                                      Disabled="@(!context.IsActive)"
+                                      OnClick="@(() => DeactivateAsync(context))"
+                                      AriaLabel="@L["Admin.DeactivateCouponAria"]" />
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager RowsPerPageString="@L["Admin.Table.RowsPerPage"]" />
+            </PagerContent>
+        </MudTable>
+    </ChildContent>
+</AdminListShell>
 
-    <MudDialog @bind-Visible="_dialogOpen">
-        <TitleContent>
-            <MudText Typo="Typo.h6">@(_editingId is null ? L["Admin.Coupons.CreateTitle"] : L["Admin.Coupons.EditTitle"])</MudText>
-        </TitleContent>
-        <DialogContent>
-            <MudStack Spacing="3">
-                <MudTextField T="string" @bind-Value="_code" Label="@L["Admin.Coupons.FieldCode"]"
-                              Variant="Variant.Outlined" Disabled="@(_editingId is not null)" />
-                <MudSelect T="int" @bind-Value="_discountType" Label="@L["Admin.Coupons.FieldType"]"
-                           Variant="Variant.Outlined">
-                    <MudSelectItem Value="0">@L["Admin.Coupons.TypeFlat"]</MudSelectItem>
-                    <MudSelectItem Value="1">@L["Admin.Coupons.TypePercentage"]</MudSelectItem>
-                </MudSelect>
-                <MudNumericField T="decimal" @bind-Value="_value" Label="@L["Admin.Coupons.FieldValue"]"
-                                 Variant="Variant.Outlined" Min="0" />
-                <MudNumericField T="decimal?" @bind-Value="_minSubtotal" Label="@L["Admin.Coupons.FieldMinSubtotal"]"
-                                 Variant="Variant.Outlined" Min="0" />
-                <MudStack Row="true" Spacing="2">
-                    <MudDatePicker @bind-Date="_validFrom" Label="@L["Admin.Coupons.FieldValidFrom"]"
-                                   Variant="Variant.Outlined" Clearable="true" />
-                    <MudDatePicker @bind-Date="_validUntil" Label="@L["Admin.Coupons.FieldValidUntil"]"
-                                   Variant="Variant.Outlined" Clearable="true" />
-                </MudStack>
-                <MudNumericField T="int?" @bind-Value="_maxRedemptions" Label="@L["Admin.Coupons.FieldMaxRedemptions"]"
-                                 Variant="Variant.Outlined" Min="1" />
-                <MudSwitch T="bool" @bind-Value="_isActive" Color="Color.Primary" Label="@L["Admin.Coupons.FieldActive"]" />
-            </MudStack>
-        </DialogContent>
-        <DialogActions>
-            <MudButton OnClick="@(() => _dialogOpen = false)">@L["Common.Cancel"]</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">
-                @if (_saving)
-                {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                }
-                @L["Common.Save"]
-            </MudButton>
-        </DialogActions>
-    </MudDialog>
-</MudContainer>
+<MudDialog @bind-Visible="_dialogOpen">
+    <TitleContent>
+        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">
+            @(_editingId is null ? L["Admin.Coupons.CreateTitle"] : L["Admin.Coupons.EditTitle"])
+        </OsDisplay>
+    </TitleContent>
+    <DialogContent>
+        @* MudForm, so Save can stay disabled until the code and value are usable. *@
+        <MudForm @ref="_form" @bind-IsValid="_formValid" Class="os-form-grid">
+            <MudTextField T="string" @bind-Value="_code" Label="@L["Admin.Coupons.FieldCode"]"
+                          Variant="Variant.Outlined" ShrinkLabel="true"
+                          Disabled="@(_editingId is not null)"
+                          Required="true" RequiredError="@L["Validation.Required"]" />
+            <MudSelect T="int" @bind-Value="_discountType" Label="@L["Admin.Coupons.FieldType"]"
+                       Variant="Variant.Outlined" ShrinkLabel="true">
+                <MudSelectItem Value="0">@L["Admin.Coupons.TypeFlat"]</MudSelectItem>
+                <MudSelectItem Value="1">@L["Admin.Coupons.TypePercentage"]</MudSelectItem>
+            </MudSelect>
+            <MudNumericField T="decimal" @bind-Value="_value" Label="@L["Admin.Coupons.FieldValue"]"
+                             Variant="Variant.Outlined" ShrinkLabel="true" Min="0.01m"
+                             Required="true" RequiredError="@L["Validation.Required"]" />
+            <MudNumericField T="decimal?" @bind-Value="_minSubtotal" Label="@L["Admin.Coupons.FieldMinSubtotal"]"
+                             Variant="Variant.Outlined" ShrinkLabel="true" Min="0" />
+            <MudDatePicker @bind-Date="_validFrom" Label="@L["Admin.Coupons.FieldValidFrom"]"
+                           Variant="Variant.Outlined" ShrinkLabel="true" Clearable="true" />
+            <MudDatePicker @bind-Date="_validUntil" Label="@L["Admin.Coupons.FieldValidUntil"]"
+                           Variant="Variant.Outlined" ShrinkLabel="true" Clearable="true" />
+            <MudNumericField T="int?" @bind-Value="_maxRedemptions" Label="@L["Admin.Coupons.FieldMaxRedemptions"]"
+                             Variant="Variant.Outlined" ShrinkLabel="true" Min="1" />
+            <MudSwitch T="bool" @bind-Value="_isActive" Color="Color.Primary" Label="@L["Admin.Coupons.FieldActive"]" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <OsButton Variant="OsButton.ButtonVariant.Ghost" OnClick="@(() => _dialogOpen = false)">
+            @L["Common.Cancel"]
+        </OsButton>
+        <OsButton OnClick="SaveAsync" Loading="_saving" Disabled="@(!_formValid)">
+            @L["Common.Save"]
+        </OsButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     private List<AdminCouponDto> _coupons = [];
@@ -127,6 +123,8 @@
 
     private bool _dialogOpen;
     private bool _saving;
+    private MudForm _form = default!;
+    private bool _formValid;
     private Guid? _editingId;
     private string _code = string.Empty;
     private int _discountType;
@@ -146,9 +144,9 @@
         {
             var r = await AdminOrdering.GetCouponsAsync();
             if (r.IsSuccess) _coupons = r.Value!;
-            else Snackbar.Add(r.Error!.Message, Severity.Error);
+            else Snackbar.ShowApiError(r.Error);
         }
-        catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+        catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         finally { _loading = false; }
     }
 
@@ -163,6 +161,7 @@
         _validUntil = null;
         _maxRedemptions = null;
         _isActive = true;
+        _formValid = false;
         _dialogOpen = true;
     }
 
@@ -177,11 +176,16 @@
         _validUntil = c.ValidUntil;
         _maxRedemptions = c.MaxRedemptions;
         _isActive = c.IsActive;
+        _formValid = true;
         _dialogOpen = true;
     }
 
     private async Task SaveAsync()
     {
+        await _form.ValidateAsync();
+        if (!_form.IsValid)
+            return;
+
         _saving = true;
         try
         {
@@ -202,29 +206,39 @@
 
             if (error is null)
             {
-                Snackbar.Add(L["Admin.Coupons.Saved"], Severity.Success);
+                Snackbar.ShowSuccess(L["Admin.Coupons.Saved"]);
                 _dialogOpen = false;
                 await LoadAsync();
             }
             else
             {
-                Snackbar.Add(error.Message, Severity.Error);
+                Snackbar.ShowApiError(error);
             }
         }
         finally { _saving = false; }
     }
 
+    // Deactivating stops redemptions for everyone holding the code, so it asks first.
     private async Task DeactivateAsync(AdminCouponDto c)
     {
+        var confirmed = await ConfirmDialog.ShowAsync(
+            Dialogs,
+            L["Admin.Confirm.DeactivateCouponTitle"],
+            L["Admin.Confirm.DeactivateCouponBody", c.Code],
+            L["Admin.Coupons.Deactivate"],
+            danger: true);
+
+        if (!confirmed) return;
+
         var result = await AdminOrdering.DeactivateCouponAsync(c.Id);
         if (result.IsSuccess)
         {
-            Snackbar.Add(L["Admin.Coupons.Deactivated"], Severity.Success);
+            Snackbar.ShowSuccess(L["Admin.Coupons.Deactivated"]);
             await LoadAsync();
         }
         else
         {
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+            Snackbar.ShowApiError(result.Error);
         }
     }
 

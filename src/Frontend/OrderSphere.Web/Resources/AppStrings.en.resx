@@ -265,9 +265,6 @@
   <data name="Home.HeroEyebrow" xml:space="preserve">
     <value>Spring 2026 · New</value>
   </data>
-  <data name="Home.HeroTitle" xml:space="preserve">
-    <value>The best tech. Carefully selected.</value>
-  </data>
   <data name="Home.HeroSubtitle" xml:space="preserve">
     <value>Laptops, tablets and accessories – expert-curated, quickly delivered.</value>
   </data>
@@ -286,20 +283,8 @@
   <data name="Home.WhatLookingFor" xml:space="preserve">
     <value>What are you looking for?</value>
   </data>
-  <data name="Home.CatLaptops" xml:space="preserve">
-    <value>Laptops</value>
-  </data>
-  <data name="Home.CatSmartphones" xml:space="preserve">
-    <value>Smartphones</value>
-  </data>
-  <data name="Home.CatTablets" xml:space="preserve">
-    <value>Tablets</value>
-  </data>
-  <data name="Home.CatAccessories" xml:space="preserve">
-    <value>Accessories</value>
-  </data>
   <data name="Home.PromiseEyebrow" xml:space="preserve">
-    <value>02 / Our promise</value>
+    <value>03 / Our promise</value>
   </data>
   <data name="Home.PromiseTitle" xml:space="preserve">
     <value>Quality, &lt;em&gt;not&lt;/em&gt; quantity.</value>
@@ -814,21 +799,6 @@
   <data name="Admin.Orders.ColAction" xml:space="preserve">
     <value>Action</value>
   </data>
-  <data name="Admin.Orders.StatusCreated" xml:space="preserve">
-    <value>Received</value>
-  </data>
-  <data name="Admin.Orders.StatusPaid" xml:space="preserve">
-    <value>Paid</value>
-  </data>
-  <data name="Admin.Orders.StatusShipped" xml:space="preserve">
-    <value>Shipped</value>
-  </data>
-  <data name="Admin.Orders.StatusDelivered" xml:space="preserve">
-    <value>Delivered</value>
-  </data>
-  <data name="Admin.Orders.StatusCancelled" xml:space="preserve">
-    <value>Cancelled</value>
-  </data>
   <data name="Admin.OrderDetail.PageTitle" xml:space="preserve">
     <value>Order — Admin</value>
   </data>
@@ -1123,6 +1093,9 @@
   <data name="Admin.Reviews.ColAction" xml:space="preserve">
     <value>Action</value>
   </data>
+  <data name="Admin.Reviews.StatusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
   <data name="Admin.Reviews.StatusApproved" xml:space="preserve">
     <value>Approved</value>
   </data>
@@ -1297,6 +1270,63 @@
   <data name="Advisor.SendAria" xml:space="preserve">
     <value>Send message</value>
   </data>
+  <data name="Advisor.Title" xml:space="preserve">
+    <value>Advisor</value>
+  </data>
+  <data name="Advisor.OpenAria" xml:space="preserve">
+    <value>Open the advisor</value>
+  </data>
+  <data name="Advisor.Greeting" xml:space="preserve">
+    <value>How can I help?</value>
+  </data>
+  <data name="Advisor.EmptyBody" xml:space="preserve">
+    <value>Ask me about products, your orders or your account.</value>
+  </data>
+  <data name="Advisor.Suggest1" xml:space="preserve">
+    <value>What's new in the shop?</value>
+  </data>
+  <data name="Advisor.Suggest2" xml:space="preserve">
+    <value>Where is my last order?</value>
+  </data>
+  <data name="Advisor.Suggest3" xml:space="preserve">
+    <value>Recommend a gift under €50</value>
+  </data>
+  <data name="Advisor.HistoryTitle" xml:space="preserve">
+    <value>Conversations</value>
+  </data>
+  <data name="Advisor.HistoryEmpty" xml:space="preserve">
+    <value>No saved conversations yet.</value>
+  </data>
+  <data name="Advisor.HistoryUntitled" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="Advisor.HistoryMessages" xml:space="preserve">
+    <value>{0} messages</value>
+  </data>
+  <data name="Advisor.InputPlaceholder" xml:space="preserve">
+    <value>Message…</value>
+  </data>
+  <data name="Advisor.ConfirmTitle" xml:space="preserve">
+    <value>Add to cart?</value>
+  </data>
+  <data name="Advisor.ConfirmYes" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Advisor.ConfirmNo" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Advisor.ConfirmedMessage" xml:space="preserve">
+    <value>Confirmed: {0} (quantity: {1}, slug={2})</value>
+  </data>
+  <data name="Advisor.CancelledMessage" xml:space="preserve">
+    <value>Cancel, please do not add it to the cart.</value>
+  </data>
+  <data name="Advisor.Unavailable" xml:space="preserve">
+    <value>Sorry, the advisor is unavailable right now.</value>
+  </data>
+  <data name="Advisor.Conversation" xml:space="preserve">
+    <value>Conversation</value>
+  </data>
   <data name="Cart.CloseAria" xml:space="preserve">
     <value>Close cart</value>
   </data>
@@ -1335,5 +1365,638 @@
   </data>
   <data name="Common.Retry" xml:space="preserve">
     <value>Retry</value>
+  </data>
+  <data name="NotFound.PageTitle" xml:space="preserve">
+    <value>404 – Page not found</value>
+  </data>
+  <data name="NotFound.Title" xml:space="preserve">
+    <value>This page does not exist</value>
+  </data>
+  <data name="NotFound.Body" xml:space="preserve">
+    <value>The link is outdated, or the address contains a typo.</value>
+  </data>
+  <data name="NotFound.GoHome" xml:space="preserve">
+    <value>Back to home</value>
+  </data>
+  <data name="Nav.Primary" xml:space="preserve">
+    <value>Main navigation</value>
+  </data>
+  <data name="Nav.Menu" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="Nav.MenuOpen" xml:space="preserve">
+    <value>Open menu</value>
+  </data>
+  <data name="Nav.MenuClose" xml:space="preserve">
+    <value>Close menu</value>
+  </data>
+  <data name="Nav.Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Search.Submit" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Locale.Label" xml:space="preserve">
+    <value>Language and currency</value>
+  </data>
+  <data name="Footer.Tagline" xml:space="preserve">
+    <value>Carefully selected technology.</value>
+  </data>
+  <data name="Footer.Shop" xml:space="preserve">
+    <value>Shop</value>
+  </data>
+  <data name="Footer.Service" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="Footer.Legal" xml:space="preserve">
+    <value>Legal</value>
+  </data>
+  <data name="Footer.Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Footer.Returns" xml:space="preserve">
+    <value>Returns</value>
+  </data>
+  <data name="Footer.Terms" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+  <data name="Footer.Cookies" xml:space="preserve">
+    <value>Cookies</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="Validation.Email" xml:space="preserve">
+    <value>Please enter a valid email address.</value>
+  </data>
+  <data name="Validation.PostalCode" xml:space="preserve">
+    <value>Invalid postal code for the selected country.</value>
+  </data>
+  <data name="Quantity.DecreaseAria" xml:space="preserve">
+    <value>Decrease quantity</value>
+  </data>
+  <data name="Quantity.IncreaseAria" xml:space="preserve">
+    <value>Increase quantity</value>
+  </data>
+  <data name="Quantity.GroupAria" xml:space="preserve">
+    <value>Quantity for {0}</value>
+  </data>
+  <data name="Address.Label" xml:space="preserve">
+    <value>Label (e.g. Home)</value>
+  </data>
+  <data name="Address.Country.DE" xml:space="preserve">
+    <value>Germany</value>
+  </data>
+  <data name="Address.Country.AT" xml:space="preserve">
+    <value>Austria</value>
+  </data>
+  <data name="Address.Country.CH" xml:space="preserve">
+    <value>Switzerland</value>
+  </data>
+  <data name="Common.Loading" xml:space="preserve">
+    <value>Loading …</value>
+  </data>
+  <data name="Common.Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Nav.BreadcrumbsAria" xml:space="preserve">
+    <value>You are here</value>
+  </data>
+  <data name="OrderSummary.Title" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Price.OriginalAria" xml:space="preserve">
+    <value>Previously {0}</value>
+  </data>
+  <data name="Cart.ViewCart" xml:space="preserve">
+    <value>View cart</value>
+  </data>
+  <data name="Profile.DeleteAddressTitle" xml:space="preserve">
+    <value>Delete address?</value>
+  </data>
+  <data name="Profile.DeleteAddressMessage" xml:space="preserve">
+    <value>“{0}” will be removed permanently.</value>
+  </data>
+  <data name="Error.BoundaryTitle" xml:space="preserve">
+    <value>Something went wrong</value>
+  </data>
+  <data name="Error.BoundaryBody" xml:space="preserve">
+    <value>This view could not be loaded. Please try again.</value>
+  </data>
+  <data name="ProductDetails.Sku" xml:space="preserve">
+    <value>SKU</value>
+  </data>
+  <data name="Auth.SignInToBuy" xml:space="preserve">
+    <value>Sign in to buy</value>
+  </data>
+  <data name="Reviews.SignInHint" xml:space="preserve">
+    <value>Sign in to write a review.</value>
+  </data>
+  <data name="Home.HeroTitleHtml" xml:space="preserve">
+    <value>The best tech.&lt;br&gt;Carefully &lt;em&gt;selected&lt;/em&gt;.</value>
+  </data>
+  <data name="Home.IssueTitle" xml:space="preserve">
+    <value>What we stand for</value>
+  </data>
+  <data name="Home.ProductCount" xml:space="preserve">
+    <value>{0} products</value>
+  </data>
+  <data name="Home.CuratedRange" xml:space="preserve">
+    <value>A curated range</value>
+  </data>
+  <data name="Home.ViewAll" xml:space="preserve">
+    <value>View all</value>
+  </data>
+  <data name="Home.FeaturedEyebrow" xml:space="preserve">
+    <value>02 / New in</value>
+  </data>
+  <data name="Home.FeaturedTitle" xml:space="preserve">
+    <value>Just arrived</value>
+  </data>
+  <data name="Shop.Filters" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="Shop.CloseFilters" xml:space="preserve">
+    <value>Close filters</value>
+  </data>
+  <data name="Shop.AllCategories" xml:space="preserve">
+    <value>All categories</value>
+  </data>
+  <data name="Shop.Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Shop.ShowingRange" xml:space="preserve">
+    <value>{0}–{1} of {2}</value>
+  </data>
+  <data name="ProductDetails.Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ProductDetails.Availability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="Checkout.AddressHint" xml:space="preserve">
+    <value>Where should the order go?</value>
+  </data>
+  <data name="Checkout.PaymentHint" xml:space="preserve">
+    <value>How would you like to pay?</value>
+  </data>
+  <data name="Checkout.ReviewTitle" xml:space="preserve">
+    <value>Review</value>
+  </data>
+  <data name="Checkout.ReviewHint" xml:space="preserve">
+    <value>One last look before the order goes out.</value>
+  </data>
+  <data name="Checkout.ReviewItems" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="Checkout.ReviewShipTo" xml:space="preserve">
+    <value>Ship to</value>
+  </data>
+  <data name="Checkout.ReviewShipToPending" xml:space="preserve">
+    <value>Not filled in yet</value>
+  </data>
+  <data name="CheckoutSuccess.Confirming" xml:space="preserve">
+    <value>Confirming your order …</value>
+  </data>
+  <data name="CheckoutSuccess.StillProcessing" xml:space="preserve">
+    <value>Your order is still being processed. It will appear under My orders shortly.</value>
+  </data>
+  <data name="Onboarding.DisplayNameHint" xml:space="preserve">
+    <value>How we will address you.</value>
+  </data>
+  <data name="Onboarding.FirstAddressHint" xml:space="preserve">
+    <value>Your default address for delivery and invoicing.</value>
+  </data>
+  <data name="Admin.Nav.Section" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="Admin.Nav.Dashboard" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Admin.Nav.Orders" xml:space="preserve">
+    <value>Orders</value>
+  </data>
+  <data name="Admin.Nav.Invoices" xml:space="preserve">
+    <value>Invoices</value>
+  </data>
+  <data name="Admin.Nav.Products" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="Admin.Nav.Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="Admin.Nav.Coupons" xml:space="preserve">
+    <value>Coupons</value>
+  </data>
+  <data name="Admin.Nav.Reviews" xml:space="preserve">
+    <value>Reviews</value>
+  </data>
+  <data name="Admin.Nav.Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Admin.Nav.ToShop" xml:space="preserve">
+    <value>To the shop</value>
+  </data>
+  <data name="Common.NoResults" xml:space="preserve">
+    <value>No entries</value>
+  </data>
+  <data name="Common.Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Admin.Confirm.DeactivateCouponTitle" xml:space="preserve">
+    <value>Deactivate coupon?</value>
+  </data>
+  <data name="Admin.Confirm.DeactivateCouponBody" xml:space="preserve">
+    <value>“{0}” can no longer be redeemed.</value>
+  </data>
+  <data name="Admin.Confirm.CancelOrderTitle" xml:space="preserve">
+    <value>Cancel order?</value>
+  </data>
+  <data name="Admin.Confirm.CancelOrderBody" xml:space="preserve">
+    <value>Order {0} will be cancelled. This cannot be undone.</value>
+  </data>
+  <data name="Admin.Confirm.RejectReviewTitle" xml:space="preserve">
+    <value>Reject review?</value>
+  </data>
+  <data name="Admin.Confirm.RejectReviewBody" xml:space="preserve">
+    <value>The review will not be published.</value>
+  </data>
+  <data name="Admin.Confirm.DeleteCategoryTitle" xml:space="preserve">
+    <value>Delete category?</value>
+  </data>
+  <data name="Admin.Confirm.DeleteCategoryBody" xml:space="preserve">
+    <value>“{0}” will be deleted. Its products remain.</value>
+  </data>
+  <data name="Admin.Confirm.DeleteProductTitle" xml:space="preserve">
+    <value>Delete product?</value>
+  </data>
+  <data name="Admin.Confirm.DeleteProductBody" xml:space="preserve">
+    <value>“{0}” will be removed from the catalogue.</value>
+  </data>
+  <data name="Admin.Table.RowsPerPage" xml:space="preserve">
+    <value>Rows per page</value>
+  </data>
+  <data name="Admin.Coupons.Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="Admin.Reviews.Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="Theme.Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Theme.Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Common.Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Article.Toc" xml:space="preserve">
+    <value>On this page</value>
+  </data>
+  <data name="Article.PlaceholderNotice" xml:space="preserve">
+    <value>Placeholder text. Replace with a legally reviewed version before going live.</value>
+  </data>
+  <data name="ApiError.Network" xml:space="preserve">
+    <value>Can't reach the server. Please try again.</value>
+  </data>
+  <data name="ApiError.UnexpectedResponse" xml:space="preserve">
+    <value>Unexpected response from the server.</value>
+  </data>
+  <data name="ApiError.Validation" xml:space="preserve">
+    <value>The input is invalid.</value>
+  </data>
+  <data name="ApiError.Unauthorized" xml:space="preserve">
+    <value>Please sign in to continue.</value>
+  </data>
+  <data name="ApiError.Forbidden" xml:space="preserve">
+    <value>You don't have permission to do that.</value>
+  </data>
+  <data name="ApiError.NotFound" xml:space="preserve">
+    <value>The requested data could not be found.</value>
+  </data>
+  <data name="ApiError.Conflict" xml:space="preserve">
+    <value>The action conflicts with the current state.</value>
+  </data>
+  <data name="ApiError.Server" xml:space="preserve">
+    <value>Something went wrong on the server. Please try again later.</value>
+  </data>
+  <data name="ApiError.Unknown" xml:space="preserve">
+    <value>The action could not be completed.</value>
+  </data>
+  <data name="Privacy.PageTitle" xml:space="preserve">
+    <value>Privacy — OrderSphere</value>
+  </data>
+  <data name="Privacy.Title" xml:space="preserve">
+    <value>Privacy policy</value>
+  </data>
+  <data name="Privacy.Lede" xml:space="preserve">
+    <value>What data we collect, why we process it, and which rights you have.</value>
+  </data>
+  <data name="Privacy.S1.Title" xml:space="preserve">
+    <value>Controller</value>
+  </data>
+  <data name="Privacy.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;The controller responsible for data processing on this website is OrderSphere GmbH, Musterstraße 1, 12345 Musterstadt, Germany. Contact: &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S2.Title" xml:space="preserve">
+    <value>Collection and storage of personal data</value>
+  </data>
+  <data name="Privacy.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;We only collect personal data that you actively provide, for example when you register, place an order or contact us.&lt;/p&gt;&lt;p&gt;This covers your name, email address, delivery address and payment details, as far as they are needed to process your order.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S3.Title" xml:space="preserve">
+    <value>Purposes of processing</value>
+  </data>
+  <data name="Privacy.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;We process data&lt;/p&gt;&lt;ul&gt;&lt;li&gt;to perform a contract (Art. 6(1)(b) GDPR),&lt;/li&gt;&lt;li&gt;to comply with legal obligations (Art. 6(1)(c)), and&lt;/li&gt;&lt;li&gt;on the basis of legitimate interests (Art. 6(1)(f)), for example to improve our service.&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="Privacy.S4.Title" xml:space="preserve">
+    <value>Cookies</value>
+  </data>
+  <data name="Privacy.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;We use strictly necessary cookies so the website works, for example for sign-in and the cart. See our &lt;a href="cookies"&gt;cookie policy&lt;/a&gt; for details.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S5.Title" xml:space="preserve">
+    <value>Your rights</value>
+  </data>
+  <data name="Privacy.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;You have the right at any time to&lt;/p&gt;&lt;ul&gt;&lt;li&gt;access (Art. 15 GDPR),&lt;/li&gt;&lt;li&gt;rectification (Art. 16),&lt;/li&gt;&lt;li&gt;erasure (Art. 17),&lt;/li&gt;&lt;li&gt;restriction of processing (Art. 18),&lt;/li&gt;&lt;li&gt;data portability (Art. 20), and&lt;/li&gt;&lt;li&gt;object (Art. 21).&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;To exercise them, write to &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;.&lt;/p&gt;</value>
+  </data>
+  <data name="Privacy.S6.Title" xml:space="preserve">
+    <value>Retention</value>
+  </data>
+  <data name="Privacy.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;We keep your data only as long as the purposes above require, or as long as statutory retention periods apply, for example under German commercial and tax law (HGB, AO).&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.PageTitle" xml:space="preserve">
+    <value>Imprint — OrderSphere</value>
+  </data>
+  <data name="Imprint.Title" xml:space="preserve">
+    <value>Imprint</value>
+  </data>
+  <data name="Imprint.Lede" xml:space="preserve">
+    <value>Provider identification as required by German law.</value>
+  </data>
+  <data name="Imprint.S1.Title" xml:space="preserve">
+    <value>Information pursuant to § 5 DDG</value>
+  </data>
+  <data name="Imprint.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;OrderSphere GmbH&lt;br /&gt;Musterstraße 1&lt;br /&gt;12345 Musterstadt&lt;br /&gt;Germany&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S2.Title" xml:space="preserve">
+    <value>Represented by</value>
+  </data>
+  <data name="Imprint.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;Max Mustermann (Managing Director)&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S3.Title" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Imprint.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;Phone: &lt;a href="tel:+49123456789"&gt;+49 (0) 123 456 789&lt;/a&gt;&lt;br /&gt;Email: &lt;a href="mailto:support@ordersphere.dev"&gt;support@ordersphere.dev&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S4.Title" xml:space="preserve">
+    <value>Commercial register</value>
+  </data>
+  <data name="Imprint.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;Entered in the commercial register&lt;br /&gt;Register court: Amtsgericht Musterstadt&lt;br /&gt;Register number: HRB 00000&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S5.Title" xml:space="preserve">
+    <value>VAT ID</value>
+  </data>
+  <data name="Imprint.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;VAT identification number pursuant to § 27a of the German VAT Act: DE000000000&lt;/p&gt;</value>
+  </data>
+  <data name="Imprint.S6.Title" xml:space="preserve">
+    <value>Responsible for content pursuant to § 18(2) MStV</value>
+  </data>
+  <data name="Imprint.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Max Mustermann&lt;br /&gt;Musterstraße 1&lt;br /&gt;12345 Musterstadt&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.PageTitle" xml:space="preserve">
+    <value>Terms — OrderSphere</value>
+  </data>
+  <data name="Terms.Title" xml:space="preserve">
+    <value>Terms and conditions</value>
+  </data>
+  <data name="Terms.Lede" xml:space="preserve">
+    <value>The rules that apply to every order placed with OrderSphere.</value>
+  </data>
+  <data name="Terms.S1.Title" xml:space="preserve">
+    <value>Scope</value>
+  </data>
+  <data name="Terms.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;These terms and conditions apply to all contracts concluded between OrderSphere GmbH and its customers through the online shop ordersphere.dev.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S2.Title" xml:space="preserve">
+    <value>Formation of contract</value>
+  </data>
+  <data name="Terms.S2.Body" xml:space="preserve">
+    <value>&lt;p&gt;By clicking “Place order” you submit a binding order for the goods in your cart. The contract is concluded once we confirm your order by email or ship the goods.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S3.Title" xml:space="preserve">
+    <value>Prices and shipping costs</value>
+  </data>
+  <data name="Terms.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;All prices include statutory VAT. Shipping costs are shown separately during checkout.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S4.Title" xml:space="preserve">
+    <value>Delivery</value>
+  </data>
+  <data name="Terms.S4.Body" xml:space="preserve">
+    <value>&lt;p&gt;We deliver to the address you provide. Delivery within Germany usually takes 2–5 business days.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S5.Title" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="Terms.S5.Body" xml:space="preserve">
+    <value>&lt;p&gt;We accept the payment methods offered during checkout.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S6.Title" xml:space="preserve">
+    <value>Right of withdrawal</value>
+  </data>
+  <data name="Terms.S6.Body" xml:space="preserve">
+    <value>&lt;p&gt;Consumers have a statutory right of withdrawal of 14 days. How to withdraw is described on the &lt;a href="returns"&gt;returns &amp;amp; withdrawal&lt;/a&gt; page.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S7.Title" xml:space="preserve">
+    <value>Warranty</value>
+  </data>
+  <data name="Terms.S7.Body" xml:space="preserve">
+    <value>&lt;p&gt;Statutory warranty rights apply.&lt;/p&gt;</value>
+  </data>
+  <data name="Terms.S8.Title" xml:space="preserve">
+    <value>Final provisions</value>
+  </data>
+  <data name="Terms.S8.Body" xml:space="preserve">
+    <value>&lt;p&gt;The law of the Federal Republic of Germany applies, excluding the UN Convention on Contracts for the International Sale of Goods. Should individual provisions be invalid, the remainder of the contract stays in effect.&lt;/p&gt;</value>
+  </data>
+  <data name="Cookies.PageTitle" xml:space="preserve">
+    <value>Cookie policy — OrderSphere</value>
+  </data>
+  <data name="Cookies.Title" xml:space="preserve">
+    <value>Cookie policy</value>
+  </data>
+  <data name="Cookies.Lede" xml:space="preserve">
+    <value>Which cookies we set and how you control them.</value>
+  </data>
+  <data name="Cookies.S1.Title" xml:space="preserve">
+    <value>What are cookies?</value>
+  </data>
+  <data name="Cookies.S1.Body" xml:space="preserve">
+    <value>&lt;p&gt;Cookies are small text files stored on your device when you visit our website. They keep the website working and manage your session, such as sign-in and cart.&lt;/p&gt;</value>
+  </data>
+  <data name="Cookies.S2.Title" xml:space="preserve">
+    <value>Which cookies do we set?</value>
+  </data>
+  <data name="Cookies.S2.Body" xml:space="preserve">
+    <value>&lt;dl&gt;&lt;dt&gt;Strictly necessary&lt;/dt&gt;&lt;dd&gt;Required for sign-in, the cart and security. They cannot be switched off, because the website would not work correctly without them.&lt;/dd&gt;&lt;dt&gt;Statistics (optional)&lt;/dt&gt;&lt;dd&gt;Show us how visitors use the website so we can improve it. Only with your consent.&lt;/dd&gt;&lt;dt&gt;Marketing (optional)&lt;/dt&gt;&lt;dd&gt;Make advertising more relevant to you. Only with your consent.&lt;/dd&gt;&lt;/dl&gt;</value>
+  </data>
+  <data name="Cookies.S3.Title" xml:space="preserve">
+    <value>Managing cookie settings</value>
+  </data>
+  <data name="Cookies.S3.Body" xml:space="preserve">
+    <value>&lt;p&gt;You can withdraw your consent at any time or delete cookies in your browser. Disabling certain cookies may limit how the website works.&lt;/p&gt;</value>
+  </data>
+  <data name="Faq.PageTitle" xml:space="preserve">
+    <value>FAQ — OrderSphere</value>
+  </data>
+  <data name="Faq.Title" xml:space="preserve">
+    <value>Frequently asked questions</value>
+  </data>
+  <data name="Faq.Lede" xml:space="preserve">
+    <value>Answers to the most common questions about your order.</value>
+  </data>
+  <data name="Faq.Q1" xml:space="preserve">
+    <value>How long does delivery take?</value>
+  </data>
+  <data name="Faq.A1" xml:space="preserve">
+    <value>Delivery within Germany usually takes 2–5 business days. Once your order ships, you receive a tracking link by email.</value>
+  </data>
+  <data name="Faq.Q2" xml:space="preserve">
+    <value>Which payment methods do you accept?</value>
+  </data>
+  <data name="Faq.A2" xml:space="preserve">
+    <value>The available payment methods are shown at checkout.</value>
+  </data>
+  <data name="Faq.Q3" xml:space="preserve">
+    <value>How do I cancel my order?</value>
+  </data>
+  <data name="Faq.A3" xml:space="preserve">
+    <value>As long as your order has not shipped, you can cancel it under “My orders”. After that, use your right of withdrawal.</value>
+  </data>
+  <data name="Faq.Q4" xml:space="preserve">
+    <value>What if an item arrives damaged?</value>
+  </data>
+  <data name="Faq.A4" xml:space="preserve">
+    <value>Email us within 14 days. We review the case and either send a free replacement or refund the purchase price.</value>
+  </data>
+  <data name="Faq.Q5" xml:space="preserve">
+    <value>How do returns work?</value>
+  </data>
+  <data name="Faq.A5" xml:space="preserve">
+    <value>You have a 14-day right of withdrawal. The “Returns &amp; withdrawal” page describes the steps; the return label is free.</value>
+  </data>
+  <data name="Faq.Q6" xml:space="preserve">
+    <value>Do you ship internationally?</value>
+  </data>
+  <data name="Faq.A6" xml:space="preserve">
+    <value>We currently ship to Germany and Austria. More countries are planned.</value>
+  </data>
+  <data name="Faq.Q7" xml:space="preserve">
+    <value>How do I change my details?</value>
+  </data>
+  <data name="Faq.A7" xml:space="preserve">
+    <value>You can update your contact details and delivery addresses in your profile at any time.</value>
+  </data>
+  <data name="Faq.Q8" xml:space="preserve">
+    <value>Is my payment secure?</value>
+  </data>
+  <data name="Faq.A8" xml:space="preserve">
+    <value>Yes. All payments run over encrypted connections, and we never store full card details on our servers.</value>
+  </data>
+  <data name="Faq.MoreTitle" xml:space="preserve">
+    <value>Question not listed?</value>
+  </data>
+  <data name="Faq.MoreBody" xml:space="preserve">
+    <value>Write to us — we reply within 24 hours.</value>
+  </data>
+  <data name="Faq.MoreCta" xml:space="preserve">
+    <value>Contact us</value>
+  </data>
+  <data name="Contact.PageTitle" xml:space="preserve">
+    <value>Contact — OrderSphere</value>
+  </data>
+  <data name="Contact.Title" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Contact.Lede" xml:space="preserve">
+    <value>We're here for you — whichever way suits you best.</value>
+  </data>
+  <data name="Contact.EmailTitle" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Contact.EmailHint" xml:space="preserve">
+    <value>Reply within 24 hours.</value>
+  </data>
+  <data name="Contact.PhoneTitle" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Contact.PhoneHours" xml:space="preserve">
+    <value>Mon–Fri, 9 am–6 pm CET</value>
+  </data>
+  <data name="Contact.AddressTitle" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Contact.FormTitle" xml:space="preserve">
+    <value>Send a message</value>
+  </data>
+  <data name="Contact.FormNotice" xml:space="preserve">
+    <value>The contact form is still in preparation. Until then, email is the fastest way to reach us.</value>
+  </data>
+  <data name="Contact.FormCta" xml:space="preserve">
+    <value>Write an email</value>
+  </data>
+  <data name="Returns.PageTitle" xml:space="preserve">
+    <value>Returns — OrderSphere</value>
+  </data>
+  <data name="Returns.Title" xml:space="preserve">
+    <value>Returns &amp; withdrawal</value>
+  </data>
+  <data name="Returns.Lede" xml:space="preserve">
+    <value>14-day right of withdrawal. The return label is on us.</value>
+  </data>
+  <data name="Returns.StepsTitle" xml:space="preserve">
+    <value>How to return an item</value>
+  </data>
+  <data name="Returns.Step1.Title" xml:space="preserve">
+    <value>Register the return</value>
+  </data>
+  <data name="Returns.Step1.Body" xml:space="preserve">
+    <value>Send a short email to support@ordersphere.dev with your order number and the reason for the return.</value>
+  </data>
+  <data name="Returns.Step2.Title" xml:space="preserve">
+    <value>Receive the label</value>
+  </data>
+  <data name="Returns.Step2.Body" xml:space="preserve">
+    <value>Within one business day you receive a free return label. Print it and attach it to the parcel.</value>
+  </data>
+  <data name="Returns.Step3.Title" xml:space="preserve">
+    <value>Drop off the parcel</value>
+  </data>
+  <data name="Returns.Step3.Body" xml:space="preserve">
+    <value>Drop the parcel off at one of our shipping partner's branches. Keep the receipt as proof.</value>
+  </data>
+  <data name="Returns.Step4.Title" xml:space="preserve">
+    <value>Refund</value>
+  </data>
+  <data name="Returns.Step4.Body" xml:space="preserve">
+    <value>Once the parcel arrives, we check the goods and refund the purchase price within 5 business days.</value>
+  </data>
+  <data name="Returns.NotesTitle" xml:space="preserve">
+    <value>Good to know</value>
+  </data>
+  <data name="Returns.NotesBody" xml:space="preserve">
+    <value>&lt;ul&gt;&lt;li&gt;The withdrawal period is 14 days from receipt of the goods.&lt;/li&gt;&lt;li&gt;Where possible, return items in their original packaging.&lt;/li&gt;&lt;li&gt;The statutory right of withdrawal and our goodwill policy are independent of each other.&lt;/li&gt;&lt;li&gt;The full conditions are in our &lt;a href="terms"&gt;terms and conditions&lt;/a&gt;.&lt;/li&gt;&lt;/ul&gt;</value>
   </data>
 </root>

@@ -1,0 +1,57 @@
+@implements IDisposable
+@inject ThemeState ThemeState
+@inject IMotionService Motion
+@inject IUserProfileClient UserProfile
+@inject IStringLocalizer<AppStrings> L
+
+@* Sun and moon share one box; data-theme on <html> drives which one is showing,
+   so the transition survives a re-render and matches the CSS theme switch. *@
+<button type="button"
+        class="os-theme-toggle"
+        aria-pressed="@ThemeState.IsDarkMode.ToString().ToLowerInvariant()"
+        aria-label="@L["DarkMode.AriaLabel"]"
+        title="@L["DarkMode.AriaLabel"]"
+        @onclick="ToggleAsync">
+    <svg class="os-theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle class="os-theme-toggle__sun" cx="12" cy="12" r="5" />
+        <g class="os-theme-toggle__rays">
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.2" y1="4.2" x2="5.6" y2="5.6" />
+            <line x1="18.4" y1="18.4" x2="19.8" y2="19.8" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.2" y1="19.8" x2="5.6" y2="18.4" />
+            <line x1="18.4" y1="5.6" x2="19.8" y2="4.2" />
+        </g>
+        <path class="os-theme-toggle__moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+    </svg>
+</button>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override void OnInitialized() => ThemeState.OnChange += OnThemeChanged;
+
+    private async Task ToggleAsync()
+    {
+        ThemeState.Toggle();
+
+        // Writes html[data-theme] and localStorage in one place, so the next boot
+        // paints the right theme before Blazor starts.
+        await Motion.SetThemeAsync(ThemeState.IsDarkMode);
+
+        var state = await (AuthState ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            // Best-effort: the device-local value is already stored, so the
+            // preference survives even when this call fails.
+            try { await UserProfile.UpdatePreferencesAsync(new UpdatePreferencesRequest(ThemeState.IsDarkMode)); }
+            catch { /* server sync is a convenience, not a requirement */ }
+        }
+    }
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => ThemeState.OnChange -= OnThemeChanged;
+}

@@ -1,0 +1,75 @@
+@inject IOrderingClient Ordering
+@inject CartState CartState
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<AppStrings> L
+
+@* Quantity picker that also performs the add. Extracted from Shop.razor so
+   Search (whose add button did nothing) and Home share the exact behaviour:
+   one success toast, one cart refresh, errors kept inside the dialog. *@
+<MudDialog>
+    <TitleContent>@Product.Name</TitleContent>
+    <DialogContent>
+        <div class="os-add-dialog">
+            <OsProductImage Product="Product" Ratio="1/1" Class="os-add-dialog__media" />
+            <div class="os-add-dialog__body">
+                <OsPrice Value="Product.Price" Size="OsPrice.PriceSize.Lg" />
+                <OsStatusChip Tone="StatusPresentation.StockTone(Product.Stock)"
+                              Text="@L[StatusPresentation.StockLabelKey(Product.Stock), Product.Stock]"
+                              Dot="true" Size="OsStatusChip.ChipSize.Sm" />
+                <p class="os-add-dialog__hint">@L["Shop.ChooseQuantity", Product.Stock]</p>
+                <OsQuantityStepper @bind-Value="_quantity" Min="1" Max="@Math.Max(1, Product.Stock)" Label="@Product.Name" />
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <OsButton Variant="OsButton.ButtonVariant.Ghost" OnClick="Cancel" Disabled="_busy">
+            @L["Common.Cancel"]
+        </OsButton>
+        <OsButton OnClick="ConfirmAsync" Loading="_busy" StartIcon="@Icons.Material.Outlined.AddShoppingCart">
+            @L["Common.AddToCart"]
+        </OsButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public ProductDto Product { get; set; } = default!;
+
+    private int _quantity = 1;
+    private bool _busy;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task ConfirmAsync()
+    {
+        _busy = true;
+        try
+        {
+            var result = await Ordering.AddToCartAsync(Product.Id, _quantity);
+            if (!result.IsSuccess)
+            {
+                Snackbar.ShowApiError(result.Error);
+                return;
+            }
+
+            Snackbar.ShowSuccess(L["Common.AddedToCart", _quantity, Product.Name]);
+            await CartState.RefreshAsync();
+            MudDialog.Close(DialogResult.Ok(_quantity));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>Opens the dialog for a product; resolves to true when an item was added.</summary>
+    public static async Task<bool> ShowAsync(IDialogService dialogs, ProductDto product)
+    {
+        var parameters = new DialogParameters<AddToCartDialog> { { x => x.Product, product } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = await dialogs.ShowAsync<AddToCartDialog>(string.Empty, parameters, options);
+        var result = await dialog.Result;
+        return result is { Canceled: false };
+    }
+}

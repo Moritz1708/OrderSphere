@@ -1,0 +1,87 @@
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject IStringLocalizer<AppStrings> L
+
+@* Language and display currency in one popover. They were two separate header
+   icons; both are "how do I want this rendered" settings and both need the same
+   full reload, so they belong together.
+   Since MudBlazor 9 a custom activator is not wired automatically; it has to call
+   the MenuContext itself, otherwise the click goes nowhere. *@
+<MudMenu AnchorOrigin="Origin.BottomRight"
+         TransformOrigin="Origin.TopRight"
+         Dense="true"
+         @bind-Open="_open">
+    <ActivatorContent>
+        <OsIconButton Icon="@Icons.Material.Outlined.Language"
+                      AriaLabel="@L["Locale.Label"]"
+                      Title="@($"{CurrentCultureName} · {CurrentCurrencyCode}")"
+                      aria-haspopup="menu"
+                      aria-expanded="@(_open ? "true" : "false")"
+                      OnClick="@(e => context.ToggleAsync(e))" />
+    </ActivatorContent>
+    <ChildContent>
+        <MudListSubheader>@L["Language.Label"]</MudListSubheader>
+        @foreach (var culture in SupportedCultures.All)
+        {
+            <MudMenuItem OnClick="@(() => SelectCultureAsync(culture.Code))">
+                <div class="os-locale-row">
+                    <span>@culture.Name</span>
+                    @if (culture.Code == _culture)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Class="os-locale-check" />
+                    }
+                </div>
+            </MudMenuItem>
+        }
+
+        <MudDivider />
+
+        <MudListSubheader>@L["Currency.Label"]</MudListSubheader>
+        @foreach (var currency in SupportedCurrencies.All)
+        {
+            <MudMenuItem OnClick="@(() => SelectCurrencyAsync(currency.Code))">
+                <div class="os-locale-row">
+                    <span class="os-mono os-locale-symbol">@currency.Symbol</span>
+                    <span>@currency.Name</span>
+                    @if (currency.Code == _currency)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Class="os-locale-check" />
+                    }
+                </div>
+            </MudMenuItem>
+        }
+    </ChildContent>
+</MudMenu>
+
+@code {
+    private bool _open;
+    private string _culture = SupportedCultures.Default;
+    private string _currency = SupportedCurrencies.Default;
+
+    private string CurrentCultureName =>
+        SupportedCultures.All.FirstOrDefault(c => c.Code == _culture)?.Name ?? _culture;
+
+    private string CurrentCurrencyCode => _currency;
+
+    protected override void OnInitialized()
+    {
+        _culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+        _currency = Formatting.DisplayCurrency;
+    }
+
+    private Task SelectCultureAsync(string code) =>
+        code == _culture ? Task.CompletedTask : PersistAndReloadAsync(SupportedCultures.StorageKey, code);
+
+    private Task SelectCurrencyAsync(string code) =>
+        code == _currency ? Task.CompletedTask : PersistAndReloadAsync(SupportedCurrencies.StorageKey, code);
+
+    private async Task PersistAndReloadAsync(string storageKey, string value)
+    {
+        try { await JS.InvokeVoidAsync("localStorage.setItem", storageKey, value); }
+        catch { /* localStorage unavailable (e.g. private mode) */ }
+
+        // Culture and currency are both bound once at startup, so only a full reload
+        // re-resolves every localized string and re-renders every price.
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

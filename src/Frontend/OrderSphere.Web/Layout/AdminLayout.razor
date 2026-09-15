@@ -1,75 +1,83 @@
 @inherits LayoutComponentBase
-@inject ThemeState ThemeState
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IStringLocalizer<AppStrings> L
 
-<MudThemeProvider Theme="ThemeState.Theme" IsDarkMode="ThemeState.IsDarkMode" />
-<MudPopoverProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
-
-<MudLayout>
-    <MudAppBar Elevation="0" Style="border-bottom: 1px solid var(--mud-palette-divider);">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       OnClick="ToggleDrawer" aria-label="@L["Admin.ToggleMenuAria"]" />
-        <MudText Typo="Typo.h6" Style="font-weight: 700; margin-left: 4px;">OrderSphere Admin</MudText>
+@* The admin shell: a permanent rail from lg up, a temporary drawer below it.
+   MudDrawer handles the overlay, the scroll lock and focus containment; the
+   editorial styling is all in pages.css under .pg-admin-*. *@
+<MudLayout Class="pg-admin">
+    <MudAppBar Elevation="0" Fixed="true" Class="pg-admin__bar">
+        <OsIconButton Icon="@Icons.Material.Outlined.Menu"
+                      AriaLabel="@L["Admin.ToggleMenuAria"]"
+                      OnClick="ToggleDrawer"
+                      Class="pg-admin__burger" />
+        <a href="/admin" class="pg-admin__brand">
+            <span class="pg-admin__brand-name">OrderSphere</span>
+            <span class="pg-admin__brand-tag os-mono">@L["Admin.Nav.Section"]</span>
+        </a>
         <MudSpacer />
-        <MudButton Variant="Variant.Text" Color="Color.Inherit"
-                   StartIcon="@Icons.Material.Outlined.Storefront"
-                   Href="/shop">
-            Zum Shop
-        </MudButton>
-        <MudButton Variant="Variant.Text" Color="Color.Inherit"
-                   StartIcon="@Icons.Material.Outlined.Logout"
-                   OnClick="HandleLogout"
-                   Disabled="_isLoggingOut">
-            @if (_isLoggingOut)
-            {
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
-            }
-            Abmelden
-        </MudButton>
+        <ThemeToggle />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive"
-               Style="border-right: 1px solid var(--mud-palette-divider);">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.subtitle2" Class="text-muted" Style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-                Navigation
-            </MudText>
-        </MudDrawerHeader>
-        <MudNavMenu>
-            <MudNavLink Href="/admin" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dashboard">
-                Dashboard
-            </MudNavLink>
-            <MudNavLink Href="/admin/orders" Icon="@Icons.Material.Outlined.Receipt">
-                Bestellungen
-            </MudNavLink>
-            <MudNavLink Href="/admin/invoices" Icon="@Icons.Material.Outlined.ReceiptLong">
-                Rechnungen
-            </MudNavLink>
-            <MudNavLink Href="/admin/products" Icon="@Icons.Material.Outlined.Inventory2">
-                Produkte
-            </MudNavLink>
-            <MudNavLink Href="/admin/categories" Icon="@Icons.Material.Outlined.Category">
-                Kategorien
-            </MudNavLink>
-            <MudNavLink Href="/admin/coupons" Icon="@Icons.Material.Outlined.LocalOffer">
-                Gutscheine
-            </MudNavLink>
-            <MudNavLink Href="/admin/reviews" Icon="@Icons.Material.Outlined.RateReview">
-                Bewertungen
-            </MudNavLink>
-            <MudNavLink Href="/admin/users" Icon="@Icons.Material.Outlined.Group">
-                Kunden
-            </MudNavLink>
-        </MudNavMenu>
+    <MudDrawer @bind-Open="_drawerOpen"
+               Elevation="0"
+               Variant="DrawerVariant.Responsive"
+               Breakpoint="Breakpoint.Lg"
+               ClipMode="DrawerClipMode.Always"
+               Class="pg-admin__rail">
+
+        <nav class="pg-admin__nav" aria-label="@L["Admin.Nav.Section"]">
+            <MudNavMenu>
+                <MudNavLink Href="/admin" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dashboard">
+                    @L["Admin.Nav.Dashboard"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/orders" Icon="@Icons.Material.Outlined.Receipt">
+                    @L["Admin.Nav.Orders"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/invoices" Icon="@Icons.Material.Outlined.ReceiptLong">
+                    @L["Admin.Nav.Invoices"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/products" Icon="@Icons.Material.Outlined.Inventory2">
+                    @L["Admin.Nav.Products"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/categories" Icon="@Icons.Material.Outlined.Category">
+                    @L["Admin.Nav.Categories"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/coupons" Icon="@Icons.Material.Outlined.LocalOffer">
+                    @L["Admin.Nav.Coupons"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/reviews" Icon="@Icons.Material.Outlined.RateReview">
+                    @L["Admin.Nav.Reviews"]
+                </MudNavLink>
+                <MudNavLink Href="/admin/users" Icon="@Icons.Material.Outlined.Group">
+                    @L["Admin.Nav.Customers"]
+                </MudNavLink>
+            </MudNavMenu>
+        </nav>
+
+        <div class="pg-admin__rail-foot">
+            <OsButton Href="/shop"
+                      Variant="OsButton.ButtonVariant.Secondary"
+                      FullWidth="true"
+                      StartIcon="@Icons.Material.Outlined.Storefront">
+                @L["Admin.Nav.ToShop"]
+            </OsButton>
+            <OsButton Variant="OsButton.ButtonVariant.Ghost"
+                      FullWidth="true"
+                      StartIcon="@Icons.Material.Outlined.Logout"
+                      Loading="_isLoggingOut"
+                      OnClick="HandleLogout">
+                @L["Account.Logout"]
+            </OsButton>
+        </div>
     </MudDrawer>
 
-    <MudMainContent Style="padding-top: 64px;">
+    <MudMainContent>
         <AppErrorBoundary>
-            @Body
+            <PageTransition>
+                @Body
+            </PageTransition>
         </AppErrorBoundary>
     </MudMainContent>
 </MudLayout>

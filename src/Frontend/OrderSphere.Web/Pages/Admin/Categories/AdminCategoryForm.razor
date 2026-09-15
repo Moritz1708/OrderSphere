@@ -3,55 +3,52 @@
 @inject IAdminCatalogClient AdminCatalog
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IMotionService Motion
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@(IsEdit ? L["Admin.CategoryForm.PageTitleEdit"] : L["Admin.CategoryForm.PageTitleCreate"])</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="py-8">
-    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Outlined.ArrowBack"
-               Href="/admin/categories" Class="mb-4">
-        @L["Admin.CategoryForm.BackToList"]
-    </MudButton>
+<OsPageHeader Eyebrow="@L["Admin.Nav.Section"]"
+              Title="@(IsEdit ? L["Admin.CategoryForm.TitleEdit"] : L["Admin.CategoryForm.TitleCreate"])"
+              Breadcrumbs="Crumbs"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm" />
 
-    <MudText Typo="Typo.h4" Class="mb-6" Style="font-weight: 700;">
-        @(IsEdit ? L["Admin.CategoryForm.TitleEdit"] : L["Admin.CategoryForm.TitleCreate"])
-    </MudText>
-
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Narrow">
     @if (_loading)
     {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
+        <OsDetailSkeleton />
     }
     else
     {
-        <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-            <MudStack Spacing="4">
-                <MudTextField @bind-Value="_name" Label="@L["Admin.CategoryForm.Name"]"
-                              Variant="Variant.Outlined" Required="true"
-                              RequiredError="@L["Admin.CategoryForm.NameRequired"]" />
+        <MudForm @ref="_form" @bind-IsValid="_valid" Class="os-form-grid pg-admin-form">
+            <MudTextField T="string" @bind-Value="_name" Label="@L["Admin.CategoryForm.Name"]"
+                          Variant="Variant.Outlined" ShrinkLabel="true" Class="os-form-grid__full"
+                          Required="true" RequiredError="@L["Admin.CategoryForm.NameRequired"]" />
 
-                <MudTextField @bind-Value="_description" Label="@L["Admin.CategoryForm.Description"]"
-                              Variant="Variant.Outlined" Lines="3" />
+            <MudTextField T="string" @bind-Value="_description" Label="@L["Admin.CategoryForm.Description"]"
+                          Variant="Variant.Outlined" ShrinkLabel="true" Lines="4"
+                          Class="os-form-grid__full" />
 
-                @if (IsEdit)
-                {
-                    <MudSwitch T="bool" @bind-Value="_isActive"
-                               Label="@L["Admin.CategoryForm.ActiveLabel"]" Color="Color.Primary" />
-                }
+            @if (IsEdit)
+            {
+                <MudSwitch T="bool" @bind-Value="_isActive" Color="Color.Primary"
+                           Class="os-form-grid__full"
+                           Label="@L["Admin.CategoryForm.ActiveLabel"]" />
+            }
+        </MudForm>
 
-                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2" Class="mt-2">
-                    <MudButton Variant="Variant.Outlined" Href="/admin/categories">@L["Common.Cancel"]</MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                               StartIcon="@Icons.Material.Outlined.Save"
-                               Disabled="_saving" OnClick="SaveAsync">
-                        @(IsEdit ? L["Common.Save"] : L["Common.Create"])
-                    </MudButton>
-                </MudStack>
-            </MudStack>
-        </MudPaper>
+        <div class="os-actionbar">
+            <OsButton Href="/admin/categories" Variant="OsButton.ButtonVariant.Ghost">
+                @L["Common.Cancel"]
+            </OsButton>
+            <OsButton OnClick="SaveAsync" Loading="_saving" Disabled="@(!_valid)"
+                      StartIcon="@Icons.Material.Outlined.Save">
+                @(IsEdit ? L["Common.Save"] : L["Common.Create"])
+            </OsButton>
+        </div>
     }
-</MudContainer>
+</OsSection>
 
 @code {
     [Parameter] public Guid? CategoryId { get; set; }
@@ -59,9 +56,17 @@
     private bool IsEdit => CategoryId.HasValue;
     private bool _loading = true;
     private bool _saving;
+    private MudForm _form = default!;
+    private bool _valid;
     private string _name = string.Empty;
     private string _description = string.Empty;
     private bool _isActive = true;
+
+    private IReadOnlyList<OsCrumb> Crumbs =>
+    [
+        new OsCrumb(L["Admin.Categories.Title"], "/admin/categories"),
+        new OsCrumb(IsEdit ? L["Admin.CategoryForm.TitleEdit"].Value : L["Admin.CategoryForm.TitleCreate"].Value),
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,32 +75,54 @@
             try
             {
                 var cats = await AdminCatalog.GetCategoriesAsync();
-                if (!cats.IsSuccess) Snackbar.Add(cats.Error!.Message, Severity.Error);
+                if (!cats.IsSuccess) Snackbar.ShowApiError(cats.Error);
                 var cat = cats.Value?.FirstOrDefault(c => c.Id == CategoryId!.Value);
-                if (cat is not null) { _name = cat.Name; _description = cat.Description; _isActive = cat.IsActive; }
+                if (cat is not null)
+                {
+                    _name = cat.Name;
+                    _description = cat.Description;
+                    _isActive = cat.IsActive;
+                }
             }
-            catch (Exception ex) { Snackbar.Add(L["Common.Error", ex.Message], Severity.Error); }
+            catch (Exception ex) { Snackbar.ShowError(L["Common.Error", ex.Message]); }
         }
         _loading = false;
     }
 
     private async Task SaveAsync()
     {
+        await _form.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            await Motion.FocusFirstInvalidAsync();
+            return;
+        }
+
         _saving = true;
         try
         {
             var input = new AdminCategoryInput(_name, _description, _isActive);
+
+            ApiError? error;
             if (IsEdit)
             {
                 var result = await AdminCatalog.UpdateCategoryAsync(CategoryId!.Value, input);
-                if (result.IsSuccess) { Snackbar.Add(L["Admin.CategoryForm.Saved"], Severity.Success); Navigation.NavigateTo("/admin/categories"); }
-                else Snackbar.Add(result.Error!.Message, Severity.Error);
+                error = result.IsSuccess ? null : result.Error;
             }
             else
             {
                 var result = await AdminCatalog.CreateCategoryAsync(input);
-                if (result.IsSuccess) { Snackbar.Add(L["Admin.CategoryForm.Created"], Severity.Success); Navigation.NavigateTo("/admin/categories"); }
-                else Snackbar.Add(result.Error!.Message, Severity.Error);
+                error = result.IsSuccess ? null : result.Error;
+            }
+
+            if (error is null)
+            {
+                Snackbar.ShowSuccess(IsEdit ? L["Admin.CategoryForm.Saved"] : L["Admin.CategoryForm.Created"]);
+                Navigation.NavigateTo("/admin/categories");
+            }
+            else
+            {
+                Snackbar.ShowApiError(error);
             }
         }
         finally { _saving = false; }

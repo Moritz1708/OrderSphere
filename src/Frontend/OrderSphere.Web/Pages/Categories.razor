@@ -1,69 +1,59 @@
 @page "/categories"
-@attribute [Authorize]
 @inject ICatalogClient Catalog
-@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Categories.PageTitle"]</PageTitle>
 
-<PageHero Eyebrow="@L["Categories.HeroEyebrow"]" Title="@L["Nav.Categories"]"
-          Subtitle="@L["Categories.HeroSubtitle"]" />
+<OsPageHeader Eyebrow="@L["Categories.HeroEyebrow"]"
+              Title="@L["Nav.Categories"]"
+              Subtitle="@L["Categories.HeroSubtitle"]" />
 
-<section style="padding: 48px 0 var(--os-section-py-md);">
-    <MudContainer MaxWidth="MaxWidth.Large">
-        @if (_loading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Style="min-height:40vh;justify-content:center;">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudStack>
-        }
-        else if (_error is not null)
-        {
-            <ErrorStateWithRetry Message="@_error" OnRetry="LoadCategoriesAsync" />
-        }
-        else if (_categories.Count == 0)
-        {
-            <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <EmptyStateCard Icon="@Icons.Material.Outlined.Category" IconSize="80px" Title="@L["Categories.None"]" />
-            </MudPaper>
-        }
-        else
-        {
-            <MudGrid Spacing="4">
-                @foreach (var category in _categories)
-                {
-                    <MudItem xs="12" sm="6" md="4">
-                        <MudPaper Elevation="0"
-                                  Class="surface-card pa-6"
-                                  Style="height: 100%; cursor: pointer;"
-                                  @onclick="@(() => Navigation.NavigateTo($"/shop/category/{Uri.EscapeDataString(category.Name)}"))">
-                            <MudStack Spacing="3">
-                                <MudIcon Icon="@GetCategoryIcon(category.Name)"
-                                         Color="Color.Primary"
-                                         Style="font-size: 56px;" />
-                                <MudText Typo="Typo.h5" Style="font-weight: 600;">
-                                    @category.Name
-                                </MudText>
-                                @if (!string.IsNullOrWhiteSpace(category.Description))
-                                {
-                                    <MudText Typo="Typo.body2" Class="text-muted">
-                                        @category.Description
-                                    </MudText>
-                                }
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2">
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled"
-                                             Style="border-radius: 100px;">
-                                        @category.ProductCount @(category.ProductCount == 1 ? L["Categories.ProductSingular"] : L["Categories.ProductPlural"])
-                                    </MudChip>
-                                </MudStack>
-                            </MudStack>
-                        </MudPaper>
-                    </MudItem>
-                }
-            </MudGrid>
-        }
-    </MudContainer>
-</section>
+<OsSection Padding="OsSection.SectionPadding.Sm">
+    @if (_loading)
+    {
+        <OsProductCardSkeleton Count="6" />
+    }
+    else if (_error is not null)
+    {
+        <OsErrorState Message="@_error" OnRetry="LoadCategoriesAsync" />
+    }
+    else if (_categories.Count == 0)
+    {
+        <OsEmptyState Icon="@Icons.Material.Outlined.Category" Title="@L["Categories.None"]" />
+    }
+    else
+    {
+        @* Bento: the largest category leads full-width, the rest fill a three-column grid. *@
+        <OsRevealGroup Class="pg-categories__grid">
+            @foreach (var (category, index) in _categories.Select((c, i) => (c, i)))
+            {
+                <OsCard @key="category.Id"
+                        Href="@($"/shop/category/{Uri.EscapeDataString(category.Name)}")"
+                        Padding="OsCard.CardPadding.None"
+                        Class="@($"pg-categories__tile {(index == 0 ? "pg-categories__tile--lead" : null)}")">
+                    <OsProductImage Seed="category.Id"
+                                    Initial="@category.Name"
+                                    Name="@category.Name"
+                                    Ratio="@(index == 0 ? "21/9" : "16/10")"
+                                    Class="pg-categories__media" />
+                    <div class="pg-categories__body">
+                        <div class="pg-categories__meta">
+                            <MudIcon Icon="@GetCategoryIcon(category.Name)" Class="pg-categories__icon" />
+                            <OsStatusChip Tone="StatusTone.Neutral"
+                                          Size="OsStatusChip.ChipSize.Sm"
+                                          Text="@($"{category.ProductCount} {(category.ProductCount == 1 ? L["Categories.ProductSingular"] : L["Categories.ProductPlural"])}")" />
+                        </div>
+                        <OsDisplay As="h2" Size="@(index == 0 ? OsDisplay.DisplaySize.D2 : OsDisplay.DisplaySize.D3)">@category.Name</OsDisplay>
+                        @if (!string.IsNullOrWhiteSpace(category.Description))
+                        {
+                            <p class="pg-categories__desc">@category.Description</p>
+                        }
+                    </div>
+                </OsCard>
+            }
+        </OsRevealGroup>
+    }
+</OsSection>
 
 @code {
     private List<CategoryDto> _categories = [];
@@ -80,9 +70,9 @@
         {
             var res = await Catalog.GetCategoriesAsync();
             if (res.IsSuccess)
-                _categories = res.Value!.Items.ToList();
+                _categories = res.Value!.Items.OrderByDescending(c => c.ProductCount).ThenBy(c => c.Name).ToList();
             else
-                _error = res.Error!.Message;
+                _error = res.Error?.Message ?? L["Common.LoadError"];
         }
         catch (Exception ex)
         {
@@ -99,10 +89,18 @@
         var n when n.Contains("laptop") => Icons.Material.Outlined.Laptop,
         var n when n.Contains("phone") || n.Contains("smartphone") => Icons.Material.Outlined.PhoneIphone,
         var n when n.Contains("tablet") => Icons.Material.Outlined.Tablet,
-        var n when n.Contains("zubehör") || n.Contains("accessor") => Icons.Material.Outlined.Headphones,
-        var n when n.Contains("audio") => Icons.Material.Outlined.Speaker,
+        var n when n.Contains("kopfhörer") || n.Contains("earbud") || n.Contains("headphone") => Icons.Material.Outlined.Headphones,
+        var n when n.Contains("zubehör") || n.Contains("accessor") || n.Contains("speicher") => Icons.Material.Outlined.Cable,
+        var n when n.Contains("audio") || n.Contains("lautsprecher") => Icons.Material.Outlined.Speaker,
         var n when n.Contains("monitor") || n.Contains("display") => Icons.Material.Outlined.Monitor,
+        var n when n.Contains("tv") || n.Contains("fernseh") => Icons.Material.Outlined.Tv,
         var n when n.Contains("kamera") || n.Contains("camera") => Icons.Material.Outlined.PhotoCamera,
+        var n when n.Contains("gaming") || n.Contains("konsole") => Icons.Material.Outlined.SportsEsports,
+        var n when n.Contains("watch") || n.Contains("wearable") => Icons.Material.Outlined.Watch,
+        var n when n.Contains("netzwerk") || n.Contains("network") || n.Contains("router") => Icons.Material.Outlined.Router,
+        var n when n.Contains("smart home") || n.Contains("home") => Icons.Material.Outlined.Home,
+        var n when n.Contains("tastatur") || n.Contains("maus") || n.Contains("keyboard") => Icons.Material.Outlined.Keyboard,
+        var n when n.Contains("desktop") || n.Contains("pc") => Icons.Material.Outlined.DesktopWindows,
         _ => Icons.Material.Outlined.Devices
     };
 }

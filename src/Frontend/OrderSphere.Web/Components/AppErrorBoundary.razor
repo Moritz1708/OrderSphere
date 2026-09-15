@@ -1,5 +1,6 @@
 @implements IDisposable
 @inject NavigationManager Nav
+@inject IStringLocalizer<AppStrings> L
 
 @* Wraps page content so an unhandled component exception shows a recoverable fallback
    instead of tearing down the whole app. The built-in ErrorBoundary already logs the
@@ -9,23 +10,14 @@
         @ChildContent
     </ChildContent>
     <ErrorContent>
-        <MudContainer MaxWidth="MaxWidth.Small" Class="py-16">
-            <MudPaper Elevation="0" Class="surface-card-lg pa-8 text-center">
-                <MudIcon Icon="@Icons.Material.Outlined.ErrorOutline"
-                         Color="Color.Error"
-                         Style="font-size: 64px;" />
-                <MudText Typo="Typo.h5" Class="mt-4">Etwas ist schiefgelaufen</MudText>
-                <MudText Class="text-muted mt-2">
-                    Diese Ansicht konnte nicht geladen werden. Bitte versuche es erneut.
-                </MudText>
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Class="btn-pill mt-6"
-                           OnClick="Recover">
-                    Erneut versuchen
-                </MudButton>
-            </MudPaper>
-        </MudContainer>
+        <OsSection Width="OsSection.SectionWidth.Narrow" Padding="OsSection.SectionPadding.Lg">
+            <OsEmptyState Icon="@Icons.Material.Outlined.ErrorOutline"
+                          Title="@L["Error.BoundaryTitle"]"
+                          Body="@L["Error.BoundaryBody"]"
+                          ActionText="@L["Common.Retry"]"
+                          ActionIcon="@Icons.Material.Outlined.Refresh"
+                          OnAction="Recover" />
+        </OsSection>
     </ErrorContent>
 </ErrorBoundary>
 

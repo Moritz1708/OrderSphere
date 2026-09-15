@@ -16,6 +16,13 @@ tokens in the browser). All API traffic is proxied: BFF → YARP API gateway
 (`OrderSphere.ApiGateway`) → services. The gateway is the single external API ingress; services
 validate the forwarded JWT and enforce per-service RBAC.
 
+**Anonymous catalog reads (2026-09).** Browsing is public: `GET`/`HEAD` on `/api/v1/products`,
+`/categories`, `/brands` and `/reviews` are declared anonymous on both hops (BFF routes ordered before
+the authenticated catch-all, gateway routes method-restricted so the stock and review `POST`s stay
+authenticated), and the Catalog service itself has always left its public read groups open. An
+anonymous request resolves to the default tenant (`TenantId == Guid.Empty`, see ADR 0012); the
+product-by-slug cache key is tenant-scoped so an anonymous miss cannot populate an organisation's entry.
+
 See [../auth/role-model.md](../auth/role-model.md) for the policy/claims model and
 [../architecture.md](../architecture.md) for the request flow.
 

@@ -1,16 +1,17 @@
 using Microsoft.Extensions.Caching.Hybrid;
+using OrderSphere.BuildingBlocks.Security;
 using OrderSphere.Catalog.Application.Diagnostics;
 
 namespace OrderSphere.Catalog.Application.Features.Products.Public.GetProductBySlug;
 
-public sealed class GetProductBySlugQueryHandler(ICatalogDbContext context, HybridCache cache)
+public sealed class GetProductBySlugQueryHandler(ICatalogDbContext context, HybridCache cache, ITenantContext tenant)
     : IQueryHandler<GetProductBySlugQuery, Result<ProductDto>>
 {
     public async Task<Result<ProductDto>> Handle(GetProductBySlugQuery request, CancellationToken ct)
     {
         var miss = false;
         var dto = await cache.GetOrCreateAsync(
-            CatalogCache.ProductBySlugKey(request.Slug),
+            CatalogCache.ProductBySlugKey(tenant.TenantId, request.Slug),
             async token =>
             {
                 miss = true;

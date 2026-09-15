@@ -1,0 +1,31 @@
+@* Status as a tinted mono chip. The tone comes from StatusPresentation, never
+   from a switch at the call site. *@
+<span class="@CssClass" role="status" @attributes="AdditionalAttributes">
+    @if (Dot)
+    {
+        <span class="os-chip__dot" aria-hidden="true"></span>
+    }
+    @Text
+</span>
+
+@code {
+    public enum ChipSize { Sm, Md }
+
+    [Parameter] public StatusTone Tone { get; set; } = StatusTone.Neutral;
+    [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+    [Parameter] public bool Dot { get; set; }
+    [Parameter] public ChipSize Size { get; set; } = ChipSize.Md;
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-chip",
+            $"os-chip--{Tone.ToString().ToLowerInvariant()}",
+            Size == ChipSize.Sm ? "os-chip--sm" : null,
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+}

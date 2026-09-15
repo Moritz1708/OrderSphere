@@ -1,0 +1,104 @@
+@inject NavigationManager Nav
+@inject IStringLocalizer<AppStrings> L
+
+@* The long-read page: page header with the one h1, then numbered sections beside a
+   sticky mono table of contents. Used by the legal and support pages. Section bodies
+   come from resources, never from user input, which is what makes MarkupString safe. *@
+
+<OsPageHeader Eyebrow="@Eyebrow" Title="@Title" Subtitle="@Lede" />
+
+<OsSection Padding="OsSection.SectionPadding.Sm">
+    <div class="@GridClass">
+        @if (HasToc)
+        {
+            <nav class="@(Numbered ? "os-article__toc os-article__toc--numbered" : "os-article__toc")" aria-labelledby="os-article-toc">
+                <p id="os-article-toc" class="os-article__toc-title">@L["Article.Toc"]</p>
+                <ol class="os-article__toc-list">
+                    @for (var i = 0; i < Sections.Count; i++)
+                    {
+                        var section = Sections[i];
+                        <li>
+                            <a href="@AnchorHref(section.Id)" class="os-article__toc-link">
+                                @if (Numbered)
+                                {
+                                    <span class="os-article__toc-num" aria-hidden="true">@Number(i)</span>
+                                }
+                                <span>@section.Heading</span>
+                            </a>
+                        </li>
+                    }
+                </ol>
+            </nav>
+        }
+
+        <div class="os-article__main">
+            @if (!string.IsNullOrWhiteSpace(Notice))
+            {
+                <p class="os-article__notice" role="note">@Notice</p>
+            }
+
+            @for (var i = 0; i < Sections.Count; i++)
+            {
+                var section = Sections[i];
+                <section id="@section.Id" class="os-article__section" aria-labelledby="@($"{section.Id}-heading")">
+                    <h2 id="@($"{section.Id}-heading")" class="os-article__heading">
+                        @if (Numbered)
+                        {
+                            <span class="os-article__num">@Number(i)</span>
+                            @* Keeps the accessible name "05 Your rights", not "05Your rights";
+                               whitespace between flex items is not rendered. *@
+                            @(" ")
+                        }
+                        <span>@section.Heading</span>
+                    </h2>
+                    <div class="os-article__body">
+                        @if (section.Body is { } body)
+                        {
+                            @body
+                        }
+                        @section.Content
+                    </div>
+                </section>
+            }
+
+            @ChildContent
+        </div>
+    </div>
+</OsSection>
+
+@code {
+    [Parameter] public string? Eyebrow { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Lede { get; set; }
+
+    /// <summary>A callout above the first section, e.g. that a text is a placeholder.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    [Parameter] public IReadOnlyList<ArticleSection> Sections { get; set; } = [];
+
+    /// <summary>Show the section number in front of each heading and in the TOC.</summary>
+    [Parameter] public bool Numbered { get; set; } = true;
+
+    /// <summary>Format for the section number; <c>{0}</c> is the 1-based index.</summary>
+    [Parameter] public string NumberFormat { get; set; } = "{0:00}";
+
+    /// <summary>Rendered after the sections, e.g. a closing call to action.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string _path = string.Empty;
+
+    // Two sections are visible at a glance; a table of contents starts to pay off at three.
+    private bool HasToc => Sections.Count > 2;
+
+    private string GridClass => HasToc ? "os-article os-article--toc" : "os-article";
+
+    protected override void OnParametersSet() =>
+        _path = Nav.ToBaseRelativePath(Nav.Uri).Split('#')[0];
+
+    // Blazor scrolls to the fragment itself, but only when path and query are unchanged.
+    // A bare "#id" resolves against <base href="/"> and would navigate to the home page.
+    private string AnchorHref(string id) => $"{_path}#{id}";
+
+    private string Number(int index) =>
+        string.Format(System.Globalization.CultureInfo.InvariantCulture, NumberFormat, index + 1);
+}

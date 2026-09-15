@@ -1,0 +1,22 @@
+@* Placeholder for a grid of product cards. Count matches the page size so the
+   grid keeps its height and nothing jumps when the real cards arrive. *@
+<OsSkeletonGroup Class="os-product-grid">
+    @for (var i = 0; i < Count; i++)
+    {
+        <div class="os-card os-card--paper os-card--pad-none os-product-card os-product-card--skeleton">
+            <OsSkeleton Variant="OsSkeleton.SkeletonVariant.Rect" Class="os-product-card__image" />
+            <div class="os-product-card__body">
+                <OsSkeleton Width="40%" Height="10px" />
+                <OsSkeleton Lines="2" />
+                <div class="os-product-card__foot">
+                    <OsSkeleton Width="72px" Height="18px" />
+                    <OsSkeleton Variant="OsSkeleton.SkeletonVariant.Circle" Width="36px" Height="36px" />
+                </div>
+            </div>
+        </div>
+    }
+</OsSkeletonGroup>
+
+@code {
+    [Parameter] public int Count { get; set; } = 6;
+}

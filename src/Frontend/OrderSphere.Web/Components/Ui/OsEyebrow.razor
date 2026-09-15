@@ -1,0 +1,37 @@
+@* Mono uppercase label with a leading rule — the editorial section marker. *@
+
+<span class="@CssClass" @attributes="AdditionalAttributes">
+    @if (Text is not null)
+    {
+        @Text
+    }
+    else
+    {
+        @ChildContent
+    }
+</span>
+
+@code {
+    public enum EyebrowTone { Accent, Muted, Ink, OnBlock }
+
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public EyebrowTone Tone { get; set; } = EyebrowTone.Accent;
+
+    /// <summary>The 24px leading rule. Off for inline uses such as table heads.</summary>
+    [Parameter] public bool Rule { get; set; } = true;
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-eyebrow",
+            Tone == EyebrowTone.Accent ? null : $"os-eyebrow--{Tone.ToString().ToLowerInvariant()}",
+            Rule ? null : "os-eyebrow--no-rule",
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+}

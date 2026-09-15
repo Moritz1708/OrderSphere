@@ -1,3 +1,4 @@
+@implements IDisposable
 @inject CartState CartState
 @inject IOrderingClient Ordering
 @inject ISnackbar Snackbar
@@ -8,82 +9,73 @@
            Anchor="Anchor.Right"
            Elevation="0"
            Variant="DrawerVariant.Temporary"
-           Width="420px"
+           Width="min(92vw, 440px)"
            ClipMode="DrawerClipMode.Never"
-           Style="box-shadow:var(--os-shadow-float);">
+           Class="os-cart">
 
-    <div style="padding:24px;height:100%;display:flex;flex-direction:column;gap:16px;">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Cart.Title"]</MudText>
-            <MudIconButton Icon="@Icons.Material.Outlined.Close"
-                           OnClick="Close" Size="Size.Small" aria-label="@L["Cart.CloseAria"]" />
-        </MudStack>
-
-        <MudDivider />
-
-        @if (_items.Count == 0)
-        {
-            <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="flex:1;padding:40px 0;">
-                <MudIcon Icon="@Icons.Material.Outlined.ShoppingCart"
-                         Style="font-size:64px;color:var(--mud-palette-divider);" />
-                <MudText Typo="Typo.body1" Class="text-muted mt-3">
-                    @L["Cart.Empty"]
-                </MudText>
-                <MudButton Href="/shop" Variant="Variant.Filled" Color="Color.Primary"
-                           Class="btn-pill mt-4" OnClick="Close">
-                    @L["Cart.ToShop"]
-                </MudButton>
-            </MudStack>
-        }
-        else
-        {
-            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
-                @foreach (var item in _items)
-                {
-                    <MudPaper Elevation="0" Class="surface-card pa-3">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="0" Style="flex:1;min-width:0;">
-                                <MudText Typo="Typo.body2" Style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                    @item.ProductName
-                                </MudText>
-                                <MudText Typo="Typo.caption" Class="text-muted">
-                                    @item.Quantity × @Formatting.Currency(item.Price)
-                                </MudText>
-                            </MudStack>
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                <MudText Typo="Typo.body2" Style="font-weight:600;white-space:nowrap;">
-                                    @Formatting.Currency(item.Quantity * item.Price)
-                                </MudText>
-                                <MudIconButton Icon="@Icons.Material.Outlined.Delete"
-                                               Size="Size.Small"
-                                               Color="Color.Error"
-                                               aria-label="@L["Cart.RemoveAria", item.ProductName]"
-                                               OnClick="@(() => RemoveAsync(item.ProductId))" />
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
-                }
-            </div>
-
-            <MudDivider />
-
-            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                <MudText Typo="Typo.h6">@L["Cart.Total"]</MudText>
-                <MudText Typo="Typo.h6" Style="font-weight:700;">
-                    @Formatting.Currency(_total)
-                </MudText>
-            </MudStack>
-
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Size="Size.Large"
-                       Class="btn-pill"
-                       OnClick="GoToCheckout">
-                @L["Cart.ToCheckout"]
-            </MudButton>
-        }
+    <div class="os-cart__head">
+        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Cart.Title"]</OsDisplay>
+        <OsIconButton Icon="@Icons.Material.Outlined.Close"
+                      AriaLabel="@L["Cart.CloseAria"]"
+                      OnClick="Close" />
     </div>
+
+    @if (_items.Count == 0)
+    {
+        <div class="os-cart__empty">
+            <OsEmptyState Icon="@Icons.Material.Outlined.ShoppingCart"
+                          Title="@L["Cart.Empty"]"
+                          ActionText="@L["Cart.ToShop"]"
+                          ActionHref="/shop"
+                          OnAction="Close"
+                          Compact="true" />
+        </div>
+    }
+    else
+    {
+        <div class="os-cart__items os-rows">
+            @foreach (var item in _items)
+            {
+                <div class="os-row" @key="item.ProductId">
+                    <OsProductImage Seed="item.ProductId" Name="@item.ProductName" Ratio="1/1" Class="os-cart__thumb" />
+                    <div class="os-row__main">
+                        <span class="os-row__title os-truncate">@item.ProductName</span>
+                        <span class="os-row__meta os-num">@Formatting.Currency(item.Price)</span>
+                        <OsQuantityStepper Value="item.Quantity"
+                                           ValueChanged="newValue => ChangeQuantityAsync(item, newValue)"
+                                           Min="1"
+                                           Disabled="_busy"
+                                           Size="OsQuantityStepper.StepperSize.Sm"
+                                           Label="@item.ProductName"
+                                           Class="mt-2" />
+                    </div>
+                    <div class="os-row__end">
+                        <OsPrice Value="item.Quantity * item.Price" Size="OsPrice.PriceSize.Sm" />
+                        <OsIconButton Icon="@Icons.Material.Outlined.Close"
+                                      Size="OsIconButton.IconButtonSize.Sm"
+                                      AriaLabel="@L["Cart.RemoveAria", item.ProductName]"
+                                      OnClick="@(() => RemoveAsync(item.ProductId))" />
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="os-cart__foot">
+            <dl class="os-kv">
+                <div class="os-kv__row os-kv__row--total">
+                    <dt class="os-kv__key">@L["Cart.Total"]</dt>
+                    <dd class="os-kv__val">@Formatting.Currency(_total)</dd>
+                </div>
+            </dl>
+
+            <OsButton FullWidth="true" Size="OsButton.ButtonSize.Lg" OnClick="GoToCheckout">
+                @L["Cart.ToCheckout"]
+            </OsButton>
+            <OsButton Variant="OsButton.ButtonVariant.Ghost" FullWidth="true" Href="/cart" OnClick="Close">
+                @L["Cart.ViewCart"]
+            </OsButton>
+        </div>
+    }
 </MudDrawer>
 
 @code {
@@ -92,6 +84,7 @@
 
     private List<CartItemDto> _items = [];
     private decimal _total;
+    private bool _busy;
 
     protected override void OnInitialized()
     {
@@ -106,11 +99,32 @@
         InvokeAsync(StateHasChanged);
     }
 
+    private async Task ChangeQuantityAsync(CartItemDto item, int newValue)
+    {
+        if (_busy) return;
+        _busy = true;
+        try
+        {
+            var result = newValue > item.Quantity
+                ? await Ordering.AddToCartAsync(item.ProductId, 1)
+                : await Ordering.DecreaseCartItemAsync(item.ProductId);
+
+            if (!result.IsSuccess)
+                Snackbar.ShowApiError(result.Error);
+
+            await CartState.RefreshAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
     private async Task RemoveAsync(Guid productId)
     {
         var result = await Ordering.RemoveFromCartAsync(productId);
         if (!result.IsSuccess)
-            Snackbar.Add(result.Error!.Message, Severity.Error);
+            Snackbar.ShowApiError(result.Error);
         await CartState.RefreshAsync();
     }
 

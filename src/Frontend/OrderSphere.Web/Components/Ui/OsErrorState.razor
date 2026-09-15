@@ -1,0 +1,38 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* A persistent, in-place failure with a way out. Transient failures go through
+   SnackbarExtensions instead. Replaces ErrorStateWithRetry. *@
+<div class="@CssClass" role="alert" @attributes="AdditionalAttributes">
+    <MudIcon Icon="@Icons.Material.Outlined.ErrorOutline" Class="os-error__icon" />
+    <div class="os-error__body">
+        @if (!string.IsNullOrWhiteSpace(Title))
+        {
+            <strong class="os-error__title">@Title</strong>
+        }
+        <span class="os-error__message">@Message</span>
+    </div>
+    @if (OnRetry.HasDelegate)
+    {
+        <OsButton Variant="OsButton.ButtonVariant.Ghost"
+                  Size="OsButton.ButtonSize.Sm"
+                  OnClick="OnRetry"
+                  StartIcon="@Icons.Material.Outlined.Refresh">
+            @L["Common.Retry"]
+        </OsButton>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter, EditorRequired] public string Message { get; set; } = string.Empty;
+    [Parameter] public EventCallback<MouseEventArgs> OnRetry { get; set; }
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[] { "os-error", Compact ? "os-error--compact" : null, Class }
+            .Where(c => !string.IsNullOrWhiteSpace(c)));
+}

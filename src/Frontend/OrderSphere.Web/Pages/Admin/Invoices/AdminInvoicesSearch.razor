@@ -5,103 +5,87 @@
 
 <PageTitle>@L["Admin.Invoices.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudStack Spacing="0" Class="mb-6">
-        <MudText Typo="Typo.h4" Style="font-weight: 700;">@L["Admin.Invoices.Title"]</MudText>
-        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.Subtitle"]</MudText>
-    </MudStack>
+<OsPageHeader Eyebrow="@L["Admin.Nav.Section"]"
+              Title="@L["Admin.Invoices.Title"]"
+              Subtitle="@L["Admin.Invoices.Subtitle"]"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm" />
 
-    <MudPaper Elevation="0" Class="pa-4 mb-6 surface-card">
-        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-            <MudTextField @bind-Value="_query" Immediate="true"
-                          Label="@L["Admin.Invoices.SearchLabel"]"
-                          Placeholder="@L["Admin.Invoices.SearchPlaceholder"]"
-                          Variant="Variant.Outlined" Margin="Margin.Dense"
-                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
-                          OnKeyDown="OnSearchKeyDown" Class="flex-grow-1" />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill"
-                       OnClick="SearchAsync" Disabled="_searching">
-                @if (_searching)
-                {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                }
-                @L["Admin.Invoices.SearchButton"]
-            </MudButton>
-        </MudStack>
-    </MudPaper>
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Narrow">
+    <div class="pg-admin__search">
+        <MudTextField @bind-Value="_query" Immediate="true"
+                      Label="@L["Admin.Invoices.SearchLabel"]"
+                      Placeholder="@L["Admin.Invoices.SearchPlaceholder"]"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" ShrinkLabel="true"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Search"
+                      OnKeyDown="OnSearchKeyDown" />
+        <OsButton OnClick="SearchAsync" Loading="_searching" Disabled="@string.IsNullOrWhiteSpace(_query)">
+            @L["Admin.Invoices.SearchButton"]
+        </OsButton>
+    </div>
 
     @if (_searching)
     {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
+        <OsListSkeleton Rows="1" />
     }
     else if (_result is not null)
     {
-        <MudPaper Elevation="0" Class="pa-6 surface-card">
-            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-                <MudStack Spacing="0">
-                    <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Invoices.ColNumber"]</MudText>
-                    <MudText Typo="Typo.h6" Class="os-mono">@_result.InvoiceNumber</MudText>
-                </MudStack>
-                <MudChip T="string" Color="@StatusColor(_result.Status)" Size="Size.Small"
-                         Variant="Variant.Filled" Style="border-radius:100px;font-weight:600;">
-                    @StatusLabel(_result.Status)
-                </MudChip>
-            </MudStack>
+        <OsCard Padding="OsCard.CardPadding.Lg" Class="pg-admin__invoice">
+            <div class="os-card__head">
+                <div>
+                    <OsEyebrow Text="@L["Admin.Invoices.ColNumber"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                    <span class="pg-admin__invoice-number os-mono">@_result.InvoiceNumber</span>
+                </div>
+                <OsStatusChip Tone="StatusPresentation.InvoiceTone(_result.Status)"
+                              Text="@L[StatusPresentation.InvoiceLabelKey(_result.Status)]"
+                              Dot="true" />
+            </div>
 
-            <MudSimpleTable Dense="true" Hover="false" Bordered="false" Striped="false" Style="background:transparent;">
-                <tbody>
-                    <tr>
-                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColOrder"]</MudText></td>
-                        <td><MudText Typo="Typo.body2" Class="os-mono">#@_result.OrderId.ToString("N")[..8].ToUpperInvariant()</MudText></td>
-                    </tr>
-                    <tr>
-                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColCustomer"]</MudText></td>
-                        <td><MudText Typo="Typo.body2">@_result.CustomerName</MudText></td>
-                    </tr>
-                    <tr>
-                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColEmail"]</MudText></td>
-                        <td><MudText Typo="Typo.body2">@_result.CustomerEmail</MudText></td>
-                    </tr>
-                    <tr>
-                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColDate"]</MudText></td>
-                        <td><MudText Typo="Typo.body2">@Formatting.DateTime(_result.IssuedAt.ToLocalTime())</MudText></td>
-                    </tr>
-                    <tr>
-                        <td><MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Invoices.ColAmount"]</MudText></td>
-                        <td><MudText Typo="Typo.body2" Style="font-weight:600;">@Formatting.Currency(_result.Total)</MudText></td>
-                    </tr>
-                </tbody>
-            </MudSimpleTable>
+            <dl class="os-kv">
+                <div class="os-kv__row">
+                    <dt class="os-kv__key">@L["Admin.Invoices.ColOrder"]</dt>
+                    <dd class="os-kv__val os-mono">#@_result.OrderId.ToString("N")[..8].ToUpperInvariant()</dd>
+                </div>
+                <div class="os-kv__row">
+                    <dt class="os-kv__key">@L["Admin.Invoices.ColCustomer"]</dt>
+                    <dd class="os-kv__val">@_result.CustomerName</dd>
+                </div>
+                <div class="os-kv__row">
+                    <dt class="os-kv__key">@L["Admin.Invoices.ColEmail"]</dt>
+                    <dd class="os-kv__val">@_result.CustomerEmail</dd>
+                </div>
+                <div class="os-kv__row">
+                    <dt class="os-kv__key">@L["Admin.Invoices.ColDate"]</dt>
+                    <dd class="os-kv__val os-mono">@Formatting.DateTime(_result.IssuedAt.ToLocalTime())</dd>
+                </div>
+                <div class="os-kv__row os-kv__row--total">
+                    <dt class="os-kv__key">@L["Admin.Invoices.ColAmount"]</dt>
+                    <dd class="os-kv__val">@Formatting.Currency(_result.Total)</dd>
+                </div>
+            </dl>
 
-            <MudStack Row="true" Spacing="2" Class="mt-4">
-                <MudButton Href="@AdminInvoicing.GetPdfUrl(_result.OrderId)" Target="_blank"
-                           Variant="Variant.Outlined" Color="Color.Primary" Class="btn-pill-outline"
-                           StartIcon="@Icons.Material.Outlined.PictureAsPdf">
-                    @L["Admin.Invoices.ViewInvoice"]
-                </MudButton>
-                <MudButton Href="@($"/admin/invoices/{_result.Id}")"
-                           Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill"
-                           StartIcon="@Icons.Material.Outlined.OpenInNew">
+            <div class="os-card__actions">
+                <OsButton Href="@($"/admin/invoices/{_result.Id}")"
+                          StartIcon="@Icons.Material.Outlined.OpenInNew">
                     @L["Admin.Invoices.ViewDetail"]
-                </MudButton>
-            </MudStack>
-        </MudPaper>
+                </OsButton>
+                <OsButton Href="@AdminInvoicing.GetPdfUrl(_result.OrderId)" Target="_blank"
+                          Variant="OsButton.ButtonVariant.Secondary"
+                          StartIcon="@Icons.Material.Outlined.PictureAsPdf">
+                    @L["Admin.Invoices.ViewInvoice"]
+                </OsButton>
+            </div>
+        </OsCard>
     }
     else if (_notFound)
     {
-        <MudPaper Elevation="0" Class="pa-12 text-center surface-card">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconClass="text-muted" Title="@L["Admin.Invoices.NoResults"]" TitleTypo="Typo.h6" />
-        </MudPaper>
+        <OsEmptyState Icon="@Icons.Material.Outlined.SearchOff" Title="@L["Admin.Invoices.NoResults"]" />
     }
     else
     {
-        <MudPaper Elevation="0" Class="pa-12 text-center surface-card">
-            <EmptyStateCard Icon="@Icons.Material.Outlined.ReceiptLong" IconClass="text-muted" Title="@L["Admin.Invoices.Prompt"]" TitleTypo="Typo.body1" />
-        </MudPaper>
+        <OsEmptyState Icon="@Icons.Material.Outlined.ReceiptLong" Title="@L["Admin.Invoices.Prompt"]" Compact="true" />
     }
-</MudContainer>
+</OsSection>
 
 @code {
     private string _query = string.Empty;
@@ -137,31 +121,16 @@
             }
             else
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Common.LoadError", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Common.LoadError", ex.Message]);
         }
         finally
         {
             _searching = false;
         }
     }
-
-    private string StatusLabel(string s) => s switch
-    {
-        "Issued" => L["Admin.Invoices.StatusIssued"],
-        "Adjusted" => L["Admin.Invoices.StatusAdjusted"],
-        "CreditIssued" => L["Admin.Invoices.StatusCreditIssued"],
-        _ => s
-    };
-
-    private static Color StatusColor(string s) => s switch
-    {
-        "Adjusted" => Color.Warning,
-        "CreditIssued" => Color.Info,
-        _ => Color.Success
-    };
 }

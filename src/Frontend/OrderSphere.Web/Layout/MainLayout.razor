@@ -1,29 +1,31 @@
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject ThemeState ThemeState
+@inject IMotionService Motion
 @inject ISnackbar Snackbar
 @inject NotificationHubClient NotificationHub
 @inject NavigationManager Nav
 @inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
-
-<MudThemeProvider Theme="ThemeState.Theme" IsDarkMode="ThemeState.IsDarkMode" />
-<MudPopoverProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
+@inject IStringLocalizer<AppStrings> L
 
 <MudLayout>
     <AppHeader OnCartToggle="ToggleCart"
+               OnMobileNavToggle="ToggleMobileNav"
                CartItemCount="@_cartItemCount"
                IsCartOpen="@_cartOpen" />
 
-    <MudMainContent Style="padding-top: 64px;">
+    <MudMainContent>
         <CascadingValue Value="this">
             <AppErrorBoundary>
-                @Body
+                <PageTransition>
+                    @Body
+                </PageTransition>
             </AppErrorBoundary>
         </CascadingValue>
     </MudMainContent>
+
+    <MobileNavDrawer Open="@_mobileNavOpen" OpenChanged="val => _mobileNavOpen = val" />
 
     <CartDrawer IsOpen="@_cartOpen" IsOpenChanged="val => _cartOpen = val" />
 
@@ -34,11 +36,10 @@
         <Authorized>
             <AdvisorDrawer IsOpen="@_advisorOpen" IsOpenChanged="val => _advisorOpen = val" />
 
-            <MudFab Color="Color.Primary"
-                    StartIcon="@Icons.Material.Filled.SupportAgent"
-                    Style="position:fixed;bottom:24px;right:24px;z-index:1300;"
-                    OnClick="ToggleAdvisor"
-                    aria-label="Berater öffnen" />
+            <button type="button" class="os-fab" @onclick="ToggleAdvisor"
+                    aria-label="@L["Advisor.OpenAria"]" aria-expanded="@_advisorOpen">
+                <MudIcon Icon="@Icons.Material.Filled.SupportAgent" />
+            </button>
         </Authorized>
     </AuthorizeView>
 
@@ -53,6 +54,7 @@
     [Inject] private IUserProfileClient UserProfile { get; set; } = default!;
 
     private bool _cartOpen;
+    private bool _mobileNavOpen;
     private bool _advisorOpen;
     private int _cartItemCount;
     private bool _onboardingPromptShown;
@@ -67,24 +69,14 @@
     {
         if (!firstRender) return;
 
-        // Restore the persisted design brand (applies to anonymous and authenticated users).
-        try
-        {
-            var savedBrand = await JS.InvokeAsync<string?>("localStorage.getItem", "os-brand");
-            if (!string.IsNullOrWhiteSpace(savedBrand))
-                ThemeState.SetBrand(savedBrand);
-        }
-        catch { /* localStorage unavailable */ }
+        await Motion.InitAsync();
 
-        // Restore the persisted dark-mode preference (device-local, applies to anonymous and
-        // authenticated users). Only when no local value exists yet do we fall back to the
-        // server-side preference, so the toggle syncs on first login on a new device.
+        // theme-boot.js applied the device-local preference before the first paint and
+        // Program.cs handed it to ThemeState. Only when nothing is stored yet do we fall
+        // back to the server-side preference, so the choice follows a user to a new device.
         string? savedDarkMode = null;
         try { savedDarkMode = await JS.InvokeAsync<string?>("localStorage.getItem", "os-dark-mode"); }
         catch { /* localStorage unavailable */ }
-
-        if (savedDarkMode is not null)
-            ThemeState.SetDarkMode(savedDarkMode == "true");
 
         var state = await (AuthState ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
         if (state.User.Identity?.IsAuthenticated == true)
@@ -95,8 +87,7 @@
                 if (profileResult.IsSuccess)
                 {
                     ThemeState.SetDarkMode(profileResult.Value!.DarkModeEnabled);
-                    try { await JS.InvokeVoidAsync("localStorage.setItem", "os-dark-mode", ThemeState.IsDarkMode ? "true" : "false"); }
-                    catch { /* localStorage unavailable */ }
+                    await Motion.SetThemeAsync(ThemeState.IsDarkMode);
                 }
             }
 
@@ -147,6 +138,8 @@
     }
 
     private void ToggleCart() => _cartOpen = !_cartOpen;
+
+    private void ToggleMobileNav() => _mobileNavOpen = !_mobileNavOpen;
 
     private void ToggleAdvisor() => _advisorOpen = !_advisorOpen;
 

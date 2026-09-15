@@ -1,86 +1,44 @@
 @page "/contact"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>Kontakt — OrderSphere</PageTitle>
+<PageTitle>@L["Contact.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Kontakt
-        </MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" Class="hero-subtitle-muted mt-2">
-            Wir sind für dich da — auf dem Weg, der dir am liebsten ist.
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Service"]"
+               Title="@L["Contact.Title"]"
+               Lede="@L["Contact.Lede"]">
+    <div class="os-contact">
+        <OsCard Class="os-contact__card">
+            <MudIcon Icon="@Icons.Material.Outlined.Email" Class="os-contact__icon" />
+            <h2 class="os-contact__title">@L["Contact.EmailTitle"]</h2>
+            <p class="os-muted">@L["Contact.EmailHint"]</p>
+            <a class="os-contact__value" href="mailto:support@ordersphere.dev">support@ordersphere.dev</a>
+        </OsCard>
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudGrid Spacing="4">
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="0" Class="pa-6 text-center surface-card"
-                          Style="height: 100%;">
-                    <MudIcon Icon="@Icons.Material.Outlined.Email"
-                             Color="Color.Primary"
-                             Style="font-size: 48px;" Class="mb-3" />
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">E-Mail</MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mt-2 mb-4">
-                        Antwort innerhalb von 24 Stunden.
-                    </MudText>
-                    <MudLink Href="mailto:support@ordersphere.dev" Underline="Underline.Hover">
-                        support@ordersphere.dev
-                    </MudLink>
-                </MudPaper>
-            </MudItem>
+        <OsCard Class="os-contact__card">
+            <MudIcon Icon="@Icons.Material.Outlined.Phone" Class="os-contact__icon" />
+            <h2 class="os-contact__title">@L["Contact.PhoneTitle"]</h2>
+            <p class="os-muted">@L["Contact.PhoneHours"]</p>
+            <a class="os-contact__value" href="tel:+49123456789">+49 (0) 123 456 789</a>
+        </OsCard>
 
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="0" Class="pa-6 text-center surface-card"
-                          Style="height: 100%;">
-                    <MudIcon Icon="@Icons.Material.Outlined.Phone"
-                             Color="Color.Primary"
-                             Style="font-size: 48px;" Class="mb-3" />
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">Telefon</MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mt-2 mb-4">
-                        Mo.–Fr. 9:00–18:00 Uhr
-                    </MudText>
-                    <MudLink Href="tel:+49123456789" Underline="Underline.Hover">
-                        +49 (0) 123 456 789
-                    </MudLink>
-                </MudPaper>
-            </MudItem>
+        <OsCard Class="os-contact__card">
+            <MudIcon Icon="@Icons.Material.Outlined.LocationOn" Class="os-contact__icon" />
+            <h2 class="os-contact__title">@L["Contact.AddressTitle"]</h2>
+            <address class="os-contact__value">
+                OrderSphere GmbH<br />
+                Musterstraße 1<br />
+                12345 Musterstadt
+            </address>
+        </OsCard>
+    </div>
 
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="0" Class="pa-6 text-center surface-card"
-                          Style="height: 100%;">
-                    <MudIcon Icon="@Icons.Material.Outlined.LocationOn"
-                             Color="Color.Primary"
-                             Style="font-size: 48px;" Class="mb-3" />
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">Adresse</MudText>
-                    <MudText Typo="Typo.body2" Class="text-muted mt-2">
-                        OrderSphere GmbH<br />
-                        Musterstraße 1<br />
-                        12345 Musterstadt
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-
-        <MudPaper Elevation="0" Class="pa-8 mt-8 surface-card-lg">
-            <MudText Typo="Typo.h5" Class="mb-4" Style="font-weight: 600;">
-                Nachricht senden
-            </MudText>
-
-            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-6">
-                Das Kontaktformular ist noch in Vorbereitung. In der Zwischenzeit erreichst du uns am schnellsten per E-Mail.
-            </MudAlert>
-
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Size="Size.Large"
-                       Href="mailto:support@ordersphere.dev"
-                       StartIcon="@Icons.Material.Outlined.Email"
-                       Class="btn-pill">
-                E-Mail schreiben
-            </MudButton>
-        </MudPaper>
-    </MudContainer>
-</section>
+    <OsCard Surface="OsCard.CardSurface.Sunk" Padding="OsCard.CardPadding.Lg" Class="os-article__cta">
+        <div>
+            <h2 class="os-article__cta-title">@L["Contact.FormTitle"]</h2>
+            <p class="os-muted">@L["Contact.FormNotice"]</p>
+        </div>
+        <OsButton Href="mailto:support@ordersphere.dev" StartIcon="@Icons.Material.Outlined.Email">
+            @L["Contact.FormCta"]
+        </OsButton>
+    </OsCard>
+</ArticleLayout>

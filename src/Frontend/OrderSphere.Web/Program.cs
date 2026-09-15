@@ -63,18 +63,19 @@ builder.Services.AddScoped<IAdminInvoicingClient, AdminInvoicingClient>();
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<NotificationHubClient>();
 builder.Services.AddSingleton<ThemeState>();
+builder.Services.AddScoped<IMotionService, MotionService>();
 
 // MudBlazor
 builder.Services.AddMudServices(config =>
 {
-    config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomLeft;
+    config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomRight;
     config.SnackbarConfiguration.PreventDuplicates = false;
     config.SnackbarConfiguration.NewestOnTop = false;
     config.SnackbarConfiguration.ShowCloseIcon = true;
-    config.SnackbarConfiguration.VisibleStateDuration = 8000;
-    config.SnackbarConfiguration.HideTransitionDuration = 500;
-    config.SnackbarConfiguration.ShowTransitionDuration = 500;
-    config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Outlined;
+    config.SnackbarConfiguration.VisibleStateDuration = 6000;
+    config.SnackbarConfiguration.HideTransitionDuration = 180;
+    config.SnackbarConfiguration.ShowTransitionDuration = 220;
+    config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Filled;
 });
 
 var host = builder.Build();
@@ -86,6 +87,18 @@ var stored = await js.InvokeAsync<string?>("localStorage.getItem", SupportedCult
 var culture = new CultureInfo(SupportedCultures.Normalize(stored));
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+// Apply the theme that theme-boot.js already painted, so MudThemeProvider emits
+// the matching palette on its first render instead of correcting itself after.
+try
+{
+    var isDark = await js.InvokeAsync<bool>("osBoot.isDark");
+    host.Services.GetRequiredService<ThemeState>().SetDarkMode(isDark);
+}
+catch
+{
+    // Boot script blocked or storage unavailable — light mode is the default.
+}
 
 // Apply the user's stored display currency before the first render. The rate table is fetched
 // once from the BFF; conversion is presentation-only. Any failure falls back to the base currency.

@@ -1,0 +1,53 @@
+@* "Nothing here yet" as a designed moment: dashed hairline frame, serif title,
+   one clear next step. Replaces EmptyStateCard. *@
+<div class="@CssClass" @attributes="AdditionalAttributes">
+    @if (Icon is not null)
+    {
+        <MudIcon Icon="@Icon" Class="os-empty__icon" />
+    }
+    <h3 class="os-empty__title">@Title</h3>
+    @if (!string.IsNullOrWhiteSpace(Body))
+    {
+        <p class="os-empty__body">@Body</p>
+    }
+    @if (ActionText is not null || ChildContent is not null)
+    {
+        <div class="os-empty__actions">
+            @if (ActionText is not null)
+            {
+                <OsButton Variant="OsButton.ButtonVariant.Secondary"
+                          Href="@ActionHref"
+                          OnClick="OnAction"
+                          StartIcon="@ActionIcon">
+                    @ActionText
+                </OsButton>
+            }
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Icon { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Body { get; set; }
+    [Parameter] public string? ActionText { get; set; }
+    [Parameter] public string? ActionHref { get; set; }
+    [Parameter] public string? ActionIcon { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnAction { get; set; }
+
+    /// <summary>Smaller padding and title, for empty states inside a card or drawer.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Additional actions rendered next to the primary one.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[] { "os-empty", Compact ? "os-empty--compact" : null, Class }
+            .Where(c => !string.IsNullOrWhiteSpace(c)));
+}

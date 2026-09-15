@@ -1,0 +1,436 @@
+/* MudBlazor restyling. MudBlazor.min.css is imported into @layer mud (app.css),
+   so every rule here wins on layer order alone — no !important, no specificity
+   escalation. Keep selectors at their natural specificity.
+
+   One exception to know about: MudBlazor's colour utilities (.mud-primary-text,
+   .mud-secondary-text, …) are declared !important, and an important declaration
+   in a lower layer still beats a normal one in a higher layer. Do not fight them
+   from here — avoid the utility at the call site instead (a plain <a> rather than
+   a MudLink, Color.Inherit rather than Color.Primary). */
+@layer overrides {
+
+  /* ---- Surfaces: no Material elevation anywhere ---- */
+  .mud-paper {
+    background-color: var(--os-paper);
+    color: var(--os-ink);
+    box-shadow: none;
+    border-radius: var(--os-radius-card);
+  }
+
+  .mud-paper-outlined { border: 1px solid var(--os-hairline); }
+
+  .mud-typography { font-family: var(--os-font-body); }
+
+  /* ---- Buttons (kept where a Mud slot demands one; OsButton elsewhere) ---- */
+  .mud-button-root {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: var(--os-radius-control);
+    font-family: var(--os-font-body);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: background-color var(--os-dur-2) var(--os-ease),
+                border-color var(--os-dur-2) var(--os-ease),
+                color var(--os-dur-2) var(--os-ease),
+                transform var(--os-dur-1) var(--os-ease);
+  }
+
+  .mud-button-root:active { transform: scale(0.98); }
+
+  .mud-button-filled {
+    background-color: var(--os-accent);
+    color: var(--os-on-accent);
+    box-shadow: none;
+  }
+
+  .mud-button-filled:hover {
+    background-color: color-mix(in srgb, var(--os-accent) 88%, var(--os-ink));
+    box-shadow: none;
+  }
+
+  .mud-button-outlined {
+    border: 1px solid var(--os-border-control);
+    color: var(--os-ink);
+    background-color: transparent;
+  }
+
+  .mud-button-outlined:hover {
+    background-color: var(--os-sunk);
+    border-color: var(--os-ink);
+  }
+
+  .mud-button-text {
+    color: var(--os-ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+
+  .mud-button-text:hover {
+    background-color: transparent;
+    color: var(--os-accent-ink);
+  }
+
+  .mud-icon-button {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--os-radius-control);
+    color: var(--os-ink);
+    transition: background-color var(--os-dur-2) var(--os-ease),
+                color var(--os-dur-2) var(--os-ease);
+  }
+
+  .mud-icon-button:hover { background-color: var(--os-sunk); }
+
+  /* ---- Inputs: hairline frame, mono eyebrow label, cobalt focus ring ---- */
+  .mud-input.mud-input-outlined { min-height: 44px; }
+
+  .mud-input-outlined-border {
+    border: 1px solid var(--os-border-control);
+    border-radius: var(--os-radius-control);
+    transition: border-color var(--os-dur-2) var(--os-ease),
+                box-shadow var(--os-dur-2) var(--os-ease);
+  }
+
+  .mud-input.mud-input-outlined:hover .mud-input-outlined-border {
+    border-color: var(--os-ink);
+  }
+
+  .mud-input.mud-input-outlined:focus-within .mud-input-outlined-border {
+    border-color: var(--os-accent-2);
+    border-width: 1px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--os-accent-2) 24%, transparent);
+  }
+
+  .mud-input-root {
+    font-family: var(--os-font-body);
+    color: var(--os-ink);
+  }
+
+  .mud-input-label-outlined {
+    font-family: var(--os-font-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--os-muted);
+  }
+
+  .mud-input-label.mud-shrink {
+    font-family: var(--os-font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mud-input.mud-input-error .mud-input-outlined-border { border-color: var(--os-error); }
+  .mud-input-helper-text { font-size: var(--os-text-xs); }
+  .mud-input-helper-text.mud-input-error { color: var(--os-error); }
+
+  .mud-input-adornment { color: var(--os-muted); }
+
+  /* ---- Table: hairline rows, mono uppercase head ---- */
+  .mud-table { background-color: transparent; }
+  .mud-table-container { background-color: transparent; }
+
+  .mud-table-cell {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--os-hairline);
+    color: var(--os-ink);
+    font-size: var(--os-text-sm);
+  }
+
+  .mud-table-head .mud-table-cell {
+    background-color: var(--os-paper);
+    border-bottom: 1px solid var(--os-hairline-strong);
+    color: var(--os-muted);
+    font-family: var(--os-font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mud-table-sort-label { font: inherit; color: inherit; }
+
+  .mud-table-hover .mud-table-row:hover { background-color: var(--os-sunk); }
+
+  .mud-table-pagination {
+    border-top: 1px solid var(--os-hairline);
+    font-family: var(--os-font-mono);
+    font-size: var(--os-text-xs);
+  }
+
+  .mud-table-toolbar { padding-inline: 0; }
+
+  /* ---- Dialog ---- */
+  .mud-dialog {
+    background-color: var(--os-paper);
+    border: 1px solid var(--os-hairline);
+    border-radius: var(--os-radius-card);
+    box-shadow: var(--os-shadow-soft);
+    animation: os-dialog-in var(--os-dur-3) var(--os-ease);
+  }
+
+  .mud-dialog-title {
+    padding: 28px 28px 8px;
+    font-family: var(--os-font-display);
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: var(--os-lh-snug);
+    letter-spacing: -0.01em;
+  }
+
+  .mud-dialog-title .mud-typography { font-family: inherit; font-size: inherit; }
+  .mud-dialog-content { padding: 8px 28px 24px; }
+
+  .mud-dialog-actions {
+    gap: var(--os-space-2);
+    padding: 16px 28px 24px;
+    border-top: 1px solid var(--os-hairline);
+  }
+
+  .mud-overlay-scrim.mud-overlay-dark {
+    background-color: var(--mud-palette-overlay-dark);
+    backdrop-filter: blur(2px);
+    animation: os-fade-in var(--os-dur-2) var(--os-ease);
+  }
+
+  /* ---- Drawer ---- */
+  .mud-drawer {
+    background-color: var(--os-paper);
+    box-shadow: none;
+    transition-timing-function: var(--os-ease);
+    transition-duration: var(--os-dur-4);
+  }
+
+  .mud-drawer.mud-drawer-pos-right { border-inline-start: 1px solid var(--os-hairline); }
+  .mud-drawer.mud-drawer-pos-left { border-inline-end: 1px solid var(--os-hairline); }
+  .mud-drawer-header { border-bottom: 1px solid var(--os-hairline); }
+
+  /* ---- Snackbar ---- */
+  .mud-snackbar {
+    background-color: var(--os-ink);
+    color: var(--os-canvas);
+    border: none;
+    border-radius: var(--os-radius-control);
+    box-shadow: var(--os-shadow-soft);
+    font-family: var(--os-font-body);
+    font-size: var(--os-text-sm);
+    animation: os-toast-in var(--os-dur-3) var(--os-ease);
+  }
+
+  .mud-snackbar .mud-snackbar-content-message { color: var(--os-canvas); }
+  .mud-snackbar.mud-alert-filled-success { box-shadow: inset 3px 0 0 var(--os-success), var(--os-shadow-soft); }
+  .mud-snackbar.mud-alert-filled-error { box-shadow: inset 3px 0 0 var(--os-error), var(--os-shadow-soft); }
+  .mud-snackbar.mud-alert-filled-warning { box-shadow: inset 3px 0 0 var(--os-warning-fill), var(--os-shadow-soft); }
+  .mud-snackbar.mud-alert-filled-info { box-shadow: inset 3px 0 0 var(--os-accent-2), var(--os-shadow-soft); }
+  .mud-snackbar .mud-icon-root { color: var(--os-canvas); }
+  .mud-snackbar .mud-button-root { color: var(--os-accent); }
+
+  /* ---- Chip (filters, coupons; status uses OsStatusChip) ---- */
+  .mud-chip {
+    height: 26px;
+    border-radius: var(--os-radius-pill);
+    border: 1px solid var(--os-hairline-strong);
+    background-color: transparent;
+    color: var(--os-ink);
+    font-family: var(--os-font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .mud-chip.mud-chip-filled.mud-chip-color-primary { background-color: var(--os-accent-bg); border-color: transparent; color: var(--os-accent-ink); }
+  .mud-chip.mud-chip-filled.mud-chip-color-success { background-color: var(--os-success-bg); border-color: transparent; color: var(--os-success); }
+  .mud-chip.mud-chip-filled.mud-chip-color-warning { background-color: var(--os-warning-bg); border-color: transparent; color: var(--os-warning); }
+  .mud-chip.mud-chip-filled.mud-chip-color-error { background-color: var(--os-error-bg); border-color: transparent; color: var(--os-error); }
+  .mud-chip.mud-chip-filled.mud-chip-color-info { background-color: var(--os-info-bg); border-color: transparent; color: var(--os-accent-2); }
+
+  /* ---- Pagination ---- */
+  .mud-pagination-item {
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid transparent;
+    border-radius: var(--os-radius-control);
+    font-family: var(--os-font-mono);
+    font-size: var(--os-text-sm);
+    color: var(--os-ink);
+  }
+
+  .mud-pagination-item:hover { border-color: var(--os-hairline-strong); background-color: transparent; }
+
+  .mud-pagination-item.mud-pagination-item-selected {
+    background-color: var(--os-ink);
+    border-color: var(--os-ink);
+    color: var(--os-canvas);
+  }
+
+  /* ---- Nav (admin sidebar): accent bar instead of a filled pill ---- */
+  .mud-nav-link {
+    padding: 10px 20px;
+    border-radius: 0;
+    font-family: var(--os-font-body);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--os-muted);
+    transition: color var(--os-dur-2) var(--os-ease),
+                background-color var(--os-dur-2) var(--os-ease);
+  }
+
+  .mud-nav-link:hover { background-color: var(--os-sunk); color: var(--os-ink); }
+
+  .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    background-color: transparent;
+    color: var(--os-ink);
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--os-accent);
+  }
+
+  .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon { color: var(--os-accent); }
+
+  /* ---- Popover / menu / select list ---- */
+  .mud-popover {
+    background-color: var(--os-paper);
+    border: 1px solid var(--os-hairline);
+    border-radius: var(--os-radius-popover);
+    box-shadow: var(--os-shadow-soft);
+  }
+
+  .mud-popover.mud-popover-open { animation: os-pop-in var(--os-dur-2) var(--os-ease); }
+
+  .mud-list-item { min-height: 40px; font-size: var(--os-text-sm); }
+  .mud-list-item:hover { background-color: var(--os-sunk); }
+
+  .mud-list-item.mud-selected-item {
+    background-color: transparent;
+    color: var(--os-ink);
+    box-shadow: inset 3px 0 0 var(--os-accent);
+  }
+
+  .mud-list-subheader {
+    font-family: var(--os-font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--os-muted);
+  }
+
+  /* ---- Skeleton ---- */
+  .mud-skeleton { border-radius: var(--os-radius-control); }
+
+  .mud-skeleton.mud-skeleton-wave::after {
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--os-ink) 5%, transparent), transparent);
+  }
+
+  /* ---- Selection controls ---- */
+  .mud-switch .mud-switch-track { background-color: var(--os-border-control); }
+  .mud-radio .mud-icon-root,
+  .mud-checkbox .mud-icon-root { color: var(--os-ink); }
+
+  /* ---- Progress ---- */
+  .mud-progress-linear { height: 2px; border-radius: 0; }
+
+  /* ---- Alert ---- */
+  .mud-alert {
+    padding: 12px 16px;
+    border: 1px solid var(--os-hairline);
+    border-radius: var(--os-radius-control);
+    background-color: var(--os-paper);
+    color: var(--os-ink);
+    box-shadow: none;
+    font-size: var(--os-text-sm);
+  }
+
+  .mud-alert.mud-alert-text-success, .mud-alert.mud-alert-outlined-success { box-shadow: inset 3px 0 0 var(--os-success); }
+  .mud-alert.mud-alert-text-error, .mud-alert.mud-alert-outlined-error { box-shadow: inset 3px 0 0 var(--os-error); }
+  .mud-alert.mud-alert-text-warning, .mud-alert.mud-alert-outlined-warning { box-shadow: inset 3px 0 0 var(--os-warning-fill); }
+  .mud-alert.mud-alert-text-info, .mud-alert.mud-alert-outlined-info { box-shadow: inset 3px 0 0 var(--os-accent-2); }
+
+  /* ---- Expansion panels (FAQ) ---- */
+  .mud-expansion-panels { background-color: transparent; }
+
+  .mud-expand-panel {
+    background-color: transparent;
+    border-bottom: 1px solid var(--os-hairline);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mud-expand-panel .mud-expand-panel-header {
+    padding: 20px 0;
+    font-family: var(--os-font-body);
+    font-size: var(--os-text-lg);
+    font-weight: 600;
+  }
+
+  .mud-expand-panel .mud-expand-panel-content { padding: 0 0 24px; }
+  .mud-expand-panel .mud-expand-panel-icon { color: var(--os-accent); }
+
+  /* ---- Timeline (order history) ---- */
+  .mud-timeline-item-dot { background-color: transparent; box-shadow: none; }
+
+  .mud-timeline-item-dot-inner {
+    width: 12px;
+    height: 12px;
+    background-color: var(--os-paper);
+    border: 2px solid var(--os-ink);
+    box-shadow: none;
+  }
+
+  .mud-timeline-item-divider::before,
+  .mud-timeline::before { background-color: var(--os-hairline-strong); }
+
+  /* ---- Badge ---- */
+  .mud-badge {
+    background-color: var(--os-accent);
+    color: var(--os-on-accent);
+    font-family: var(--os-font-mono);
+    font-size: 0.68rem;
+    border: 2px solid var(--os-canvas);
+  }
+
+  /* ---- App bar & main content ---- */
+  .mud-appbar {
+    height: var(--os-header-h);
+    border-bottom: 1px solid var(--os-hairline);
+    box-shadow: none;
+    backdrop-filter: saturate(160%) blur(14px);
+  }
+
+  .mud-appbar .mud-toolbar {
+    min-height: var(--os-header-h);
+    height: var(--os-header-h);
+    padding-inline: var(--os-gutter);
+  }
+
+  /* Mud computes padding-top as appbar-height minus an eighth; we want a flush fit. */
+  .mud-main-content { padding-top: var(--os-header-h); }
+
+  /* ---- Date picker (coupons) ---- */
+  .mud-picker-popover-paper,
+  .mud-picker-container {
+    border-radius: var(--os-radius-card);
+    border: 1px solid var(--os-hairline);
+  }
+
+  .mud-picker-calendar-day.mud-selected {
+    background-color: var(--os-ink);
+    color: var(--os-canvas);
+  }
+
+  .mud-picker-toolbar { background-color: var(--os-sunk); color: var(--os-ink); }
+
+  /* ---- Tooltip ---- */
+  .mud-tooltip {
+    background-color: var(--os-ink);
+    color: var(--os-canvas);
+    border-radius: var(--os-radius-control);
+    font-family: var(--os-font-body);
+    font-size: var(--os-text-xs);
+  }
+
+  /* ---- Divider ---- */
+  .mud-divider { border-color: var(--os-hairline); }
+}

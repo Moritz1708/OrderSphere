@@ -1,0 +1,123 @@
+@implements IDisposable
+@inject IMotionService Motion
+
+@* Dashboard tile: eyebrow label, a big mono number that counts up on first
+   paint, optional delta. The count-up is a C# tween rather than a CSS
+   @property counter so the number stays real text — selectable, readable by
+   assistive technology, and unaffected by browser support. *@
+
+@if (Href is not null)
+{
+    <a href="@Href" class="os-stat os-stat--interactive" @attributes="AdditionalAttributes">@Inner()</a>
+}
+else
+{
+    <div class="os-stat" @attributes="AdditionalAttributes">@Inner()</div>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public decimal Value { get; set; }
+
+    /// <summary>Formats the displayed value. Defaults to a whole number in the current culture.</summary>
+    [Parameter] public Func<decimal, string> Format { get; set; } = v => v.ToString("N0");
+
+    [Parameter] public string? Delta { get; set; }
+    [Parameter] public StatusTone DeltaTone { get; set; } = StatusTone.Neutral;
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Animate from the previous value. Skipped automatically under reduced motion.</summary>
+    [Parameter] public bool CountUp { get; set; } = true;
+
+    [Parameter] public string? Href { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private decimal _shown;
+    private decimal? _target;
+    private bool _pending;
+    private CancellationTokenSource? _cts;
+
+    protected override void OnParametersSet()
+    {
+        if (_target == Value)
+            return;
+
+        _target = Value;
+
+        if (CountUp)
+            _pending = true;
+        else
+            _shown = Value;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_pending)
+            return;
+
+        _pending = false;
+        await TweenAsync(_shown, Value);
+    }
+
+    private async Task TweenAsync(decimal from, decimal to)
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        if (from == to || await Motion.PrefersReducedMotionAsync())
+        {
+            _shown = to;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        const int durationMs = 600;
+        const int frameMs = 16;
+        var start = Environment.TickCount64;
+
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                var t = Math.Min(1.0, (Environment.TickCount64 - start) / (double)durationMs);
+                var eased = 1 - Math.Pow(1 - t, 3); // ease-out cubic
+                _shown = from + (to - from) * (decimal)eased;
+                // After an await we may be off the render thread; route through the dispatcher.
+                await InvokeAsync(StateHasChanged);
+
+                if (t >= 1.0)
+                    break;
+
+                await Task.Delay(frameMs, token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // A newer value arrived; its own tween takes over.
+        }
+    }
+
+    private RenderFragment Inner() =>@<text>
+        <span class="os-stat__head">
+            <span class="os-eyebrow os-eyebrow--muted os-eyebrow--no-rule">@Label</span>
+            @if (Icon is not null)
+            {
+                <MudIcon Icon="@Icon" Class="os-stat__icon" />
+            }
+        </span>
+        <span class="os-stat__value os-num">@Format(_shown)</span>
+        @if (!string.IsNullOrWhiteSpace(Delta))
+        {
+            <span class="os-stat__delta os-stat__delta--@DeltaTone.ToString().ToLowerInvariant()">@Delta</span>
+        }
+    </text>;
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

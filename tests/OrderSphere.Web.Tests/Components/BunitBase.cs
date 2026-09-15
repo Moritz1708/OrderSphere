@@ -2,6 +2,7 @@ using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MudBlazor.Services;
+using OrderSphere.Web.Services;
 
 namespace OrderSphere.Web.Tests.Components;
 
@@ -16,6 +17,7 @@ public abstract class BunitBase : BunitContext, IAsyncLifetime
     {
         Services.AddMudServices();
         Services.AddSingleton<IStringLocalizer<AppStrings>>(new PassthroughLocalizer());
+        Services.AddScoped<IMotionService, MotionService>();
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 

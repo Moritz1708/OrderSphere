@@ -1,112 +1,208 @@
 @page "/"
+@inject ICatalogClient Catalog
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>OrderSphere</PageTitle>
 
-<PageHero Variant="PageHero.HeroVariant.TwoColumn"
-          Eyebrow="@L["Home.HeroEyebrow"]"
-          Title="@L["Home.HeroTitle"]"
-          Subtitle="@L["Home.HeroSubtitle"]">
-    <LeadingContent>
-        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mt-6">
-            <MudButton Variant="Variant.Filled" Size="Size.Large"
-                       Href="/shop" Class="btn-pill-white">
-                @L["Cart.ToShop"]
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" Size="Size.Large"
-                       Href="/categories" Class="btn-pill-outline-white">
-                @L["Nav.Categories"]
-            </MudButton>
-        </MudStack>
-        <MudStack Row="true" Spacing="4" Class="mt-6">
-            <span class="os-mono text-on-dark-muted" style="font-size:0.75rem;">✓ @L["Home.FreeShipping"]</span>
-            <span class="os-mono text-on-dark-muted" style="font-size:0.75rem;">✓ @L["Home.Returns"]</span>
-            <span class="os-mono text-on-dark-muted" style="font-size:0.75rem;">✓ @L["Home.Warranty"]</span>
-        </MudStack>
-    </LeadingContent>
-    <ChildContent>
-        <MudPaper Elevation="0"
-                  Style="border-radius:20px;overflow:hidden;background:rgba(255,255,255,0.12);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.18);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;">
-            <MudIcon Icon="@Icons.Material.Outlined.Laptop"
-                     Style="font-size:120px;color:var(--mud-palette-primary-text);opacity:0.55;" />
-        </MudPaper>
-    </ChildContent>
-</PageHero>
-
-<!-- CATEGORY STRIP -->
-<section class="section-white">
-    <MudContainer MaxWidth="MaxWidth.Large">
-        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:40px;">
-            <div>
-                <span class="os-eyebrow">@L["Home.CategoriesEyebrow"]</span>
-                <MudText Typo="Typo.h3" Style="margin-top:8px;letter-spacing:-0.015em;">
-                    @L["Home.WhatLookingFor"]
-                </MudText>
+@* ---- Masthead: stays dark in both themes (--os-block) ---- *@
+<OsSection Tone="OsSection.SectionTone.Block" Padding="OsSection.SectionPadding.Lg" Class="pg-home-hero">
+    <div class="pg-home-hero__grid">
+        <div class="pg-home-hero__copy">
+            <OsEyebrow Text="@L["Home.HeroEyebrow"]" Tone="OsEyebrow.EyebrowTone.OnBlock" />
+            <OsDisplay As="h1" Size="OsDisplay.DisplaySize.D1" Class="mt-3">@((MarkupString)L["Home.HeroTitleHtml"].Value)</OsDisplay>
+            <p class="pg-home-hero__lede">@L["Home.HeroSubtitle"]</p>
+            <div class="pg-home-hero__actions">
+                <OsButton Href="/shop" Size="OsButton.ButtonSize.Lg" EndIcon="@Icons.Material.Outlined.ArrowForward">@L["Cart.ToShop"]</OsButton>
+                <OsButton Href="/categories" Variant="OsButton.ButtonVariant.Secondary" Size="OsButton.ButtonSize.Lg" Class="pg-home-hero__ghost">
+                    @L["Nav.Categories"]
+                </OsButton>
             </div>
-            <MudButton Variant="Variant.Text" Href="/shop" Color="Color.Primary"
-                       EndIcon="@Icons.Material.Outlined.ArrowForward">
-                @L["Common.AllProducts"]
-            </MudButton>
         </div>
 
-        <MudGrid Spacing="3">
-            @foreach (var cat in _categories)
+        <aside class="pg-home-issue" aria-label="@L["Home.IssueTitle"]">
+            <OsEyebrow Text="@L["Home.IssueTitle"]" Tone="OsEyebrow.EyebrowTone.OnBlock" />
+            <dl class="pg-home-issue__rows">
+                <div class="pg-home-issue__row">
+                    <dt class="pg-home-issue__k">01</dt>
+                    <dd class="pg-home-issue__v">@L["Home.FreeShipping"]</dd>
+                </div>
+                <div class="pg-home-issue__row">
+                    <dt class="pg-home-issue__k">02</dt>
+                    <dd class="pg-home-issue__v">@L["Home.Returns"]</dd>
+                </div>
+                <div class="pg-home-issue__row">
+                    <dt class="pg-home-issue__k">03</dt>
+                    <dd class="pg-home-issue__v">@L["Home.Warranty"]</dd>
+                </div>
+                <div class="pg-home-issue__row">
+                    <dt class="pg-home-issue__k">04</dt>
+                    <dd class="pg-home-issue__v os-num">@(_totalProducts is { } n ? L["Home.ProductCount", n] : L["Home.CuratedRange"])</dd>
+                </div>
+            </dl>
+        </aside>
+    </div>
+</OsSection>
+
+@* ---- Bento: the five largest categories, live ---- *@
+<OsSection Tone="OsSection.SectionTone.Paper">
+    <div class="pg-home-head">
+        <div>
+            <OsEyebrow Text="@L["Home.CategoriesEyebrow"]" />
+            <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D2" Class="mt-2">@L["Home.WhatLookingFor"]</OsDisplay>
+        </div>
+        <OsButton Href="/categories" Variant="OsButton.ButtonVariant.Ghost" EndIcon="@Icons.Material.Outlined.ArrowForward">
+            @L["Home.ViewAll"]
+        </OsButton>
+    </div>
+
+    @if (_categoriesError is not null)
+    {
+        <OsErrorState Message="@_categoriesError" OnRetry="LoadAsync" />
+    }
+    else if (_categories is null)
+    {
+        <OsSkeletonGroup Class="pg-home-bento">
+            @foreach (var _ in Enumerable.Range(0, 5))
             {
-                <MudItem xs="6" sm="3">
-                    <MudPaper Elevation="0" Class="product-card pa-6 text-center" Style="cursor:default;" tabindex="-1">
-                        <MudIcon Icon="@cat.Icon" Color="Color.Primary" Style="font-size:40px;" />
-                        <MudText Typo="Typo.body1" Style="font-weight:600;margin-top:12px;">@cat.Name</MudText>
-                    </MudPaper>
-                </MudItem>
+                <OsSkeleton Variant="OsSkeleton.SkeletonVariant.Rect" Class="pg-home-bento__skeleton" />
             }
-        </MudGrid>
-    </MudContainer>
-</section>
+        </OsSkeletonGroup>
+    }
+    else if (_categories.Count == 0)
+    {
+        <OsEmptyState Icon="@Icons.Material.Outlined.Category" Title="@L["Categories.None"]" Compact="true" />
+    }
+    else
+    {
+        <OsRevealGroup Class="pg-home-bento">
+            @foreach (var category in _categories)
+            {
+                <OsCard @key="category.Id"
+                        Href="@($"/shop/category/{Uri.EscapeDataString(category.Name)}")"
+                        Padding="OsCard.CardPadding.None"
+                        Class="pg-home-bento__tile">
+                    <OsProductImage Seed="category.Id" Initial="@category.Name" Name="@category.Name" Ratio="16/10" Class="pg-home-bento__media" />
+                    <div class="pg-home-bento__body">
+                        <OsDisplay As="h3" Size="OsDisplay.DisplaySize.D3">@category.Name</OsDisplay>
+                        <span class="pg-home-bento__count os-mono">@L["Home.ProductCount", category.ProductCount]</span>
+                    </div>
+                </OsCard>
+            }
+        </OsRevealGroup>
+    }
+</OsSection>
 
-<!-- EDITORIAL -->
-<section class="section-gray">
-    <MudContainer MaxWidth="MaxWidth.Large">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
-            <div>
-                <span class="os-eyebrow">@L["Home.PromiseEyebrow"]</span>
-                <MudText Typo="Typo.h2" Style="margin-top:16px;letter-spacing:-0.025em;line-height:1.1;">
-                    @((MarkupString)L["Home.PromiseTitle"].Value)
-                </MudText>
-                <MudText Typo="Typo.body1" Class="text-muted" Style="margin-top:20px;line-height:1.7;">
-                    @L["Home.PromiseBody"]
-                </MudText>
-            </div>
-            <div>
-                <MudPaper Elevation="0"
-                          Style="border-radius:16px;padding:32px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-divider);box-shadow:var(--os-shadow-card);">
-                    <MudText Typo="Typo.h5" Style="font-style:italic;line-height:1.5;font-weight:400;">
-                        @L["Home.Quote"]
-                    </MudText>
-                    <MudDivider Class="my-4" />
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                        <IconBadge Size="36px">
-                            <MudIcon Icon="@Icons.Material.Outlined.Person" Style="font-size:18px;color:var(--mud-palette-primary-text);" />
-                        </IconBadge>
-                        <div>
-                            <MudText Typo="Typo.body2" Style="font-weight:600;">OrderSphere Team</MudText>
-                            <MudText Typo="Typo.caption" Class="text-muted">@L["Home.TeamRole"]</MudText>
-                        </div>
-                    </MudStack>
-                </MudPaper>
-            </div>
+@* ---- Featured rail: newest products, horizontally scrollable ---- *@
+<OsSection>
+    <div class="pg-home-head">
+        <div>
+            <OsEyebrow Text="@L["Home.FeaturedEyebrow"]" />
+            <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D2" Class="mt-2">@L["Home.FeaturedTitle"]</OsDisplay>
         </div>
-    </MudContainer>
-</section>
+        <OsButton Href="/shop" Variant="OsButton.ButtonVariant.Ghost" EndIcon="@Icons.Material.Outlined.ArrowForward">
+            @L["Common.AllProducts"]
+        </OsButton>
+    </div>
+
+    @if (_featuredError is not null)
+    {
+        <OsErrorState Message="@_featuredError" OnRetry="LoadAsync" />
+    }
+    else if (_featured is null)
+    {
+        <OsProductCardSkeleton Count="4" />
+    }
+    else if (_featured.Count > 0)
+    {
+        <div class="pg-home-rail" role="list" aria-label="@L["Home.FeaturedTitle"]">
+            @foreach (var product in _featured)
+            {
+                <div role="listitem" class="pg-home-rail__item" @key="product.Id">
+                    <ProductCard Product="product" ShowCategory="true" OnOpen="OpenDetails" OnAdd="AddToCartAsync" />
+                </div>
+            }
+        </div>
+    }
+</OsSection>
+
+@* ---- Promise: the editorial statement ---- *@
+<OsSection Tone="OsSection.SectionTone.Sunk" Padding="OsSection.SectionPadding.Lg">
+    <div class="pg-home-promise">
+        <div class="pg-home-promise__col">
+            <OsEyebrow Text="@L["Home.PromiseEyebrow"]" />
+            <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D2" Class="mt-3">@((MarkupString)L["Home.PromiseTitle"].Value)</OsDisplay>
+            <p class="pg-home-promise__body">@L["Home.PromiseBody"]</p>
+        </div>
+        <figure class="pg-home-promise__col pg-home-promise__quote">
+            <blockquote class="pg-home-promise__text">@L["Home.Quote"]</blockquote>
+            <figcaption class="pg-home-promise__cite">
+                <span class="pg-home-promise__mark" aria-hidden="true">○</span>
+                <span>
+                    <strong>OrderSphere Team</strong>
+                    <span class="os-muted pg-home-promise__role">@L["Home.TeamRole"]</span>
+                </span>
+            </figcaption>
+        </figure>
+    </div>
+</OsSection>
 
 @code {
-    private List<(string Icon, string Name)> _categories = [];
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
-    protected override void OnInitialized() =>
-        _categories =
-        [
-            (Icons.Material.Outlined.Laptop, L["Home.CatLaptops"]),
-            (Icons.Material.Outlined.PhoneIphone, L["Home.CatSmartphones"]),
-            (Icons.Material.Outlined.Tablet, L["Home.CatTablets"]),
-            (Icons.Material.Outlined.Headphones, L["Home.CatAccessories"]),
-        ];
+    private List<CategoryDto>? _categories;
+    private string? _categoriesError;
+    private List<ProductDto>? _featured;
+    private string? _featuredError;
+    private int? _totalProducts;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _categoriesError = null;
+        _featuredError = null;
+
+        // Both calls are independent; run them together so the page settles in one round trip.
+        var categoriesTask = Catalog.GetCategoriesAsync();
+        var featuredTask = Catalog.GetProductsAsync(new ProductQuery(Page: 1, PageSize: 8, SortBy: "newest", SortDir: "desc"));
+        await Task.WhenAll(categoriesTask, featuredTask);
+
+        var categories = await categoriesTask;
+        if (categories.IsSuccess)
+        {
+            _categories = categories.Value!.Items
+                .OrderByDescending(c => c.ProductCount)
+                .ThenBy(c => c.Name)
+                .Take(5)
+                .ToList();
+        }
+        else
+        {
+            _categoriesError = categories.Error?.Message ?? L["Common.LoadError"];
+        }
+
+        var featured = await featuredTask;
+        if (featured.IsSuccess)
+        {
+            _featured = featured.Value!.Items.ToList();
+            _totalProducts = featured.Value.TotalCount;
+        }
+        else
+        {
+            _featuredError = featured.Error?.Message ?? L["Common.LoadError"];
+        }
+    }
+
+    private void OpenDetails(ProductDto product)
+        => Navigation.NavigateTo($"/shop/{Uri.EscapeDataString(product.CategoryName)}/{Uri.EscapeDataString(product.Slug)}");
+
+    private async Task AddToCartAsync(ProductDto product)
+    {
+        if (!await LoginRedirect.EnsureSignedInAsync(AuthState, Navigation))
+            return;
+
+        await AddToCartDialog.ShowAsync(Dialogs, product);
+    }
 }

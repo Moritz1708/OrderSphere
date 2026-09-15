@@ -3,90 +3,63 @@
 @inject IUserProfileClient UserProfile
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
+@inject IMotionService Motion
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Onboarding.PageTitle"]</PageTitle>
 
-<PageHero Title="@L["Onboarding.DisplayName"]"
-          Subtitle="@L["Onboarding.HeroSubtitle"]" />
+<OsPageHeader Title="@L["Onboarding.DisplayName"]" Subtitle="@L["Onboarding.HeroSubtitle"]" Narrow="true" />
 
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Narrow">
+    @if (_loading)
+    {
+        <OsListSkeleton Rows="2" />
+    }
+    else
+    {
+        <div class="pg-checkout__steps pg-onboarding">
+            <section class="pg-step" aria-labelledby="ob-name">
+                <span class="pg-step__num os-mono" aria-hidden="true">01</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="ob-name">@L["Onboarding.DisplayName"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Onboarding.DisplayNameHint"]</p>
+                    <MudForm @ref="_nameForm">
+                        <MudTextField T="string" @bind-Value="_displayName"
+                                      Label="@L["Onboarding.DisplayNameLabel"]"
+                                      Variant="Variant.Outlined" ShrinkLabel="true"
+                                      Required="true" RequiredError="@L["Validation.Required"]"
+                                      autocomplete="nickname" />
+                    </MudForm>
+                </div>
+            </section>
 
-<section style="padding:48px 0 var(--os-section-py-md);">
-    <MudContainer MaxWidth="MaxWidth.Small">
-        @if (_loading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Class="py-12">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudStack>
-        }
-        else
-        {
-            <MudStack Spacing="4">
-                <!-- Display name -->
-                <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                    <MudText Typo="Typo.h6" Style="font-weight:600;" Class="mb-4">@L["Onboarding.DisplayName"]</MudText>
-                    <MudTextField T="string"
-                                  Label="@L["Onboarding.DisplayNameLabel"]"
-                                  Variant="Variant.Outlined"
-                                  FullWidth="true"
-                                  @bind-Value="_displayName" />
-                </MudPaper>
+            <section class="pg-step" aria-labelledby="ob-address">
+                <span class="pg-step__num os-mono" aria-hidden="true">02</span>
+                <div class="pg-step__body">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" id="ob-address">@L["Onboarding.FirstAddress"]</OsDisplay>
+                    <p class="pg-step__hint">@L["Onboarding.FirstAddressHint"]</p>
+                    <AddressForm @ref="_addressForm" Model="_address" />
+                </div>
+            </section>
 
-                <!-- Shipping address -->
-                <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                    <MudText Typo="Typo.h6" Style="font-weight:600;" Class="mb-4">@L["Onboarding.FirstAddress"]</MudText>
-                    <MudGrid Spacing="3">
-                        <MudItem xs="12" md="6">
-                            <MudTextField T="string" Label="@L["Address.FirstName"]" Variant="Variant.Outlined"
-                                          FullWidth="true" @bind-Value="_address.FirstName" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField T="string" Label="@L["Address.LastName"]" Variant="Variant.Outlined"
-                                          FullWidth="true" @bind-Value="_address.LastName" />
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudTextField T="string" Label="@L["Address.Street"]" Variant="Variant.Outlined"
-                                          FullWidth="true" @bind-Value="_address.Street" />
-                        </MudItem>
-                        <MudItem xs="4">
-                            <MudTextField T="string" Label="@L["Address.PostalCode"]" Variant="Variant.Outlined"
-                                          FullWidth="true" @bind-Value="_address.PostalCode" />
-                        </MudItem>
-                        <MudItem xs="5">
-                            <MudTextField T="string" Label="@L["Address.City"]" Variant="Variant.Outlined"
-                                          FullWidth="true" @bind-Value="_address.City" />
-                        </MudItem>
-                        <MudItem xs="3">
-                            <MudTextField T="string" Label="@L["Address.Country"]" Variant="Variant.Outlined"
-                                          FullWidth="true" @bind-Value="_address.Country" />
-                        </MudItem>
-                    </MudGrid>
-                </MudPaper>
-
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Size="Size.Large"
-                           FullWidth="true"
-                           Class="btn-pill"
-                           Disabled="_saving"
-                           OnClick="SubmitAsync">
-                    @if (_saving)
-                    {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                    }
+            @* Sticky on a phone so the way forward is always one tap away. *@
+            <div class="os-actionbar">
+                <OsButton Size="OsButton.ButtonSize.Lg" FullWidth="true" Loading="_saving" OnClick="SubmitAsync">
                     @L["Onboarding.Submit"]
-                </MudButton>
-            </MudStack>
-        }
-    </MudContainer>
-</section>
+                </OsButton>
+            </div>
+        </div>
+    }
+</OsSection>
 
 @code {
     private bool _loading = true;
     private bool _saving;
     private string _displayName = string.Empty;
 
-    private readonly AddressModel _address = new();
+    private MudForm _nameForm = default!;
+    private AddressForm _addressForm = default!;
+    private readonly AddressFormModel _address = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,11 +86,16 @@
 
     private async Task SubmitAsync()
     {
-        if (string.IsNullOrWhiteSpace(_displayName))
+        await _nameForm.ValidateAsync();
+        if (!_nameForm.IsValid)
         {
-            Snackbar.Add(L["Onboarding.RequireDisplayName"], Severity.Warning);
+            await Motion.FocusFirstInvalidAsync();
             return;
         }
+
+        // The address is optional, but once the user has started one it has to be complete.
+        if (_address.IsTouched && !await _addressForm.ValidateAsync())
+            return;
 
         _saving = true;
         try
@@ -125,19 +103,17 @@
             var profileResult = await UserProfile.UpdateProfileAsync(new UpdateProfileRequest(_displayName, string.Empty));
             if (!profileResult.IsSuccess)
             {
-                Snackbar.Add(profileResult.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(profileResult.Error);
                 return;
             }
 
-            if (_address.IsValid())
+            if (_address.IsComplete)
             {
-                var addressResult = await UserProfile.AddAddressAsync(new CreateAddressRequest(
-                    "Standard", _address.FirstName, _address.LastName,
-                    _address.Street, _address.City, _address.PostalCode, _address.Country,
-                    SetAsDefault: true));
+                var addressResult = await UserProfile.AddAddressAsync(
+                    _address.ToCreateAddressRequest(label: "Standard", setAsDefault: true));
                 if (!addressResult.IsSuccess)
                 {
-                    Snackbar.Add(addressResult.Error!.Message, Severity.Error);
+                    Snackbar.ShowApiError(addressResult.Error);
                     return;
                 }
             }
@@ -145,7 +121,7 @@
             var result = await UserProfile.CompleteOnboardingAsync();
             if (!result.IsSuccess)
             {
-                Snackbar.Add(L["Onboarding.OnboardingError"], Severity.Error);
+                Snackbar.ShowError(L["Onboarding.OnboardingError"]);
                 return;
             }
 
@@ -153,29 +129,11 @@
         }
         catch
         {
-            Snackbar.Add(L["Onboarding.Error"], Severity.Error);
+            Snackbar.ShowError(L["Onboarding.Error"]);
         }
         finally
         {
             _saving = false;
         }
-    }
-
-    private sealed class AddressModel
-    {
-        public string FirstName  { get; set; } = string.Empty;
-        public string LastName   { get; set; } = string.Empty;
-        public string Street     { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
-        public string City       { get; set; } = string.Empty;
-        public string Country    { get; set; } = "Deutschland";
-
-        public bool IsValid() =>
-            !string.IsNullOrWhiteSpace(FirstName) &&
-            !string.IsNullOrWhiteSpace(LastName) &&
-            !string.IsNullOrWhiteSpace(Street) &&
-            !string.IsNullOrWhiteSpace(PostalCode) &&
-            !string.IsNullOrWhiteSpace(City) &&
-            !string.IsNullOrWhiteSpace(Country);
     }
 }

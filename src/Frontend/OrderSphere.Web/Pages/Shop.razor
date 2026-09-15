@@ -1,152 +1,113 @@
 @page "/shop"
 @page "/shop/category/{Category}"
-@attribute [Authorize]
 @inject ICatalogClient Catalog
-@inject IOrderingClient Ordering
-@inject CartState CartState
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Shop.PageTitle"]</PageTitle>
 
-<PageHero Eyebrow="@L["Common.AllProducts"]" Title="@L["Shop.HeroTitle"]"
-          Subtitle="@L["Shop.HeroSubtitle"]" />
-
-<section style="padding:48px 0 var(--os-section-py-md);">
-    <MudContainer MaxWidth="MaxWidth.Large">
-
-        <MudPaper Elevation="0" Outlined="true" Class="pa-4 mb-6">
-            <MudGrid Spacing="2" Class="align-center">
-                <MudItem xs="12" md="4">
-                    <MudTextField T="string" @bind-Value="_search"
-                                  Placeholder="@L["Shop.SearchPlaceholder"]"
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Outlined.Search"
-                                  Variant="Variant.Outlined" Margin="Margin.Dense"
-                                  OnKeyDown="OnSearchKeyDown" />
-                </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudSelect T="string" @bind-Value="_categoryFilter" @bind-Value:after="ResetAndReloadAsync"
-                               Label="@L["Shop.CategoryFilter"]" Clearable="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense">
-                        @foreach (var c in _categories)
-                        {
-                            <MudSelectItem Value="@c.Name">@c.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudSelect T="string" @bind-Value="_sort" @bind-Value:after="ResetAndReloadAsync"
-                               Label="@L["Shop.SortLabel"]"
-                               Variant="Variant.Outlined" Margin="Margin.Dense">
-                        <MudSelectItem Value="@("name_asc")">@L["Shop.SortNameAsc"]</MudSelectItem>
-                        <MudSelectItem Value="@("name_desc")">@L["Shop.SortNameDesc"]</MudSelectItem>
-                        <MudSelectItem Value="@("price_asc")">@L["Shop.SortPriceAsc"]</MudSelectItem>
-                        <MudSelectItem Value="@("price_desc")">@L["Shop.SortPriceDesc"]</MudSelectItem>
-                        <MudSelectItem Value="@("newest")">@L["Shop.SortNewest"]</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="2">
-                    <MudButton FullWidth="true" Variant="Variant.Filled" Color="Color.Primary"
-                               OnClick="ApplyAsync">@L["Shop.ApplyFilter"]</MudButton>
-                </MudItem>
-
-                <MudItem xs="6" md="3">
-                    <MudNumericField T="decimal?" @bind-Value="_minPrice" Label="@L["Shop.MinPrice"]"
-                                     Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" />
-                </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudNumericField T="decimal?" @bind-Value="_maxPrice" Label="@L["Shop.MaxPrice"]"
-                                     Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" />
-                </MudItem>
-                <MudItem xs="12" md="2">
-                    <MudButton FullWidth="true" Variant="Variant.Text" Color="Color.Default"
-                               OnClick="ResetFiltersAsync">@L["Shop.ResetFilter"]</MudButton>
-                </MudItem>
-            </MudGrid>
-        </MudPaper>
-
-        @if (_loading)
+<OsPageHeader Eyebrow="@L["Common.AllProducts"]"
+              Title="@(Category ?? L["Shop.HeroTitle"])"
+              Subtitle="@L["Shop.HeroSubtitle"]"
+              Breadcrumbs="Crumbs"
+              Padding="OsPageHeader.HeaderPadding.Sm">
+    <Actions>
+        @if (!_loading)
         {
-            <MudStack AlignItems="AlignItems.Center" Style="min-height:40vh;justify-content:center;">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudStack>
+            <span class="os-mono os-muted"><span class="os-num">@_totalCount</span> @L["Shop.ProductsLabel"]</span>
         }
-        else if (!_products.Any())
-        {
-            <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height:40vh;padding:64px 0;">
-                <MudIcon Icon="@Icons.Material.Outlined.Inventory2"
-                         Style="font-size:64px;color:var(--mud-palette-divider);" />
-                <MudText Typo="Typo.h5" Style="margin-top:20px;font-weight:600;">@L["Shop.NoProducts"]</MudText>
-                <MudText Typo="Typo.body2" Class="text-muted" Style="margin-top:4px;">@L["Shop.NoProductsHint"]</MudText>
-            </MudStack>
-        }
-        else
-        {
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-                <MudText Typo="Typo.body2" Class="text-muted">
-                    <span class="os-mono">@_totalCount</span> @L["Shop.ProductsLabel"]
-                </MudText>
+    </Actions>
+</OsPageHeader>
+
+<OsSection Padding="OsSection.SectionPadding.Sm">
+    <div class="pg-shop">
+        @* Filter rail: sticky beside the grid from md up; a bottom sheet below. *@
+        <aside class="pg-shop__rail" aria-label="@L["Shop.Filters"]">
+            @Filters
+        </aside>
+
+        <div class="pg-shop__main">
+            <div class="pg-shop__toolbar">
+                <OsButton Variant="OsButton.ButtonVariant.Secondary"
+                          Size="OsButton.ButtonSize.Sm"
+                          StartIcon="@Icons.Material.Outlined.Tune"
+                          Class="pg-shop__mobile-toggle"
+                          OnClick="() => _filtersOpen = true">
+                    @L["Shop.Filters"]
+                </OsButton>
+                @if (!_loading && _products.Count > 0)
+                {
+                    <span class="os-mono os-muted pg-shop__range">
+                        @L["Shop.ShowingRange", (_page - 1) * PageSize + 1, Math.Min(_page * PageSize, _totalCount), _totalCount]
+                    </span>
+                }
             </div>
 
-            <MudGrid Spacing="3">
-                @foreach (var product in _products)
-                {
-                    <MudItem xs="12" sm="6" md="4">
-                        <ProductCard Product="product"
-                                     ShowCategory="true"
-                                     OnOpen="OpenDetails"
-                                     OnAdd="OpenQuantityPopup" />
-                    </MudItem>
-                }
-            </MudGrid>
-
-            @if (_totalPages > 1)
+            @if (_loading)
             {
-                <MudStack AlignItems="AlignItems.Center" Class="mt-8">
-                    <MudPagination Color="Color.Primary" Count="_totalPages"
-                                   Selected="_page" SelectedChanged="OnPageChangedAsync" />
-                </MudStack>
+                <OsProductCardSkeleton Count="6" />
             }
+            else if (_products.Count == 0)
+            {
+                <OsEmptyState Icon="@Icons.Material.Outlined.Inventory2"
+                              Title="@L["Shop.NoProducts"]"
+                              Body="@L["Shop.NoProductsHint"]"
+                              ActionText="@L["Shop.ResetFilter"]"
+                              OnAction="ResetFiltersAsync" />
+            }
+            else
+            {
+                <OsRevealGroup Class="os-product-grid" @key="_page">
+                    @foreach (var product in _products)
+                    {
+                        <ProductCard @key="product.Id"
+                                     Product="product"
+                                     ShowCategory="@(Category is null)"
+                                     OnOpen="OpenDetails"
+                                     OnAdd="AddToCartAsync" />
+                    }
+                </OsRevealGroup>
 
-            <!-- Quantity dialog -->
-            <MudDialog @bind-Visible="_popupOpen">
-                <TitleContent>
-                    <MudText Typo="Typo.h6">@_selectedProduct?.Name</MudText>
-                </TitleContent>
-                <DialogContent>
-                    <MudText Typo="Typo.body2" Class="mb-4">@L["Shop.ChooseQuantity", _selectedProduct?.Stock ?? 1]</MudText>
-                    <MudNumericField T="int" @bind-Value="_quantity"
-                                     Min="1" Max="@(_selectedProduct?.Stock ?? 1)"
-                                     Label="@L["Common.Quantity"]" Variant="Variant.Outlined" />
-                </DialogContent>
-                <DialogActions>
-                    <MudButton OnClick="ClosePopup">@L["Common.Cancel"]</MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                               OnClick="ConfirmAddToCartAsync" Disabled="_addingToCart">
-                        @if (_addingToCart)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        }
-                        @L["Common.AddToCart"]
-                    </MudButton>
-                </DialogActions>
-            </MudDialog>
+                @if (_totalPages > 1)
+                {
+                    <div class="os-pager">
+                        <MudPagination Color="Color.Primary" Count="_totalPages"
+                                       Selected="_page" SelectedChanged="OnPageChangedAsync" />
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</OsSection>
+
+<MudDrawer @bind-Open="_filtersOpen"
+           Anchor="Anchor.Bottom"
+           Variant="DrawerVariant.Temporary"
+           OverlayAutoClose="true"
+           Height="min(85vh, 640px)"
+           Class="pg-shop__sheet">
+    <div class="pg-shop__sheet-head">
+        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Shop.Filters"]</OsDisplay>
+        <OsIconButton Icon="@Icons.Material.Outlined.Close" AriaLabel="@L["Shop.CloseFilters"]" OnClick="() => _filtersOpen = false" />
+    </div>
+    <div class="pg-shop__sheet-body">
+        @if (_filtersOpen)
+        {
+            @Filters
         }
-    </MudContainer>
-</section>
+    </div>
+</MudDrawer>
 
 @code {
     [Parameter] public string? Category { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
     private List<ProductDto> _products = [];
     private List<CategoryDto> _categories = [];
     private bool _loading = true;
-    private bool _popupOpen;
-    private bool _addingToCart;
-    private ProductDto? _selectedProduct;
-    private int _quantity = 1;
+    private bool _filtersOpen;
 
     private const int PageSize = 12;
     private int _page = 1;
@@ -154,20 +115,82 @@
     private int _totalPages;
 
     private string _search = string.Empty;
-    private string? _categoryFilter;
     private decimal? _minPrice;
     private decimal? _maxPrice;
     private string _sort = "name_asc";
 
     private string? _lastCategoryRoute;
 
+    private IReadOnlyList<OsCrumb>? Crumbs => Category is null
+        ? null
+        : [new(L["Nav.Shop"], "/shop"), new(Category)];
+
+    // One definition, rendered in the rail (md+) and in the mobile sheet.
+    private RenderFragment Filters => __builder =>
+    {
+        <div class="pg-shop__filters">
+            <div class="pg-shop__group">
+                <MudTextField T="string" @bind-Value="_search"
+                              Placeholder="@L["Shop.SearchPlaceholder"]"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Search"
+                              Variant="Variant.Outlined" Margin="Margin.Dense"
+                              OnKeyDown="OnSearchKeyDown" />
+            </div>
+
+            <nav class="pg-shop__group pg-shop__group--cats" aria-label="@L["Nav.Categories"]">
+                <OsEyebrow Text="@L["Nav.Categories"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                <div class="pg-shop__cats">
+                    <a href="/shop" class="pg-shop__cat @(Category is null ? "is-active" : null)" @onclick="() => _filtersOpen = false">
+                        <span>@L["Shop.AllCategories"]</span>
+                    </a>
+                    @foreach (var c in _categories)
+                    {
+                        <a href="@($"/shop/category/{Uri.EscapeDataString(c.Name)}")"
+                           class="pg-shop__cat @(c.Name == Category ? "is-active" : null)"
+                           @onclick="() => _filtersOpen = false">
+                            <span>@c.Name</span>
+                            <span class="pg-shop__cat-count os-num">@c.ProductCount</span>
+                        </a>
+                    }
+                </div>
+            </nav>
+
+            <div class="pg-shop__group">
+                <OsEyebrow Text="@L["Shop.Price"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                <div class="pg-shop__price">
+                    <MudNumericField T="decimal?" @bind-Value="_minPrice" Label="@L["Shop.MinPrice"]" ShrinkLabel="true"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" HideSpinButtons="true" />
+                    <MudNumericField T="decimal?" @bind-Value="_maxPrice" Label="@L["Shop.MaxPrice"]" ShrinkLabel="true"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" HideSpinButtons="true" />
+                </div>
+            </div>
+
+            <div class="pg-shop__group">
+                <OsEyebrow Text="@L["Shop.SortLabel"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" />
+                <MudSelect T="string" @bind-Value="_sort" @bind-Value:after="ResetAndReloadAsync"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem Value="@("name_asc")">@L["Shop.SortNameAsc"]</MudSelectItem>
+                    <MudSelectItem Value="@("name_desc")">@L["Shop.SortNameDesc"]</MudSelectItem>
+                    <MudSelectItem Value="@("price_asc")">@L["Shop.SortPriceAsc"]</MudSelectItem>
+                    <MudSelectItem Value="@("price_desc")">@L["Shop.SortPriceDesc"]</MudSelectItem>
+                    <MudSelectItem Value="@("newest")">@L["Shop.SortNewest"]</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <div class="pg-shop__group pg-shop__actions">
+                <OsButton FullWidth="true" OnClick="ApplyAsync">@L["Shop.ApplyFilter"]</OsButton>
+                <OsButton FullWidth="true" Variant="OsButton.ButtonVariant.Ghost" OnClick="ResetFiltersAsync">@L["Shop.ResetFilter"]</OsButton>
+            </div>
+        </div>
+    };
+
     protected override async Task OnInitializedAsync()
     {
         var cats = await Catalog.GetCategoriesAsync();
         if (cats.IsSuccess)
-            _categories = cats.Value!.Items.ToList();
+            _categories = cats.Value!.Items.OrderBy(c => c.Name).ToList();
 
-        _categoryFilter = Category;
         _lastCategoryRoute = Category;
         await LoadAsync();
     }
@@ -178,7 +201,6 @@
         if (_lastCategoryRoute != Category)
         {
             _lastCategoryRoute = Category;
-            _categoryFilter = Category;
             _page = 1;
             await LoadAsync();
         }
@@ -194,7 +216,7 @@
                 Page: _page,
                 PageSize: PageSize,
                 Search: string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(),
-                Category: string.IsNullOrWhiteSpace(_categoryFilter) ? null : _categoryFilter,
+                Category: Category,
                 MinPrice: _minPrice,
                 MaxPrice: _maxPrice,
                 SortBy: by,
@@ -209,12 +231,12 @@
             }
             else
             {
-                Snackbar.Add(res.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(res.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Shop.LoadError", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Shop.LoadError", ex.Message]);
         }
         finally
         {
@@ -237,16 +259,20 @@
         await LoadAsync();
     }
 
-    private Task ApplyAsync() => ResetAndReloadAsync();
+    private async Task ApplyAsync()
+    {
+        _filtersOpen = false;
+        await ResetAndReloadAsync();
+    }
 
     private async Task ResetFiltersAsync()
     {
         _search = string.Empty;
-        _categoryFilter = Category;
         _minPrice = null;
         _maxPrice = null;
         _sort = "name_asc";
         _page = 1;
+        _filtersOpen = false;
         await LoadAsync();
     }
 
@@ -265,41 +291,11 @@
     private void OpenDetails(ProductDto product)
         => Navigation.NavigateTo($"/shop/{Uri.EscapeDataString(product.CategoryName)}/{Uri.EscapeDataString(product.Slug)}");
 
-    private void OpenQuantityPopup(ProductDto product)
+    private async Task AddToCartAsync(ProductDto product)
     {
-        _selectedProduct = product;
-        _quantity = 1;
-        _popupOpen = true;
-    }
+        if (!await LoginRedirect.EnsureSignedInAsync(AuthState, Navigation))
+            return;
 
-    private void ClosePopup()
-    {
-        _popupOpen = false;
-        _selectedProduct = null;
-    }
-
-    private async Task ConfirmAddToCartAsync()
-    {
-        if (_selectedProduct is null) return;
-
-        _addingToCart = true;
-        try
-        {
-            var result = await Ordering.AddToCartAsync(_selectedProduct.Id, _quantity);
-            if (result.IsSuccess)
-            {
-                Snackbar.Add(L["Common.AddedToCart", _quantity, _selectedProduct.Name], Severity.Success);
-                await CartState.RefreshAsync();
-                ClosePopup();
-            }
-            else
-            {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
-            }
-        }
-        finally
-        {
-            _addingToCart = false;
-        }
+        await AddToCartDialog.ShowAsync(Dialogs, product);
     }
 }

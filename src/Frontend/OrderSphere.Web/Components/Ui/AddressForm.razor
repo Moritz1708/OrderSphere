@@ -1,0 +1,116 @@
+@inject IStringLocalizer<AppStrings> L
+
+@* The one address form. Checkout, Profile and Onboarding each carried their
+   own copy with slightly different fields and no validation; this one is bound
+   to AddressFormModel and validates through MudForm. *@
+<MudForm @ref="Form" Class="os-address-form">
+    <div class="os-form-grid">
+        @if (ShowLabel)
+        {
+            <MudTextField T="string" @bind-Value="Model.Label"
+                          Label="@L["Address.Label"]"
+                          Variant="Variant.Outlined" ShrinkLabel="true"
+                          Class="os-form-grid__full" />
+        }
+
+        <MudTextField T="string" @bind-Value="Model.FirstName"
+                      Label="@L["Address.FirstName"]"
+                      Variant="Variant.Outlined" ShrinkLabel="true"
+                      Required="true" RequiredError="@L["Validation.Required"]"
+                      autocomplete="given-name" />
+
+        <MudTextField T="string" @bind-Value="Model.LastName"
+                      Label="@L["Address.LastName"]"
+                      Variant="Variant.Outlined" ShrinkLabel="true"
+                      Required="true" RequiredError="@L["Validation.Required"]"
+                      autocomplete="family-name" />
+
+        <MudTextField T="string" @bind-Value="Model.Street"
+                      Label="@L["Address.Street"]"
+                      Variant="Variant.Outlined" ShrinkLabel="true"
+                      Required="true" RequiredError="@L["Validation.Required"]"
+                      Class="os-form-grid__full"
+                      autocomplete="street-address" />
+
+        <MudTextField T="string" @bind-Value="Model.PostalCode"
+                      Label="@L["Address.PostalCode"]"
+                      Variant="Variant.Outlined" ShrinkLabel="true"
+                      Required="true" RequiredError="@L["Validation.Required"]"
+                      Validation="@((Func<string, string?>)ValidatePostalCode)"
+                      Class="os-form-grid__third"
+                      autocomplete="postal-code" />
+
+        <MudTextField T="string" @bind-Value="Model.City"
+                      Label="@L["Address.City"]"
+                      Variant="Variant.Outlined" ShrinkLabel="true"
+                      Required="true" RequiredError="@L["Validation.Required"]"
+                      Class="os-form-grid__two-thirds"
+                      autocomplete="address-level2" />
+
+        <MudSelect T="string" @bind-Value="Model.Country"
+                   Label="@L["Address.Country"]"
+                   Variant="Variant.Outlined" ShrinkLabel="true"
+                   Required="true" RequiredError="@L["Validation.Required"]"
+                   Class="os-form-grid__full">
+            @* Stored values stay the German strings the backend already holds; only the labels localise. *@
+            <MudSelectItem T="string" Value="@("Deutschland")">@L["Address.Country.DE"]</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Österreich")">@L["Address.Country.AT"]</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Schweiz")">@L["Address.Country.CH"]</MudSelectItem>
+        </MudSelect>
+
+        @if (ShowEmail)
+        {
+            <MudTextField T="string" @bind-Value="Model.Email"
+                          Label="@L["Address.Email"]"
+                          Variant="Variant.Outlined" ShrinkLabel="true"
+                          InputType="InputType.Email"
+                          Required="true" RequiredError="@L["Validation.Required"]"
+                          Validation="@((Func<string, string?>)ValidateEmail)"
+                          Class="os-form-grid__full"
+                          autocomplete="email" />
+        }
+    </div>
+</MudForm>
+
+@code {
+    [Parameter, EditorRequired] public AddressFormModel Model { get; set; } = default!;
+
+    /// <summary>Shows the "Label" field (Profile: Home, Office …).</summary>
+    [Parameter] public bool ShowLabel { get; set; }
+
+    /// <summary>Shows and requires an email field (Checkout).</summary>
+    [Parameter] public bool ShowEmail { get; set; }
+
+    /// <summary>The underlying MudForm, for callers that need <c>IsValid</c> or <c>ResetAsync</c>.</summary>
+    public MudForm Form { get; private set; } = default!;
+
+    /// <summary>Runs validation and reports whether every field passed.</summary>
+    public async Task<bool> ValidateAsync()
+    {
+        await Form.ValidateAsync();
+        return Form.IsValid;
+    }
+
+    private string? ValidatePostalCode(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null; // Required handles emptiness with its own message.
+
+        var digits = Model.Country == "Deutschland" ? 5 : 4;
+        return value.Trim().Length == digits && value.Trim().All(char.IsDigit)
+            ? null
+            : L["Validation.PostalCode"].Value;
+    }
+
+    private string? ValidateEmail(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var v = value.Trim();
+        var at = v.IndexOf('@');
+        return at > 0 && at < v.Length - 1 && v.IndexOf('.', at) > at + 1 && !v.Contains(' ')
+            ? null
+            : L["Validation.Email"].Value;
+    }
+}

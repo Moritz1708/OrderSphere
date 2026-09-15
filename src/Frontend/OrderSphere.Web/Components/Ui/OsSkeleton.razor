@@ -1,0 +1,49 @@
+@* A shimmering placeholder block. Purely decorative on its own — wrap groups in
+   an OsSkeletonGroup (or one of the composites) so assistive technology hears
+   "loading" once instead of nothing. *@
+
+@if (Variant == SkeletonVariant.Text && Lines > 1)
+{
+    <span class="os-skeleton-lines" aria-hidden="true">
+        @for (var i = 0; i < Lines; i++)
+        {
+            <span class="os-skeleton os-skeleton--text @Class" style="@LineStyle(i)"></span>
+        }
+    </span>
+}
+else
+{
+    <span class="@CssClass" style="@Style" aria-hidden="true"></span>
+}
+
+@code {
+    public enum SkeletonVariant { Text, Rect, Circle }
+
+    [Parameter] public SkeletonVariant Variant { get; set; } = SkeletonVariant.Text;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>For text: number of lines; the last one is shortened so it reads as prose.</summary>
+    [Parameter] public int Lines { get; set; } = 1;
+
+    [Parameter] public string? Class { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-skeleton",
+            $"os-skeleton--{Variant.ToString().ToLowerInvariant()}",
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private string Style => Join(
+        Width is not null ? $"width:{Width}" : null,
+        Height is not null ? $"height:{Height}" : null);
+
+    private string LineStyle(int index) => Join(
+        index == Lines - 1 ? "width:62%" : (Width is not null ? $"width:{Width}" : null),
+        Height is not null ? $"height:{Height}" : null);
+
+    private static string Join(params string?[] parts) =>
+        string.Join(';', parts.Where(p => !string.IsNullOrWhiteSpace(p)));
+}

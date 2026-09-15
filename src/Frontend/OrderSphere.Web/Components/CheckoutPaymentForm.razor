@@ -1,22 +1,18 @@
-@* Payment-method section of the checkout page. Binds Model.PaymentMethod. *@
+@* Payment-method options for the checkout page. The surrounding step supplies the
+   heading, so this renders the choices only. Binds Model.PaymentMethod. *@
 @inject IStringLocalizer<AppStrings> L
 
-<MudPaper Elevation="0" Class="surface-card-lg pa-6">
-    <MudText Typo="Typo.h5" Class="mb-4">@L["Payment.Title"]</MudText>
-    <MudRadioGroup T="int" @bind-Value="Model.PaymentMethod">
-        <MudStack Spacing="2">
-            <MudPaper Elevation="0" Class="surface-card pa-4">
-                <MudRadio T="int" Value="0" Color="Color.Primary">@L["Payment.CreditCard"]</MudRadio>
-            </MudPaper>
-            <MudPaper Elevation="0" Class="surface-card pa-4">
-                <MudRadio T="int" Value="1" Color="Color.Primary">@L["Payment.PayPal"]</MudRadio>
-            </MudPaper>
-            <MudPaper Elevation="0" Class="surface-card pa-4">
-                <MudRadio T="int" Value="2" Color="Color.Primary">@L["Payment.Invoice"]</MudRadio>
-            </MudPaper>
-        </MudStack>
-    </MudRadioGroup>
-</MudPaper>
+<MudRadioGroup T="int" @bind-Value="Model.PaymentMethod" Class="os-options">
+    <label class="os-option @(Model.PaymentMethod == 0 ? "is-selected" : null)">
+        <MudRadio T="int" Value="0" Color="Color.Primary">@L["Payment.CreditCard"]</MudRadio>
+    </label>
+    <label class="os-option @(Model.PaymentMethod == 1 ? "is-selected" : null)">
+        <MudRadio T="int" Value="1" Color="Color.Primary">@L["Payment.PayPal"]</MudRadio>
+    </label>
+    <label class="os-option @(Model.PaymentMethod == 2 ? "is-selected" : null)">
+        <MudRadio T="int" Value="2" Color="Color.Primary">@L["Payment.Invoice"]</MudRadio>
+    </label>
+</MudRadioGroup>
 
 @code {
     [Parameter, EditorRequired] public CheckoutFormModel Model { get; set; } = default!;

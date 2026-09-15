@@ -1,89 +1,68 @@
 @page "/search"
-@attribute [Authorize]
 @inject ICatalogClient Catalog
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject NavigationManager Navigation
 @inject IStringLocalizer<AppStrings> L
 
 <PageTitle>@L["Search.PageTitle"]</PageTitle>
 
-<PageHero Eyebrow="@L["Search.HeroEyebrow"]" Title="@L["Search.HeroTitle"]"
-          Subtitle="@L["Search.HeroSubtitle"]">
-    <LeadingContent>
-        <MudPaper Elevation="0" Class="pa-2 mx-auto"
-                  Style="max-width: 600px; border-radius: 100px; background: var(--mud-palette-surface);">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0" Class="px-4">
-                <MudIcon Icon="@Icons.Material.Outlined.Search" Color="Color.Default" />
-                <MudTextField T="string"
-                              @bind-Value="_queryInput"
-                              Placeholder="@L["Search.Placeholder"]"
-                              Variant="Variant.Text"
-                              Underline="false"
-                              FullWidth="true"
-                              Class="mx-3"
-                              OnKeyDown="OnSearchKeyDown" />
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           OnClick="ApplySearch"
-                           Style="border-radius: 100px;">
-                    @L["Search.Button"]
-                </MudButton>
-            </MudStack>
-        </MudPaper>
-    </LeadingContent>
-</PageHero>
+<OsPageHeader Eyebrow="@L["Search.HeroEyebrow"]"
+              Title="@L["Search.HeroTitle"]"
+              Subtitle="@L["Search.HeroSubtitle"]"
+              Size="OsDisplay.DisplaySize.D3">
+    <OsSearchBar @bind-Value="_queryInput"
+                 Size="OsSearchBar.SearchSize.Hero"
+                 OnSubmit="OnSearchSubmit"
+                 AutoFocus="true"
+                 Class="pg-search__bar" />
+</OsPageHeader>
 
-<section style="padding: 48px 0 var(--os-section-py-md); min-height: 50vh;">
-    <MudContainer MaxWidth="MaxWidth.Large">
-        @if (_loading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Style="min-height:40vh;justify-content:center;">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudStack>
-        }
-        else if (string.IsNullOrWhiteSpace(Query))
-        {
-            <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <EmptyStateCard Icon="@Icons.Material.Outlined.Search" IconSize="80px"
-                                Title="@L["Search.Prompt"]" Body="@L["Search.PromptHint"]" />
-            </MudPaper>
-        }
-        else if (_results.Count == 0)
-        {
-            <MudPaper Elevation="0" Class="surface-card-lg pa-12 text-center">
-                <EmptyStateCard Icon="@Icons.Material.Outlined.SearchOff" IconSize="80px"
-                                Title="@L["Search.NoResults", Query!]" Body="@L["Search.NoResultsHint"]"
-                                ActionText="@L["Cart.ToShop"]" ActionHref="/shop" />
-            </MudPaper>
-        }
-        else
-        {
-            <MudText Typo="Typo.h5" Class="mb-6" Style="font-weight: 600;">
-                @L["Search.ResultsCount", _totalCount, Query!]
-            </MudText>
+<OsSection Padding="OsSection.SectionPadding.Sm" Class="pg-search__results">
+    @if (_loading)
+    {
+        <OsProductCardSkeleton Count="6" />
+    }
+    else if (string.IsNullOrWhiteSpace(Query))
+    {
+        <OsEmptyState Icon="@Icons.Material.Outlined.Search"
+                      Title="@L["Search.Prompt"]"
+                      Body="@L["Search.PromptHint"]" />
+    }
+    else if (_results.Count == 0)
+    {
+        <OsEmptyState Icon="@Icons.Material.Outlined.SearchOff"
+                      Title="@L["Search.NoResults", Query!]"
+                      Body="@L["Search.NoResultsHint"]"
+                      ActionText="@L["Cart.ToShop"]"
+                      ActionHref="/shop" />
+    }
+    else
+    {
+        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-6">
+            @L["Search.ResultsCount", _totalCount, Query!]
+        </OsDisplay>
 
-            <MudGrid Spacing="3">
-                @foreach (var product in _results)
-                {
-                    <MudItem xs="12" sm="6" md="4">
-                        <ProductCard Product="product"
-                                     ShowCategory="true"
-                                     OnOpen="OpenDetails"
-                                     OnAdd="_ => { }" />
-                    </MudItem>
-                }
-            </MudGrid>
-
-            @if (_totalPages > 1)
+        <div class="os-product-grid">
+            @foreach (var product in _results)
             {
-                <MudStack AlignItems="AlignItems.Center" Class="mt-8">
-                    <MudPagination Color="Color.Primary" Count="_totalPages"
-                                   Selected="_page" SelectedChanged="OnPageChangedAsync" />
-                </MudStack>
+                <ProductCard @key="product.Id"
+                             Product="product"
+                             ShowCategory="true"
+                             OnOpen="OpenDetails"
+                             OnAdd="AddToCartAsync" />
             }
+        </div>
+
+        @if (_totalPages > 1)
+        {
+            <div class="os-pager">
+                <MudPagination Color="Color.Primary" Count="_totalPages"
+                               Selected="_page" SelectedChanged="OnPageChangedAsync" />
+            </div>
         }
-    </MudContainer>
-</section>
+    }
+</OsSection>
 
 @code {
     [SupplyParameterFromQuery(Name = "q")]
@@ -97,11 +76,6 @@
     private int _page = 1;
     private int _totalCount;
     private int _totalPages;
-
-    protected override void OnInitialized()
-    {
-        _queryInput = Query ?? string.Empty;
-    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -127,7 +101,7 @@
                 new ProductQuery(Page: _page, PageSize: PageSize, Search: Query.Trim()));
             if (!res.IsSuccess)
             {
-                Snackbar.Add(res.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(res.Error);
                 _results = [];
                 _totalCount = 0;
                 _totalPages = 0;
@@ -140,7 +114,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Search.Error", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Search.Error", ex.Message]);
             _results = [];
             _totalCount = 0;
             _totalPages = 0;
@@ -160,15 +134,20 @@
     private void OpenDetails(ProductDto product)
         => Navigation.NavigateTo($"/shop/{Uri.EscapeDataString(product.CategoryName)}/{Uri.EscapeDataString(product.Slug)}");
 
-    private void ApplySearch()
+    // The old page passed an empty callback here, so the add button did nothing.
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private async Task AddToCartAsync(ProductDto product)
     {
-        var trimmed = _queryInput?.Trim() ?? string.Empty;
-        var url = string.IsNullOrEmpty(trimmed) ? "/search" : $"/search?q={Uri.EscapeDataString(trimmed)}";
-        Navigation.NavigateTo(url);
+        if (!await LoginRedirect.EnsureSignedInAsync(AuthState, Navigation))
+            return;
+
+        await AddToCartDialog.ShowAsync(Dialogs, product);
     }
 
-    private void OnSearchKeyDown(KeyboardEventArgs e)
+    private void OnSearchSubmit(string term)
     {
-        if (e.Key == "Enter") ApplySearch();
+        var url = string.IsNullOrEmpty(term) ? "/search" : $"/search?q={Uri.EscapeDataString(term)}";
+        Navigation.NavigateTo(url);
     }
 }

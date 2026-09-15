@@ -1,0 +1,44 @@
+@* A page band: tone, vertical rhythm and a centred container in one element.
+   Replaces the section-*/page-section classes and ad-hoc MudContainers. *@
+
+<section id="@Id" class="@CssClass" @attributes="AdditionalAttributes">
+    <div class="@ContainerClass">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    public enum SectionTone { Canvas, Paper, Sunk, Block }
+
+    /// <summary>Vertical padding: 48 / 80 / 120px, halved below md.</summary>
+    public enum SectionPadding { None, Sm, Md, Lg }
+
+    public enum SectionWidth { Default, Narrow, Wide, Full }
+
+    [Parameter] public SectionTone Tone { get; set; } = SectionTone.Canvas;
+    [Parameter] public SectionPadding Padding { get; set; } = SectionPadding.Md;
+    [Parameter] public SectionWidth Width { get; set; } = SectionWidth.Default;
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        string.Join(' ', new[]
+        {
+            "os-section",
+            $"os-section--{Tone.ToString().ToLowerInvariant()}",
+            $"os-section--pad-{Padding.ToString().ToLowerInvariant()}",
+            Class,
+        }.Where(c => !string.IsNullOrWhiteSpace(c)));
+
+    private string ContainerClass => Width switch
+    {
+        SectionWidth.Narrow => "os-container os-container--narrow",
+        SectionWidth.Wide => "os-container os-container--wide",
+        SectionWidth.Full => "os-container os-container--full",
+        _ => "os-container",
+    };
+}

@@ -1,0 +1,72 @@
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IStringLocalizer<AppStrings> L
+
+@* Below md the header hides its links. Until now nothing replaced them, so the
+   storefront simply had no navigation on a phone. MudDrawer handles the overlay,
+   the scroll lock and focus containment. *@
+<MudDrawer @bind-Open="Open"
+           Anchor="Anchor.Left"
+           Variant="DrawerVariant.Temporary"
+           OverlayAutoClose="true"
+           Width="min(88vw, 360px)"
+           Class="os-mobile-nav">
+
+    <div class="os-mobile-nav__head">
+        <span class="os-eyebrow">@L["Nav.Menu"]</span>
+        <OsIconButton Icon="@Icons.Material.Outlined.Close"
+                      AriaLabel="@L["Nav.MenuClose"]"
+                      OnClick="CloseAsync" />
+    </div>
+
+    <nav class="os-mobile-nav__links" aria-label="@L["Nav.Primary"]">
+        <a href="/shop" class="os-mobile-nav__link" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Nav.Shop"]</a>
+        <a href="/categories" class="os-mobile-nav__link" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Nav.Categories"]</a>
+        <a href="/search" class="os-mobile-nav__link" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Nav.Search"]</a>
+        <a href="/cart" class="os-mobile-nav__link" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Cart.Title"]</a>
+
+        <AuthorizeView>
+            <Authorized>
+                <hr />
+                <a href="/account/orders" class="os-mobile-nav__link os-mobile-nav__link--sm" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Account.MyOrders"]</a>
+                <a href="/account/profile" class="os-mobile-nav__link os-mobile-nav__link--sm" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Account.MyProfile"]</a>
+                <AuthorizeView Roles="admin" Context="adminCtx">
+                    <a href="/admin" class="os-mobile-nav__link os-mobile-nav__link--sm" @onclick="CloseAsync" @onclick:preventDefault="false">@L["Account.Admin"]</a>
+                </AuthorizeView>
+            </Authorized>
+        </AuthorizeView>
+    </nav>
+
+    <div class="os-mobile-nav__foot">
+        <div class="os-mobile-nav__settings">
+            <LocaleMenu />
+            <ThemeToggle />
+        </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <OsButton Variant="OsButton.ButtonVariant.Secondary"
+                          FullWidth="true"
+                          OnClick="HandleLogoutAsync">
+                    @L["Account.Logout"]
+                </OsButton>
+            </Authorized>
+            <NotAuthorized>
+                <OsButton OnClick="() => LoginRedirect.Go(Navigation)" FullWidth="true">@L["Auth.SignIn"]</OsButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</MudDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+    private Task CloseAsync() => OpenChanged.InvokeAsync(false);
+
+    private async Task HandleLogoutAsync()
+    {
+        try { await Http.PostAsync("/bff/logout", content: null); } catch { }
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

@@ -6,136 +6,124 @@
 
 <PageTitle>@L["Admin.Dashboard.PageTitle"]</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudText Typo="Typo.h4" Class="mb-2" Style="font-weight: 700;">@L["Admin.Dashboard.Title"]</MudText>
-    <MudText Typo="Typo.body1" Class="text-muted mb-8">@L["Admin.Dashboard.Subtitle"]</MudText>
+<OsPageHeader Eyebrow="@L["Admin.Nav.Section"]"
+              Title="@L["Admin.Dashboard.Title"]"
+              Subtitle="@L["Admin.Dashboard.Subtitle"]"
+              Size="OsDisplay.DisplaySize.D3"
+              Padding="OsPageHeader.HeaderPadding.Sm" />
 
+<OsSection Padding="OsSection.SectionPadding.Sm" Width="OsSection.SectionWidth.Wide">
     @if (_loading)
     {
-        <MudStack AlignItems="AlignItems.Center" Class="py-12">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </MudStack>
+        <OsSkeletonGroup Class="pg-admin__stats">
+            @foreach (var _ in Enumerable.Range(0, 4))
+            {
+                <OsSkeleton Variant="OsSkeleton.SkeletonVariant.Rect" Height="140px" />
+            }
+        </OsSkeletonGroup>
     }
     else if (_stats is null)
     {
-        <ErrorStateWithRetry Message="@L["Common.LoadError", "–"]" OnRetry="LoadAsync" />
+        <OsErrorState Message="@L["Common.LoadError", "–"]" OnRetry="LoadAsync" />
     }
     else
     {
-        <MudGrid Class="mb-8">
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-5" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                    <MudStack Spacing="1">
-                        <MudIcon Icon="@Icons.Material.Outlined.Receipt" Color="Color.Primary" />
-                        <MudText Typo="Typo.h4" Style="font-weight:700;">@_stats.TotalOrders</MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.TotalOrders"]</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Dashboard.OrdersToday", _stats.OrdersToday]</MudText>
-                    </MudStack>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-5" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                    <MudStack Spacing="1">
-                        <MudIcon Icon="@Icons.Material.Outlined.Euro" Color="Color.Success" />
-                        <MudText Typo="Typo.h4" Style="font-weight:700;">@Formatting.Currency(_stats.TotalRevenue)</MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.TotalRevenue"]</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">@Formatting.Currency(_stats.RevenueToday) @L["Admin.Dashboard.OrdersToday", ""]</MudText>
-                    </MudStack>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-5" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                    <MudStack Spacing="1">
-                        <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Color="Color.Warning" />
-                        <MudText Typo="Typo.h4" Style="font-weight:700;">@_stats.PendingShipments</MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.PendingShipments"]</MudText>
-                    </MudStack>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="0" Class="pa-5" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                    <MudStack Spacing="1">
-                        <MudIcon Icon="@Icons.Material.Outlined.Warning" Color="Color.Error" />
-                        <MudText Typo="Typo.h4" Style="font-weight:700;">@_lowStockCount</MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.LowStock"]</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">@L["Admin.Dashboard.LowStockOf", _totalProducts]</MudText>
-                    </MudStack>
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
+        <OsRevealGroup Class="pg-admin__stats">
+            <OsStat Label="@L["Admin.Dashboard.TotalOrders"]"
+                    Value="_stats.TotalOrders"
+                    Icon="@Icons.Material.Outlined.Receipt"
+                    Delta="@L["Admin.Dashboard.OrdersToday", _stats.OrdersToday]"
+                    Href="/admin/orders" />
+            <OsStat Label="@L["Admin.Dashboard.TotalRevenue"]"
+                    Value="_stats.TotalRevenue"
+                    Format="Formatting.Currency"
+                    Icon="@Icons.Material.Outlined.Euro"
+                    Delta="@($"{Formatting.Currency(_stats.RevenueToday)} {L["Admin.Dashboard.OrdersToday", ""]}")"
+                    DeltaTone="StatusTone.Success" />
+            <OsStat Label="@L["Admin.Dashboard.PendingShipments"]"
+                    Value="_stats.PendingShipments"
+                    Icon="@Icons.Material.Outlined.LocalShipping"
+                    DeltaTone="StatusTone.Warning" />
+            <OsStat Label="@L["Admin.Dashboard.LowStock"]"
+                    Value="_lowStockCount"
+                    Icon="@Icons.Material.Outlined.Warning"
+                    Delta="@L["Admin.Dashboard.LowStockOf", _totalProducts]"
+                    DeltaTone="@(_lowStockCount > 0 ? StatusTone.Danger : StatusTone.Neutral)"
+                    Href="/admin/products" />
+        </OsRevealGroup>
 
-        <MudGrid>
-            <MudItem xs="12" md="7">
-                <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-                        <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Admin.Dashboard.RecentOrders"]</MudText>
-                        <MudButton Variant="Variant.Text" Size="Size.Small" Href="/admin/orders">@L["Admin.Dashboard.ViewAll"]</MudButton>
-                    </MudStack>
-                    @if (!_stats.RecentOrders.Any())
-                    {
-                        <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.NoOrders"]</MudText>
-                    }
-                    else
-                    {
-                        <MudStack Spacing="3">
-                            @foreach (var order in _stats.RecentOrders)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body2" Style="font-weight:500;">@order.CustomerName</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted">
-                                            #@order.Id.ToString("N")[..8].ToUpperInvariant() · @Formatting.DateTime(order.CreatedAt.ToLocalTime())
-                                        </MudText>
-                                    </MudStack>
-                                    <MudStack Spacing="0" AlignItems="AlignItems.End">
-                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@Formatting.Currency(order.Total)</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted">@order.Status</MudText>
-                                    </MudStack>
-                                </MudStack>
-                            }
-                        </MudStack>
-                    }
-                </MudPaper>
-            </MudItem>
+        <div class="pg-admin__panels">
+            <OsCard Padding="OsCard.CardPadding.Lg">
+                <div class="os-card__head">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Admin.Dashboard.RecentOrders"]</OsDisplay>
+                    <OsButton Href="/admin/orders" Variant="OsButton.ButtonVariant.Ghost" Size="OsButton.ButtonSize.Sm"
+                              EndIcon="@Icons.Material.Outlined.ArrowForward">
+                        @L["Admin.Dashboard.ViewAll"]
+                    </OsButton>
+                </div>
 
-            <MudItem xs="12" md="5">
-                <MudPaper Elevation="0" Class="pa-6" Style="border-radius:16px;border:1px solid var(--mud-palette-divider);">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-                        <MudText Typo="Typo.h6" Style="font-weight:600;">@L["Admin.Dashboard.LowStock"]</MudText>
-                        <MudButton Variant="Variant.Text" Size="Size.Small" Href="/admin/products">@L["Admin.Dashboard.Products"]</MudButton>
-                    </MudStack>
-                    @if (!_lowStockProducts.Any())
-                    {
-                        <MudStack AlignItems="AlignItems.Center" Class="py-4">
-                            <MudIcon Icon="@Icons.Material.Outlined.CheckCircle" Color="Color.Success" Style="font-size:48px;" />
-                            <MudText Typo="Typo.body2" Class="text-muted">@L["Admin.Dashboard.AllGood"]</MudText>
-                        </MudStack>
-                    }
-                    else
-                    {
-                        <MudStack Spacing="2">
-                            @foreach (var p in _lowStockProducts)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body2">@p.Name</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted os-mono">@p.SKU</MudText>
-                                    </MudStack>
-                                    <MudChip T="string"
-                                             Color="@(p.Stock == 0 ? Color.Error : Color.Warning)"
-                                             Size="Size.Small" Variant="Variant.Filled"
-                                             Style="border-radius:100px;">
-                                        @p.Stock
-                                    </MudChip>
-                                </MudStack>
-                            }
-                        </MudStack>
-                    }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
+                @if (!_stats.RecentOrders.Any())
+                {
+                    <OsEmptyState Icon="@Icons.Material.Outlined.Inbox" Title="@L["Admin.Dashboard.NoOrders"]" Compact="true" />
+                }
+                else
+                {
+                    <div class="os-rows">
+                        @foreach (var order in _stats.RecentOrders)
+                        {
+                            <a class="os-row pg-admin__row" href="@($"/admin/orders/{order.Id}")" @key="order.Id">
+                                <div class="os-row__main">
+                                    <span class="os-row__title">@order.CustomerName</span>
+                                    <span class="os-row__meta os-mono">
+                                        #@order.Id.ToString("N")[..8].ToUpperInvariant() · @Formatting.DateTime(order.CreatedAt.ToLocalTime())
+                                    </span>
+                                </div>
+                                <div class="os-row__end">
+                                    <OsPrice Value="order.Total" Size="OsPrice.PriceSize.Sm" />
+                                    <OsStatusChip Tone="StatusPresentation.OrderTone(order.Status)"
+                                                  Text="@L[StatusPresentation.OrderLabelKey(order.Status)]"
+                                                  Size="OsStatusChip.ChipSize.Sm" />
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </OsCard>
+
+            <OsCard Padding="OsCard.CardPadding.Lg">
+                <div class="os-card__head">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3">@L["Admin.Dashboard.LowStock"]</OsDisplay>
+                    <OsButton Href="/admin/products" Variant="OsButton.ButtonVariant.Ghost" Size="OsButton.ButtonSize.Sm"
+                              EndIcon="@Icons.Material.Outlined.ArrowForward">
+                        @L["Admin.Dashboard.Products"]
+                    </OsButton>
+                </div>
+
+                @if (!_lowStockProducts.Any())
+                {
+                    <OsEmptyState Icon="@Icons.Material.Outlined.CheckCircle" Title="@L["Admin.Dashboard.AllGood"]" Compact="true" />
+                }
+                else
+                {
+                    <div class="os-rows">
+                        @foreach (var p in _lowStockProducts)
+                        {
+                            <a class="os-row pg-admin__row" href="@($"/admin/products/{p.Id}")" @key="p.Id">
+                                <div class="os-row__main">
+                                    <span class="os-row__title">@p.Name</span>
+                                    <span class="os-row__meta os-mono">@p.SKU</span>
+                                </div>
+                                <OsStatusChip Tone="@(p.Stock == 0 ? StatusTone.Danger : StatusTone.Warning)"
+                                              Text="@p.Stock.ToString()"
+                                              Size="OsStatusChip.ChipSize.Sm" />
+                            </a>
+                        }
+                    </div>
+                }
+            </OsCard>
+        </div>
     }
-</MudContainer>
+</OsSection>
 
 @code {
     private OrderStatsDto? _stats;
@@ -154,7 +142,7 @@
         {
             var stats = await AdminOrdering.GetStatsAsync();
             _stats = stats.Value;
-            if (!stats.IsSuccess) Snackbar.Add(stats.Error!.Message, Severity.Error);
+            if (!stats.IsSuccess) Snackbar.ShowApiError(stats.Error);
 
             var products = await AdminCatalog.GetProductsAsync();
             if (products.IsSuccess)
@@ -166,12 +154,12 @@
             }
             else
             {
-                Snackbar.Add(products.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(products.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add(L["Common.LoadError", ex.Message], Severity.Error);
+            Snackbar.ShowError(L["Common.LoadError", ex.Message]);
         }
         finally
         {

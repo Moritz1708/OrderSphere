@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Resources;
 
 namespace OrderSphere.Web.Services;
 
@@ -19,8 +20,22 @@ public enum ApiErrorKind
 /// <summary>A structured API error carrying a user-facing message and the originating status.</summary>
 public sealed record ApiError(ApiErrorKind Kind, string Message, int? StatusCode = null)
 {
-    public static readonly ApiError Network =
-        new(ApiErrorKind.Network, "Keine Verbindung zum Server. Bitte versuche es erneut.");
+    // A property, not a cached field: the text is resolved in the culture current at the
+    // time of the failure, which a static initialiser could run before the culture is set.
+    public static ApiError Network => new(ApiErrorKind.Network, ApiErrorText.Get("ApiError.Network"));
+}
+
+/// <summary>
+/// Default wording for failures the server did not describe. The API clients are plain
+/// classes without an <c>IStringLocalizer</c>, so this reads the same <c>AppStrings</c>
+/// table through its <see cref="ResourceManager"/> in the current UI culture.
+/// </summary>
+internal static class ApiErrorText
+{
+    private static readonly ResourceManager Strings =
+        new("OrderSphere.Web.Resources.AppStrings", typeof(AppStrings).Assembly);
+
+    public static string Get(string key) => Strings.GetString(key) ?? key;
 }
 
 /// <summary>Result of an API call that returns no payload.</summary>
@@ -57,7 +72,7 @@ public static class ApiResultExtensions
 
         var value = await response.Content.ReadFromJsonAsync<T>(ct);
         return value is null
-            ? ApiResult<T>.Fail(new ApiError(ApiErrorKind.Server, "Unerwartete Antwort vom Server."))
+            ? ApiResult<T>.Fail(new ApiError(ApiErrorKind.Server, ApiErrorText.Get("ApiError.UnexpectedResponse")))
             : ApiResult<T>.Ok(value);
     }
 
@@ -124,16 +139,16 @@ public static class ApiResultExtensions
         return new ApiError(kind, message, (int)response.StatusCode);
     }
 
-    private static string DefaultMessage(ApiErrorKind kind) => kind switch
+    private static string DefaultMessage(ApiErrorKind kind) => ApiErrorText.Get(kind switch
     {
-        ApiErrorKind.Validation => "Die Eingabe ist ungültig.",
-        ApiErrorKind.Unauthorized => "Bitte melde dich an, um fortzufahren.",
-        ApiErrorKind.Forbidden => "Dafür fehlt dir die Berechtigung.",
-        ApiErrorKind.NotFound => "Die angeforderten Daten wurden nicht gefunden.",
-        ApiErrorKind.Conflict => "Die Aktion steht im Konflikt mit dem aktuellen Stand.",
-        ApiErrorKind.Server => "Auf dem Server ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
-        _ => "Die Aktion konnte nicht ausgeführt werden.",
-    };
+        ApiErrorKind.Validation => "ApiError.Validation",
+        ApiErrorKind.Unauthorized => "ApiError.Unauthorized",
+        ApiErrorKind.Forbidden => "ApiError.Forbidden",
+        ApiErrorKind.NotFound => "ApiError.NotFound",
+        ApiErrorKind.Conflict => "ApiError.Conflict",
+        ApiErrorKind.Server => "ApiError.Server",
+        _ => "ApiError.Unknown",
+    });
 
     private static async Task<string?> ReadProblemMessageAsync(HttpResponseMessage response, CancellationToken ct)
     {

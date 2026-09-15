@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @inject IOrderingClient Ordering
 @inject IInvoicingClient Invoicing
-@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<AppStrings> L
 
@@ -10,182 +9,165 @@
 
 @if (_loading)
 {
-    <div style="display:flex;justify-content:center;align-items:center;min-height:60vh;">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-    </div>
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <OsDetailSkeleton />
+    </OsSection>
 }
 else if (_order is null)
 {
-    <MudContainer MaxWidth="MaxWidth.Small" Class="text-center" Style="padding:var(--os-section-py-md) 0;">
-        <MudText Typo="Typo.h5">@L["OrderDetail.NotFound"]</MudText>
-        <MudButton Href="/account/orders" Variant="Variant.Filled" Color="Color.Primary" Class="btn-pill mt-4">
-            @L["Common.Back"]
-        </MudButton>
-    </MudContainer>
+    <OsSection Width="OsSection.SectionWidth.Narrow">
+        <OsEmptyState Icon="@Icons.Material.Outlined.ReceiptLong"
+                      Title="@L["OrderDetail.NotFound"]"
+                      ActionText="@L["Common.Back"]"
+                      ActionHref="/account/orders" />
+    </OsSection>
 }
 else
 {
-    <section style="padding:48px 0 var(--os-section-py-md);">
-        <MudContainer MaxWidth="MaxWidth.Medium">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
-                <MudIconButton Icon="@Icons.Material.Outlined.ArrowBack"
-                               OnClick="@(() => Navigation.NavigateTo("/account/orders"))"
-                               aria-label="@L["Common.BackAria"]" />
-                <MudText Typo="Typo.h5" Style="font-weight:600;">
-                    @L["Admin.OrderDetail.Order"] #@_order.Id.ToString("N")[..8].ToUpperInvariant()
-                </MudText>
-                <MudChip T="string"
-                         Color="@GetStatusColor(_order.Status)"
-                         Variant="Variant.Filled"
-                         Style="border-radius:100px;font-weight:600;">
-                    @GetStatusLabel(_order.Status)
-                </MudChip>
-            </MudStack>
+    <OsPageHeader Breadcrumbs="Crumbs"
+                  Eyebrow="@L["Orders.OrderNumber"]"
+                  Title="@($"#{ShortId}")"
+                  Size="OsDisplay.DisplaySize.D3"
+                  Padding="OsPageHeader.HeaderPadding.Sm">
+        <Actions>
+            <OsStatusChip Tone="StatusPresentation.OrderTone(_order.Status)"
+                          Text="@L[StatusPresentation.OrderLabelKey(_order.Status)]"
+                          Dot="true" />
+        </Actions>
+    </OsPageHeader>
 
-            <MudGrid Spacing="4">
-                <MudItem xs="12" md="8">
-                    <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                        <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["OrderDetail.Items"]</MudText>
-                        <MudStack Spacing="3">
-                            @foreach (var line in _order.Items)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body1" Style="font-weight:500;">@line.ProductName</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted">
-                                            @line.Quantity × @Formatting.Currency(line.Price)
-                                        </MudText>
-                                    </MudStack>
-                                    <MudText Typo="Typo.body1" Style="font-weight:600;">
-                                        @Formatting.Currency(line.Quantity * line.Price)
-                                    </MudText>
-                                </MudStack>
-                            }
-                        </MudStack>
-                        <MudDivider Class="my-4" />
-                        <MudStack Spacing="2">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["OrderSummary.Subtotal"]</MudText>
-                                <MudText Typo="Typo.body2">@Formatting.Currency(Subtotal)</MudText>
-                            </MudStack>
-                            @if (_order.DiscountAmount > 0)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                    <MudText Typo="Typo.body2" Class="text-muted">
-                                        @L["OrderSummary.Discount"] @(_order.CouponCode is { } c ? $"({c})" : "")
-                                    </MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Success">−@Formatting.Currency(_order.DiscountAmount)</MudText>
-                                </MudStack>
-                            }
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["OrderSummary.Shipping"]</MudText>
-                                @if (_order.ShippingCost > 0)
-                                {
-                                    <MudText Typo="Typo.body2">@Formatting.Currency(_order.ShippingCost)</MudText>
-                                }
-                                else
-                                {
-                                    <MudText Typo="Typo.body2" Class="shipping-free">@L["OrderSummary.Free"]</MudText>
-                                }
-                            </MudStack>
-                            <MudDivider />
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                                <MudText Typo="Typo.h6">@L["OrderDetail.Total"]</MudText>
-                                <MudText Typo="Typo.h6" Style="font-weight:700;">
-                                    @Formatting.Currency(_order.Total)
-                                </MudText>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
+    <OsSection Padding="OsSection.SectionPadding.Sm">
+        <div class="pg-order">
+            <div class="pg-order__main">
+                <OsCard Padding="OsCard.CardPadding.Lg">
+                    <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-4">@L["OrderDetail.Items"]</OsDisplay>
 
-                    @if (_order.StatusHistory is { Count: > 0 } history)
-                    {
-                        <MudPaper Elevation="0" Class="surface-card-lg pa-6 mt-4">
-                            <MudText Typo="Typo.h6" Class="mb-4" Style="font-weight:600;">@L["OrderDetail.Timeline"]</MudText>
-                            <MudTimeline TimelinePosition="TimelinePosition.Start">
-                                @foreach (var entry in history)
-                                {
-                                    <MudTimelineItem Color="@GetStatusColor(entry.Status)" Size="Size.Small">
-                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@GetStatusLabel(entry.Status)</MudText>
-                                        <MudText Typo="Typo.caption" Class="text-muted">
-                                            @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
-                                        </MudText>
-                                    </MudTimelineItem>
-                                }
-                            </MudTimeline>
-                        </MudPaper>
-                    }
-                </MudItem>
-
-                <MudItem xs="12" md="4">
-                    <MudStack Spacing="4">
-                        <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                            <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-3">
-                                @L["OrderDetail.ShippingAddress"]
-                            </MudText>
-                            <MudText Typo="Typo.body2">
-                                @_order.ShippingAddress.FirstName @_order.ShippingAddress.LastName
-                            </MudText>
-                            <MudText Typo="Typo.body2">@_order.ShippingAddress.Street</MudText>
-                            <MudText Typo="Typo.body2">
-                                @_order.ShippingAddress.PostalCode @_order.ShippingAddress.City
-                            </MudText>
-                            <MudText Typo="Typo.body2">@_order.ShippingAddress.Country</MudText>
-                        </MudPaper>
-
-                        @if (!string.IsNullOrWhiteSpace(_order.TrackingNumber))
+                    <div class="os-rows">
+                        @foreach (var line in _order.Items)
                         {
-                            <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                                <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">
-                                    @L["OrderDetail.Tracking"]
-                                </MudText>
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                    <MudIcon Icon="@Icons.Material.Outlined.LocalShipping"
-                                             Color="Color.Primary" Size="Size.Small" />
-                                    <MudText Typo="Typo.body2" Class="text-monospace">
-                                        @_order.TrackingNumber
-                                    </MudText>
-                                </MudStack>
-                            </MudPaper>
+                            <div class="os-row">
+                                <div class="os-row__main">
+                                    <span class="os-row__title">@line.ProductName</span>
+                                    <span class="os-row__meta os-num">@line.Quantity × @Formatting.Currency(line.Price)</span>
+                                </div>
+                                <OsPrice Value="line.Quantity * line.Price" />
+                            </div>
                         }
+                    </div>
 
-                        <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                            <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">@L["OrderDetail.Details"]</MudText>
-                            <MudText Typo="Typo.caption" Class="text-muted">@L["OrderDetail.OrderDate"]</MudText>
-                            <MudText Typo="Typo.body2">
-                                @Formatting.DateTime(_order.CreatedAt.ToLocalTime())
-                            </MudText>
-                        </MudPaper>
-
-                        <MudPaper Elevation="0" Class="surface-card-lg pa-6">
-                            <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">@L["OrderDetail.Invoice"]</MudText>
-                            @if (_invoice is not null)
+                    <dl class="os-kv mt-5">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["OrderSummary.Subtotal"]</dt>
+                            <dd class="os-kv__val">@Formatting.Currency(Subtotal)</dd>
+                        </div>
+                        @if (_order.DiscountAmount > 0)
+                        {
+                            <div class="os-kv__row">
+                                <dt class="os-kv__key">@L["OrderSummary.Discount"] @(_order.CouponCode is { } c ? $"({c})" : "")</dt>
+                                <dd class="os-kv__val os-kv__val--positive">−@Formatting.Currency(_order.DiscountAmount)</dd>
+                            </div>
+                        }
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["OrderSummary.Shipping"]</dt>
+                            @if (_order.ShippingCost > 0)
                             {
-                                <MudText Typo="Typo.caption" Class="text-muted">@L["OrderDetail.InvoiceNumber"]</MudText>
-                                <MudText Typo="Typo.body2" Class="os-mono mb-3">@_invoice.InvoiceNumber</MudText>
-                                <MudButton Href="@Invoicing.GetPdfUrl(_order.Id)" Target="_blank"
-                                           Variant="Variant.Filled" Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Outlined.PictureAsPdf"
-                                           Class="btn-pill" FullWidth="true">
-                                    @L["OrderDetail.ViewInvoice"]
-                                </MudButton>
-                                <MudButton Href="@Invoicing.GetDownloadUrl(_order.Id)"
-                                           Variant="Variant.Outlined"
-                                           StartIcon="@Icons.Material.Outlined.Download"
-                                           Class="btn-pill-outline mt-2" FullWidth="true">
-                                    @L["OrderDetail.DownloadInvoice"]
-                                </MudButton>
+                                <dd class="os-kv__val">@Formatting.Currency(_order.ShippingCost)</dd>
                             }
                             else
                             {
-                                <MudText Typo="Typo.body2" Class="text-muted">@L["OrderDetail.InvoicePending"]</MudText>
+                                <dd class="os-kv__val os-kv__val--positive">@L["OrderSummary.Free"]</dd>
                             }
-                        </MudPaper>
-                    </MudStack>
-                </MudItem>
-            </MudGrid>
-        </MudContainer>
-    </section>
+                        </div>
+                        <div class="os-kv__row os-kv__row--total">
+                            <dt class="os-kv__key">@L["OrderDetail.Total"]</dt>
+                            <dd class="os-kv__val">@Formatting.Currency(_order.Total)</dd>
+                        </div>
+                    </dl>
+                </OsCard>
+
+                @if (_order.StatusHistory is { Count: > 0 } history)
+                {
+                    <OsCard Padding="OsCard.CardPadding.Lg" Class="mt-4">
+                        <OsDisplay As="h2" Size="OsDisplay.DisplaySize.D3" Class="mb-4">@L["OrderDetail.Timeline"]</OsDisplay>
+                        @* An editorial rail rather than MudTimeline: one hairline, a dot
+                           per step, mono timestamps. The newest entry is the emphasised one. *@
+                        <ol class="pg-timeline">
+                            @foreach (var (entry, index) in history.Select((e, i) => (e, i)))
+                            {
+                                <li class="pg-timeline__item @(index == history.Count - 1 ? "is-current" : null)">
+                                    <span class="pg-timeline__dot os-tone-@StatusPresentation.OrderTone(entry.Status).ToString().ToLowerInvariant()" aria-hidden="true"></span>
+                                    <span class="pg-timeline__label">@L[StatusPresentation.OrderLabelKey(entry.Status)]</span>
+                                    <time class="pg-timeline__time os-mono" datetime="@entry.OccurredAt.ToString("o")">
+                                        @Formatting.DateTime(entry.OccurredAt.ToLocalTime())
+                                    </time>
+                                </li>
+                            }
+                        </ol>
+                    </OsCard>
+                }
+            </div>
+
+            <aside class="pg-order__aside">
+                <OsCard>
+                    <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.ShippingAddress"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                    <address class="pg-order__address">
+                        @_order.ShippingAddress.FirstName @_order.ShippingAddress.LastName<br />
+                        @_order.ShippingAddress.Street<br />
+                        @_order.ShippingAddress.PostalCode @_order.ShippingAddress.City<br />
+                        @_order.ShippingAddress.Country
+                    </address>
+                </OsCard>
+
+                @if (!string.IsNullOrWhiteSpace(_order.TrackingNumber))
+                {
+                    <OsCard>
+                        <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Tracking"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                        <span class="pg-order__tracking os-mono">
+                            <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Size="Size.Small" />
+                            @_order.TrackingNumber
+                        </span>
+                    </OsCard>
+                }
+
+                <OsCard>
+                    <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Details"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                    <dl class="os-kv">
+                        <div class="os-kv__row">
+                            <dt class="os-kv__key">@L["OrderDetail.OrderDate"]</dt>
+                            <dd class="os-kv__val">@Formatting.DateTime(_order.CreatedAt.ToLocalTime())</dd>
+                        </div>
+                    </dl>
+                </OsCard>
+
+                <OsCard>
+                    <h2 class="os-card__label"><OsEyebrow Text="@L["OrderDetail.Invoice"]" Tone="OsEyebrow.EyebrowTone.Muted" Rule="false" /></h2>
+                    @if (_invoice is not null)
+                    {
+                        <dl class="os-kv mb-4">
+                            <div class="os-kv__row">
+                                <dt class="os-kv__key">@L["OrderDetail.InvoiceNumber"]</dt>
+                                <dd class="os-kv__val">@_invoice.InvoiceNumber</dd>
+                            </div>
+                        </dl>
+                        <OsButton Href="@Invoicing.GetPdfUrl(_order.Id)" Target="_blank" FullWidth="true"
+                                  StartIcon="@Icons.Material.Outlined.PictureAsPdf">
+                            @L["OrderDetail.ViewInvoice"]
+                        </OsButton>
+                        <OsButton Href="@Invoicing.GetDownloadUrl(_order.Id)" FullWidth="true"
+                                  Variant="OsButton.ButtonVariant.Secondary"
+                                  StartIcon="@Icons.Material.Outlined.Download"
+                                  Class="mt-2">
+                            @L["OrderDetail.DownloadInvoice"]
+                        </OsButton>
+                    }
+                    else
+                    {
+                        <p class="os-muted">@L["OrderDetail.InvoicePending"]</p>
+                    }
+                </OsCard>
+                </aside>
+        </div>
+    </OsSection>
 }
 
 @code {
@@ -196,6 +178,13 @@ else
     private bool _loading = true;
 
     private decimal Subtotal => _order?.Items.Sum(i => i.Quantity * i.Price) ?? 0m;
+    private string ShortId => OrderId.ToString("N")[..8].ToUpperInvariant();
+
+    private IReadOnlyList<OsCrumb> Crumbs =>
+    [
+        new(L["Account.MyOrders"], "/account/orders"),
+        new($"#{ShortId}"),
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -205,7 +194,7 @@ else
             _order = result.Value;
             if (!result.IsSuccess)
             {
-                Snackbar.Add(result.Error!.Message, Severity.Error);
+                Snackbar.ShowApiError(result.Error);
                 return;
             }
 
@@ -220,28 +209,4 @@ else
             _loading = false;
         }
     }
-
-    private static Color GetStatusColor(string status) => status switch
-    {
-        "Created"    => Color.Warning,
-        "Pending"    => Color.Warning,
-        "Paid"       => Color.Info,
-        "Processing" => Color.Info,
-        "Shipped"    => Color.Primary,
-        "Delivered"  => Color.Success,
-        "Cancelled"  => Color.Error,
-        _            => Color.Default,
-    };
-
-    private string GetStatusLabel(string status) => status switch
-    {
-        "Created"    => L["OrderStatus.Created"],
-        "Pending"    => L["OrderStatus.Pending"],
-        "Paid"       => L["OrderStatus.Paid"],
-        "Processing" => L["OrderStatus.Processing"],
-        "Shipped"    => L["OrderStatus.Shipped"],
-        "Delivered"  => L["OrderStatus.Delivered"],
-        "Cancelled"  => L["OrderStatus.Cancelled"],
-        _            => status,
-    };
 }

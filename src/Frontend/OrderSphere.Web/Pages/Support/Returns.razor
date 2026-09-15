@@ -1,95 +1,36 @@
 @page "/returns"
+@inject IStringLocalizer<AppStrings> L
 
-<PageTitle>Rückgabe — OrderSphere</PageTitle>
+<PageTitle>@L["Returns.PageTitle"]</PageTitle>
 
-<section class="section-hero-sm">
-    <MudContainer>
-        <MudText Typo="Typo.h2" Align="Align.Center" Class="hero-title">
-            Rückgabe &amp; Widerruf
-        </MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" Class="hero-subtitle-muted mt-2">
-            14 Tage Widerrufsrecht. Schnell, einfach, kostenlos.
-        </MudText>
-    </MudContainer>
-</section>
+<ArticleLayout Eyebrow="@L["Footer.Service"]"
+               Title="@L["Returns.Title"]"
+               Lede="@L["Returns.Lede"]"
+               Numbered="false"
+               Sections="_sections" />
 
-<section class="page-section">
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Elevation="0" Class="pa-8 surface-card-lg">
+@code {
+    // Returns.Step1..Step4 in AppStrings.
+    private const int StepCount = 4;
 
-            <MudText Typo="Typo.h5" Class="mb-6" Style="font-weight: 600;">
-                So gibst du zurück
-            </MudText>
+    private IReadOnlyList<ArticleSection> _sections = [];
 
-            <MudStack Spacing="6">
-                <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Start">
-                    <IconBadge CssClass="icon-bubble-primary">
-                        <MudText Typo="Typo.h6" Style="color: inherit; font-weight: 700;">1</MudText>
-                    </IconBadge>
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                            Rückgabe anmelden
-                        </MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">
-                            Schreibe uns eine kurze E-Mail an support@ordersphere.dev mit deiner Bestellnummer und dem Grund der Rückgabe.
-                        </MudText>
-                    </MudStack>
-                </MudStack>
+    protected override void OnInitialized() => _sections =
+    [
+        new("steps", L["Returns.StepsTitle"], Content: Steps),
+        new("notes", L["Returns.NotesTitle"], new MarkupString(L["Returns.NotesBody"])),
+    ];
 
-                <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Start">
-                    <IconBadge CssClass="icon-bubble-primary">
-                        <MudText Typo="Typo.h6" Style="color: inherit; font-weight: 700;">2</MudText>
-                    </IconBadge>
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                            Versandlabel erhalten
-                        </MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">
-                            Wir senden dir innerhalb eines Werktags ein kostenloses Rücksende-Etikett zu. Einfach ausdrucken und auf dem Paket befestigen.
-                        </MudText>
-                    </MudStack>
-                </MudStack>
-
-                <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Start">
-                    <IconBadge CssClass="icon-bubble-primary">
-                        <MudText Typo="Typo.h6" Style="color: inherit; font-weight: 700;">3</MudText>
-                    </IconBadge>
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                            Paket abgeben
-                        </MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">
-                            Gib das Paket bei einer Filiale unseres Versandpartners ab. Eine Quittung erhältst du dort als Beleg.
-                        </MudText>
-                    </MudStack>
-                </MudStack>
-
-                <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Start">
-                    <IconBadge CssClass="icon-bubble-primary">
-                        <MudText Typo="Typo.h6" Style="color: inherit; font-weight: 700;">4</MudText>
-                    </IconBadge>
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                            Erstattung
-                        </MudText>
-                        <MudText Typo="Typo.body2" Class="text-muted">
-                            Sobald das Paket bei uns eingegangen ist, prüfen wir die Ware und erstatten dir den Kaufpreis innerhalb von 5 Werktagen auf dein Konto.
-                        </MudText>
-                    </MudStack>
-                </MudStack>
-            </MudStack>
-
-            <MudDivider Class="my-8" />
-
-            <MudText Typo="Typo.h6" Class="mb-3" Style="font-weight: 600;">
-                Wichtige Hinweise
-            </MudText>
-            <MudText Typo="Typo.body2" Class="text-muted">
-                • Die Widerrufsfrist beträgt 14 Tage ab Erhalt der Ware.<br />
-                • Artikel sollten möglichst in Originalverpackung zurückgesendet werden.<br />
-                • Das gesetzliche Widerrufsrecht und unsere Kulanzregelung sind voneinander unabhängig.<br />
-                • Vollständige Bedingungen findest du in unseren <MudLink Href="/terms">AGB</MudLink>.
-            </MudText>
-        </MudPaper>
-    </MudContainer>
-</section>
+    private RenderFragment Steps => @<ol class="os-steps">
+        @for (var n = 1; n <= StepCount; n++)
+        {
+            <li class="os-steps__item">
+                <span class="os-steps__num" aria-hidden="true">@n.ToString("00")</span>
+                <div>
+                    <h3 class="os-steps__title">@L[$"Returns.Step{n}.Title"]</h3>
+                    <p class="os-steps__body">@L[$"Returns.Step{n}.Body"]</p>
+                </div>
+            </li>
+        }
+    </ol>;
+}

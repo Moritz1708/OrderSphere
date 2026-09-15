@@ -1,0 +1,17 @@
+@* Placeholder for a stack of list rows or cards (orders, addresses, history). *@
+<OsSkeletonGroup Class="os-list-skeleton">
+    @for (var i = 0; i < Rows; i++)
+    {
+        <div class="os-card os-card--paper os-card--pad-md os-list-skeleton__row">
+            <div class="os-list-skeleton__main">
+                <OsSkeleton Width="45%" Height="16px" />
+                <OsSkeleton Width="70%" Height="12px" />
+            </div>
+            <OsSkeleton Width="88px" Height="26px" />
+        </div>
+    }
+</OsSkeletonGroup>
+
+@code {
+    [Parameter] public int Rows { get; set; } = 4;
+}
