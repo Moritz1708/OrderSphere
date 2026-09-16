@@ -3,9 +3,14 @@
 Deploying OrderSphere into a dedicated Azure DEV environment via the Azure Developer CLI
 (`azd`). OrderSphere is a .NET Aspire application: the AppHost manifest
 (`src/Hosting/OrderSphere.AppHost`) is the single source of the resource topology. `azd` reads the
-manifest and generates the Bicep templates from it (Container Apps, PostgreSQL Flexible Server,
-Service Bus, Azure Managed Redis, Key Vault). There is deliberately **no** hand-maintained
-`infra/` folder.
+manifest and generates the Bicep templates from it (Container Apps, Service Bus, Azure Managed
+Redis, Key Vault). There is deliberately **no** hand-maintained `infra/` folder.
+
+Postgres deploys as a container inside Container Apps by default, in every azd environment —
+some subscriptions (including the one behind `ordersphere-dev`) reject Azure PostgreSQL Flexible
+Server. An environment whose subscription does support Flexible Server can opt in explicitly via
+`azd env set Deployment__UseManagedPostgres true` before its first `azd up`/`azd provision`; see
+[deploy-ordersphere-budget.md](deploy-ordersphere-budget.md) for a deployment that does this.
 
 Auth0 is **not** part of this deployment. It is an external, managed identity provider (tenant
 `ordersphere-dev.eu.auth0.com`). The coupling is solely through the issuer URL (`oidc-authority`

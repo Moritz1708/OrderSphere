@@ -86,6 +86,105 @@ hooks:
           fi
         fi
 
+        # Budget scaling — opt-in via `azd env set BUDGET_SCALING true`. Aspire's typed model for
+        # Azure Container Apps requires an explicit AddAzureContainerAppEnvironment (which this
+        # AppHost deliberately does not use — see AppHost.cs's Azure Search WithRoleAssignments
+        # comment), so scale-to-zero and CPU/memory sizing are applied imperatively here instead,
+        # the same "typed model can't express it" pattern as the CMK/Foundry steps above.
+        #
+        # ordersphere-bff (external ingress) is kept warm to avoid a cold start on first page load.
+        # Every other HTTP-only service scales to zero on Container Apps' built-in HTTP scaler —
+        # no custom rule needed, it wakes on the next request.
+        #
+        # Six services also run a Service-Bus-queue-consuming BackgroundService (queue name is
+        # each Workers/*Processor.cs's QueueName constant) that is NOT driven by inbound HTTP, so
+        # scaling them to zero WITHOUT a KEDA azure-servicebus scale rule would leave queued
+        # messages unprocessed until unrelated traffic happened to wake the app. Each gets one
+        # identity-authenticated scale rule per queue it consumes instead, so it wakes on its own
+        # when a message arrives and falls back to zero once drained.
+        #
+        # MaxReplicas is capped at 3 everywhere to bound worst-case cost from a retry storm/spike.
+        # Also caps Log Analytics ingestion at 1 GB/day so a logging bug cannot blow the budget via
+        # Application Insights ingestion cost.
+        #
+        # VERIFY AFTER THE FIRST REAL azd provision/deploy: (1) that repeated --scale-rule-name
+        # calls on the same app upsert additional named rules rather than replacing the previous
+        # one (az containerapp show --name <app> --query properties.template.scale.rules should
+        # list all rules for that app); (2) that --scale-rule-identity with the shared user-
+        # assigned identity actually authenticates KEDA's queue-depth check (send a message to a
+        # queue while its consumer sits at 0 replicas and confirm a replica starts). Neither has
+        # been exercised against a live Container App by this change.
+        if [ "$BUDGET_SCALING" = "true" ] && [ -n "$AZURE_RESOURCE_GROUP" ]; then
+          echo "Applying budget Container Apps scaling..."
+
+          SB_NAMESPACE=$(az resource list --resource-group "$AZURE_RESOURCE_GROUP" \
+            --resource-type Microsoft.ServiceBus/namespaces --query "[0].name" -o tsv)
+          IDENTITY_ID=$(az resource list --resource-group "$AZURE_RESOURCE_GROUP" \
+            --resource-type Microsoft.ManagedIdentity/userAssignedIdentities --query "[0].id" -o tsv)
+
+          # Defensive: KEDA's azure-servicebus scaler needs read access to queue depth. Aspire's
+          # own generated role assignment for WithReference(serviceBus) should already cover this
+          # for the consuming apps — grant it again here (idempotent) in case it doesn't.
+          if [ -n "$SB_NAMESPACE" ] && [ -n "$IDENTITY_ID" ]; then
+            IDENTITY_PRINCIPAL_ID=$(az identity show --ids "$IDENTITY_ID" --query principalId -o tsv)
+            SB_ID=$(az servicebus namespace show --name "$SB_NAMESPACE" \
+              --resource-group "$AZURE_RESOURCE_GROUP" --query id -o tsv)
+            az role assignment create --assignee-object-id "$IDENTITY_PRINCIPAL_ID" \
+              --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Owner" \
+              --scope "$SB_ID" --only-show-errors || true
+          fi
+
+          for APP in ordersphere-catalog ordersphere-basket ordersphere-userprofile \
+                     ordersphere-partners ordersphere-webhooks ordersphere-apigateway \
+                     ordersphere-mcp ordersphere-ordering ordersphere-payment; do
+            az containerapp update --name "$APP" --resource-group "$AZURE_RESOURCE_GROUP" \
+              --min-replicas 0 --max-replicas 3 --cpu 0.25 --memory 0.5Gi \
+              --only-show-errors || true
+          done
+
+          az containerapp update --name ordersphere-bff --resource-group "$AZURE_RESOURCE_GROUP" \
+            --min-replicas 1 --max-replicas 3 --cpu 0.25 --memory 0.5Gi --only-show-errors || true
+
+          if [ -n "$SB_NAMESPACE" ] && [ -n "$IDENTITY_ID" ]; then
+            add_sb_scale_rule() {
+              az containerapp update --name "$1" --resource-group "$AZURE_RESOURCE_GROUP" \
+                --min-replicas 0 --max-replicas 3 --cpu 0.25 --memory 0.5Gi \
+                --scale-rule-name "$2" --scale-rule-type azure-servicebus \
+                --scale-rule-metadata "queueName=$3" "namespace=$SB_NAMESPACE" "messageCount=1" \
+                --scale-rule-identity "$IDENTITY_ID" --only-show-errors || true
+            }
+
+            add_sb_scale_rule ordersphere-ordering-worker sb-orders orders
+            add_sb_scale_rule ordersphere-ordering-worker sb-payment-results payment-results
+            add_sb_scale_rule ordersphere-ordering-worker sb-payment-refunds payment-refunds
+            add_sb_scale_rule ordersphere-ordering-worker sb-order-history order-history
+            add_sb_scale_rule ordersphere-ordering-worker sb-erasure-ordering erasure-ordering
+
+            add_sb_scale_rule ordersphere-notification-worker sb-notification-orders notification-orders
+            add_sb_scale_rule ordersphere-notification-worker sb-invoice-ready invoice-ready
+
+            add_sb_scale_rule ordersphere-webhooks-worker sb-webhook-events webhook-events
+
+            add_sb_scale_rule ordersphere-advisory sb-erasure-advisory erasure-advisory
+
+            add_sb_scale_rule ordersphere-invoicing sb-invoice-generation invoice-generation
+
+            add_sb_scale_rule ordersphere-payment-worker sb-refund-requested refund-requested
+            add_sb_scale_rule ordersphere-payment-worker sb-payment-requests payment-requests
+            add_sb_scale_rule ordersphere-payment-worker sb-order-confirmation-failed order-confirmation-failed
+            add_sb_scale_rule ordersphere-payment-worker sb-erasure-payment erasure-payment
+          else
+            echo "Skipping Service Bus KEDA scale rules: namespace or managed identity not found."
+          fi
+
+          WORKSPACE_NAME=$(az resource list --resource-group "$AZURE_RESOURCE_GROUP" \
+            --resource-type Microsoft.OperationalInsights/workspaces --query "[0].name" -o tsv)
+          if [ -n "$WORKSPACE_NAME" ]; then
+            az monitor log-analytics workspace update --resource-group "$AZURE_RESOURCE_GROUP" \
+              --workspace-name "$WORKSPACE_NAME" --daily-quota-gb 1 --only-show-errors || true
+          fi
+        fi
+
         if [ -z "$AZURE_FOUNDRY_RESOURCE_ID" ] || [ -z "$MANAGED_IDENTITY_CLIENT_ID" ]; then
           echo "Skipping Foundry role grant: AZURE_FOUNDRY_RESOURCE_ID or MANAGED_IDENTITY_CLIENT_ID not set."
           exit 0
@@ -140,6 +239,77 @@ hooks:
                 }
               }
             }
+          }
+        }
+
+        # Budget scaling — opt-in via `azd env set BUDGET_SCALING true`. See the posix branch above
+        # for the full rationale and the "verify after first real provision" caveats (KEDA scale-
+        # rule upsert behavior and --scale-rule-identity auth have not been exercised live).
+        if ($env:BUDGET_SCALING -eq "true" -and $env:AZURE_RESOURCE_GROUP) {
+          Write-Host "Applying budget Container Apps scaling..."
+
+          $sbNamespace = az resource list --resource-group $env:AZURE_RESOURCE_GROUP `
+            --resource-type Microsoft.ServiceBus/namespaces --query "[0].name" -o tsv
+          $identityId = az resource list --resource-group $env:AZURE_RESOURCE_GROUP `
+            --resource-type Microsoft.ManagedIdentity/userAssignedIdentities --query "[0].id" -o tsv
+
+          if ($sbNamespace -and $identityId) {
+            $identityPrincipalId = az identity show --ids $identityId --query principalId -o tsv
+            $sbId = az servicebus namespace show --name $sbNamespace `
+              --resource-group $env:AZURE_RESOURCE_GROUP --query id -o tsv
+            az role assignment create --assignee-object-id $identityPrincipalId `
+              --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Owner" `
+              --scope $sbId --only-show-errors
+          }
+
+          $httpOnlyApps = @("ordersphere-catalog", "ordersphere-basket", "ordersphere-userprofile",
+            "ordersphere-partners", "ordersphere-webhooks", "ordersphere-apigateway",
+            "ordersphere-mcp", "ordersphere-ordering", "ordersphere-payment")
+          foreach ($app in $httpOnlyApps) {
+            az containerapp update --name $app --resource-group $env:AZURE_RESOURCE_GROUP `
+              --min-replicas 0 --max-replicas 3 --cpu 0.25 --memory 0.5Gi --only-show-errors
+          }
+
+          az containerapp update --name ordersphere-bff --resource-group $env:AZURE_RESOURCE_GROUP `
+            --min-replicas 1 --max-replicas 3 --cpu 0.25 --memory 0.5Gi --only-show-errors
+
+          if ($sbNamespace -and $identityId) {
+            function Add-SbScaleRule($appName, $ruleName, $queueName) {
+              az containerapp update --name $appName --resource-group $env:AZURE_RESOURCE_GROUP `
+                --min-replicas 0 --max-replicas 3 --cpu 0.25 --memory 0.5Gi `
+                --scale-rule-name $ruleName --scale-rule-type azure-servicebus `
+                --scale-rule-metadata "queueName=$queueName" "namespace=$sbNamespace" "messageCount=1" `
+                --scale-rule-identity $identityId --only-show-errors
+            }
+
+            Add-SbScaleRule ordersphere-ordering-worker sb-orders orders
+            Add-SbScaleRule ordersphere-ordering-worker sb-payment-results payment-results
+            Add-SbScaleRule ordersphere-ordering-worker sb-payment-refunds payment-refunds
+            Add-SbScaleRule ordersphere-ordering-worker sb-order-history order-history
+            Add-SbScaleRule ordersphere-ordering-worker sb-erasure-ordering erasure-ordering
+
+            Add-SbScaleRule ordersphere-notification-worker sb-notification-orders notification-orders
+            Add-SbScaleRule ordersphere-notification-worker sb-invoice-ready invoice-ready
+
+            Add-SbScaleRule ordersphere-webhooks-worker sb-webhook-events webhook-events
+
+            Add-SbScaleRule ordersphere-advisory sb-erasure-advisory erasure-advisory
+
+            Add-SbScaleRule ordersphere-invoicing sb-invoice-generation invoice-generation
+
+            Add-SbScaleRule ordersphere-payment-worker sb-refund-requested refund-requested
+            Add-SbScaleRule ordersphere-payment-worker sb-payment-requests payment-requests
+            Add-SbScaleRule ordersphere-payment-worker sb-order-confirmation-failed order-confirmation-failed
+            Add-SbScaleRule ordersphere-payment-worker sb-erasure-payment erasure-payment
+          } else {
+            Write-Host "Skipping Service Bus KEDA scale rules: namespace or managed identity not found."
+          }
+
+          $workspaceName = az resource list --resource-group $env:AZURE_RESOURCE_GROUP `
+            --resource-type Microsoft.OperationalInsights/workspaces --query "[0].name" -o tsv
+          if ($workspaceName) {
+            az monitor log-analytics workspace update --resource-group $env:AZURE_RESOURCE_GROUP `
+              --workspace-name $workspaceName --daily-quota-gb 1 --only-show-errors
           }
         }
 
