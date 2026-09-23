@@ -15,6 +15,8 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
 
         builder.HasIndex(p => p.OrderId).IsUnique();
         builder.HasIndex(p => p.CorrelationId);
+        // Stripe webhooks for charges reference only the PaymentIntent id.
+        builder.HasIndex(p => p.TransactionId);
 
         // Money mapped onto the existing "Amount"/"Currency" columns — no schema change.
         builder.ComplexProperty(p => p.Amount, b =>

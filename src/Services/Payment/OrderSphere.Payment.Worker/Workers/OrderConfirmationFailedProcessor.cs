@@ -132,7 +132,8 @@ public sealed class OrderConfirmationFailedProcessor(
                 throw new InvalidOperationException(
                     $"No provider for method '{payment.PaymentMethod}' to refund order {evt.OrderId}.");
 
-            var refund = await provider.RefundAsync(payment.TransactionId!, payment.Amount, ct);
+            // One confirmation failure per order, so a fixed reference makes the refund idempotent.
+            var refund = await provider.RefundAsync(payment.TransactionId!, payment.Amount, "ocf", ct);
             if (refund.IsFailure)
                 // Throw so Service Bus redelivers — a transient refund failure must not silently drop.
                 throw new InvalidOperationException(

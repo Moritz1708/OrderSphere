@@ -13,7 +13,7 @@ namespace OrderSphere.Payment.Tests;
 public sealed class PaymentProviderTests
 {
     private static readonly PaymentRequest Request =
-        new(Guid.NewGuid(), 49.99m, "EUR", "customer@example.com");
+        new(Guid.NewGuid(), 49.99m, "EUR", "customer@example.com", Guid.Empty, Guid.NewGuid());
 
     private static IPaymentProvider CreditCard() =>
         new CreditCardPaymentProvider(NullLogger<CreditCardPaymentProvider>.Instance);
@@ -72,7 +72,12 @@ public sealed class PaymentProviderTests
     [Theory]
     [MemberData(nameof(AllProviders))]
     public async Task Refund_ReturnsSuccess(IPaymentProvider provider)
-        => (await provider.RefundAsync("txn-123", 49.99m)).IsSuccess.Should().BeTrue();
+        => (await provider.RefundAsync("txn-123", 49.99m, "ref-1")).IsSuccess.Should().BeTrue();
+
+    [Theory]
+    [MemberData(nameof(AllProviders))]
+    public async Task Void_ReturnsSuccess(IPaymentProvider provider)
+        => (await provider.VoidAsync("txn-123")).IsSuccess.Should().BeTrue();
 
 
     private static PaymentProviderFactory BuildFactory() =>

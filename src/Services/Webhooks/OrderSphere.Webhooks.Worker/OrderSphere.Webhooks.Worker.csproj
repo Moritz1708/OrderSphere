@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\OrderSphere.BuildingBlocks.Contracts\OrderSphere.BuildingBlocks.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="OrderSphere.Webhooks.Tests" />
+  </ItemGroup>
+
 </Project>

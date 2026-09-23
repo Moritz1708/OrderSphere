@@ -66,7 +66,7 @@ public sealed class OrderConfirmationFailedProcessorTests
         await SeedCapturedPaymentAsync(context, orderId);
 
         var provider = Substitute.For<IPaymentProvider>();
-        provider.RefundAsync(Arg.Any<string>(), Arg.Any<decimal>(), Arg.Any<CancellationToken>())
+        provider.RefundAsync(Arg.Any<string>(), Arg.Any<decimal>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Result.Success());
         var factory = Substitute.For<IPaymentProviderFactory>();
         factory.GetProvider(Method).Returns(provider);
@@ -75,7 +75,7 @@ public sealed class OrderConfirmationFailedProcessorTests
             NewEvent(orderId), context, UnprocessedInbox(), factory, CancellationToken.None);
         await context.SaveChangesAsync();
 
-        await provider.Received(1).RefundAsync("cap-1", 49.99m, Arg.Any<CancellationToken>());
+        await provider.Received(1).RefundAsync("cap-1", 49.99m, "ocf", Arg.Any<CancellationToken>());
 
         var record = await context.Payments.SingleAsync(p => p.OrderId == OrderId.From(orderId));
         record.Status.Should().Be(PaymentStatus.Refunded);
@@ -116,7 +116,7 @@ public sealed class OrderConfirmationFailedProcessorTests
         await SeedCapturedPaymentAsync(context, orderId);
 
         var provider = Substitute.For<IPaymentProvider>();
-        provider.RefundAsync(Arg.Any<string>(), Arg.Any<decimal>(), Arg.Any<CancellationToken>())
+        provider.RefundAsync(Arg.Any<string>(), Arg.Any<decimal>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Result.Failure(new Error("Payment.Refund", "Gateway timeout.")));
         var factory = Substitute.For<IPaymentProviderFactory>();
         factory.GetProvider(Method).Returns(provider);

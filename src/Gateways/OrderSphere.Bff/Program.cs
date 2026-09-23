@@ -100,12 +100,9 @@ app.UseAuthorization();
 app.UseOrderSphereRequestLogging();
 
 app.MapGet("/bff/login", (HttpContext ctx, string? returnUrl) =>
-{
-    var redirect = string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl;
-    return Results.Challenge(
-        new AuthenticationProperties { RedirectUri = redirect },
-        [OpenIdConnectDefaults.AuthenticationScheme]);
-});
+    Results.Challenge(
+        new AuthenticationProperties { RedirectUri = LocalReturnUrl.Sanitize(returnUrl) },
+        [OpenIdConnectDefaults.AuthenticationScheme]));
 
 app.MapPost("/bff/logout", (HttpContext _) =>
     Results.SignOut(

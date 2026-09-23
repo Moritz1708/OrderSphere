@@ -25,25 +25,18 @@ public sealed class UpdateOrderStatusCommandHandler(
             if (order is null)
                 return Result.Failure(OrderErrors.OrderNotFoundError);
 
-            try
+            var transition = request.NewStatus switch
             {
-                switch (request.NewStatus)
-                {
-                    case OrderStatus.Shipped:
-                        order.MarkShipped();
-                        break;
-                    case OrderStatus.Delivered:
-                        order.MarkDelivered();
-                        break;
-                    default:
-                        return Result.Failure(OrderErrors.InvalidStatusTransition);
-                }
-            }
-            catch (InvalidOperationException ex)
+                OrderStatus.Shipped => order.MarkShipped(),
+                OrderStatus.Delivered => order.MarkDelivered(),
+                _ => Result.Failure(OrderErrors.InvalidStatusTransition)
+            };
+
+            if (transition.IsFailure)
             {
-                logger.LogWarning(ex, "Invalid status transition for order {OrderId} to {NewStatus}",
-                    request.OrderId, request.NewStatus);
-                return Result.Failure(OrderErrors.InvalidStatusTransition);
+                logger.LogWarning("Invalid status transition for order {OrderId} from {Status} to {NewStatus}",
+                    request.OrderId, order.Status, request.NewStatus);
+                return transition;
             }
 
             await eventStore.AppendAsync(order, cancellationToken);

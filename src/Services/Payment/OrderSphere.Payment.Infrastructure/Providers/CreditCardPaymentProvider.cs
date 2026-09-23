@@ -25,7 +25,14 @@ internal sealed class CreditCardPaymentProvider(ILogger<CreditCardPaymentProvide
         return Task.FromResult(Result<PaymentProviderResult>.Success(new PaymentProviderResult(transactionId)));
     }
 
-    public Task<Result> RefundAsync(string transactionId, decimal amount, CancellationToken ct = default)
+    public Task<Result> VoidAsync(string transactionId, CancellationToken ct = default)
+    {
+        logger.LogInformation("CreditCard authorization voided. TransactionId: {TransactionId}", transactionId);
+
+        return Task.FromResult(Result.Success());
+    }
+
+    public Task<Result> RefundAsync(string transactionId, decimal amount, string refundReference, CancellationToken ct = default)
     {
         logger.LogInformation("CreditCard payment refunded. TransactionId: {TransactionId}, Amount: {Amount}",
             transactionId, amount);

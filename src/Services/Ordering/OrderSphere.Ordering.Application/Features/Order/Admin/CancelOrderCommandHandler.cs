@@ -31,11 +31,11 @@ public sealed class CancelOrderCommandHandler(
             //   Paid/Shipped → the reservation was confirmed (on-hand stock decremented); restore it.
             var wasConfirmed = order.Status is not OrderStatus.Created;
 
-            try { order.Cancel(); }
-            catch (InvalidOperationException ex)
+            var cancel = order.Cancel();
+            if (cancel.IsFailure)
             {
-                logger.LogWarning(ex, "Cannot cancel order {OrderId} in current status", request.OrderId);
-                return Result.Failure(OrderErrors.InvalidStatusTransition);
+                logger.LogWarning("Cannot cancel order {OrderId} in status {Status}", request.OrderId, order.Status);
+                return cancel;
             }
 
             if (wasConfirmed)

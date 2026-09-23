@@ -112,33 +112,12 @@ public sealed class WebhookEventProcessor(
                 return;
             }
 
-            // Find all active subscriptions that listen to this event type.
-            var eventTypeName = webhookEventType.Value.ToString();
-            var subscriptions = await db.Subscriptions
-                .Where(s => s.IsActive && s.Events.Contains(eventTypeName))
-                .ToListAsync(args.CancellationToken);
-
-            // Filter precisely (Contains is a substring match; verify exact enum membership).
-            var matchingSubscriptions = subscriptions
-                .Where(s => s.ListensTo(webhookEventType.Value))
-                .ToList();
-
             // "No subscriber" is a normal outcome, not a special case: it takes the same path and
             // produces the same Information record with Count = 0. Previously it returned early
             // with only a Debug line, which made a completed message indistinguishable from a
             // processor that never ran — see docs/logging.md, one Information record per message.
-            //
-            // Create a delivery record for each matching subscription.
-            foreach (var sub in matchingSubscriptions)
-            {
-                var delivery = new WebhookDelivery(
-                    sub.Id,
-                    eventTypeName,
-                    eventId,
-                    body);
-
-                db.Deliveries.Add(delivery);
-            }
+            var created = await StageDeliveriesAsync(
+                db, webhookEventType.Value, eventId, body, args.CancellationToken);
 
             await db.SaveChangesAsync(args.CancellationToken);
             await inboxStore.MarkAsProcessedAsync(eventId, eventType, args.CancellationToken);
@@ -146,13 +125,43 @@ public sealed class WebhookEventProcessor(
 
             logger.LogInformation(
                 "Created {Count} webhook deliveries for event {EventId} ({EventType}).",
-                matchingSubscriptions.Count, eventId, eventTypeName);
+                created, eventId, webhookEventType.Value);
         }
         catch (Exception ex)
         {
             logger.MessageProcessingFailed(ex);
             await args.AbandonMessageAsync(args.Message, cancellationToken: args.CancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Stages one delivery per active subscription that listens to the event type and belongs to
+    /// the customer the event is about. Subscriptions are owned by a customer and the payload is
+    /// that customer's data, so an event without a customer id (published before the property
+    /// existed) is delivered to nobody rather than to every subscriber.
+    /// </summary>
+    internal static async Task<int> StageDeliveriesAsync(
+        WebhooksDbContext db,
+        WebhookEventType webhookEventType,
+        Guid eventId,
+        string body,
+        CancellationToken ct)
+    {
+        if (ExtractCustomerId(body) is not { } customerId)
+            return 0;
+
+        var owner = CustomerId.From(customerId);
+        var eventTypeName = webhookEventType.ToString();
+        var subscriptions = await db.Subscriptions
+            .Where(s => s.IsActive && s.CustomerId == owner && s.Events.Contains(eventTypeName))
+            .ToListAsync(ct);
+
+        // Contains is a substring match; verify exact enum membership.
+        var matching = subscriptions.Where(s => s.ListensTo(webhookEventType)).ToList();
+        foreach (var sub in matching)
+            db.Deliveries.Add(new WebhookDelivery(sub.Id, eventTypeName, eventId, body));
+
+        return matching.Count;
     }
 
     private Task ProcessErrorAsync(ProcessErrorEventArgs args)
@@ -212,6 +221,25 @@ public sealed class WebhookEventProcessor(
         catch { /* Body already validated as JSON by ExtractEventId; be defensive anyway. */ }
 
         return TenantId.Default;
+    }
+
+    /// <summary>Reads the optional <c>CustomerId</c> the publishing service puts on the event.</summary>
+    private static Guid? ExtractCustomerId(string body)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("CustomerId", out var prop)
+                && prop.ValueKind == JsonValueKind.String
+                && prop.TryGetGuid(out var customerId)
+                && customerId != Guid.Empty)
+            {
+                return customerId;
+            }
+        }
+        catch { /* Body already validated as JSON by ExtractEventId; be defensive anyway. */ }
+
+        return null;
     }
 
     private static WebhookEventType? MapToWebhookEventType(string eventType) => eventType switch
