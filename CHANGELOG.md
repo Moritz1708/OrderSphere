@@ -30,3 +30,29 @@ manually.
   architecture; gRPC/OpenAPI/NuGet contract packages marked out of scope.
 - `docs/architecture.md`: corrected the Service Bus queue inventory to match `AppHost.cs`.
 - `docs/deploy-ordersphere.md`: fixed step numbering.
+- `Order` status transitions (`Confirm`, `MarkShipped`, `MarkDelivered`, `Cancel`) and
+  `PaymentRecord` transitions return `Result` and reject invalid transitions instead of throwing
+  or applying them.
+- `OrderStatusChangedIntegrationEvent` carries an optional `CustomerId` (additive).
+- Stripe client: 30 s timeout with 2 network retries (SDK default 80 s), keeping one payment run
+  inside the Service Bus lock renewal window.
+
+### Fixed
+- Stripe calls carry deterministic idempotency keys; a redelivered payment request no longer
+  creates a second PaymentIntent. Only declines and invalid requests are reported as failures;
+  transient faults are retried through Service Bus redelivery.
+- A failed capture releases the authorization and keeps the PaymentIntent id on the payment record.
+- The Stripe webhook is reachable (`/webhooks/stripe` on the BFF), finds payments by order or intent,
+  asks Stripe to retry while the record does not exist yet, rejects a missing signature with 400
+  instead of 500, and applies only valid status transitions.
+- A payment result for an already cancelled order no longer re-confirms it; a captured payment on a
+  cancelled order is refunded.
+- Admin coupon management is routed through the API Gateway (was 404).
+
+### Security
+- Webhook subscriptions only receive events of their own customer (previously every subscriber of
+  an event type received all customers' events).
+- Webhook target URLs are restricted to public HTTPS hosts, checked on save and again for every
+  resolved address at connect time; redirects are not followed; failed deliveries no longer store
+  the target's response body.
+- `/bff/login` only accepts a local `returnUrl` (open redirect).
