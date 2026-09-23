@@ -40,6 +40,34 @@ public sealed class CreateSubscriptionCommandValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("https://127.0.0.1/")]
+    [InlineData("https://localhost/hook")]
+    [InlineData("https://ordersphere-catalog/api/v1/products")]
+    [InlineData("https://169.254.169.254/latest/meta-data")]
+    [InlineData("https://10.0.0.5/")]
+    [InlineData("https://[::1]/")]
+    [InlineData("https://user:pw@example.com/hook")]
+    public async Task Validate_InternalTarget_Fails(string url)
+    {
+        var result = await _validator.ValidateAsync(ValidCommand(url: url));
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Validate_OverlongUrl_Fails()
+    {
+        var result = await _validator.ValidateAsync(ValidCommand(url: "https://example.com/" + new string('a', 2048)));
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Validate_UndefinedEventType_Fails()
+    {
+        var result = await _validator.ValidateAsync(ValidCommand(events: [(WebhookEventType)999]));
+        result.IsValid.Should().BeFalse();
+    }
+
 
     [Fact]
     public async Task Validate_EmptyEvents_Fails()

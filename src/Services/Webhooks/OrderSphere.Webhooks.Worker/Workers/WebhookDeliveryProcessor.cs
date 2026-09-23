@@ -149,9 +149,10 @@ public sealed class WebhookDeliveryProcessor(
             }
             else
             {
-                var body = await response.Content.ReadAsStringAsync(ct);
-                var error = $"HTTP {statusCode}: {body}";
-                delivery.RecordFailure(statusCode, error);
+                // The response body is deliberately not stored: deliveries are readable by the
+                // subscriber through the API, so persisting it would echo whatever the target
+                // returned — including content of a host the subscriber should not reach.
+                delivery.RecordFailure(statusCode, $"HTTP {statusCode}");
                 WebhookMetrics.Failed.Add(1, new KeyValuePair<string, object?>("status", statusCode));
                 logger.LogWarning(
                     "Webhook delivery {DeliveryId} to {Url} failed with {StatusCode}. Attempt {Attempt}/{Max}.",
