@@ -37,7 +37,14 @@ public static class DependencyInjection
         var stripeApiKey = configuration.GetSection(StripeOptions.SectionName)["ApiKey"];
         if (!string.IsNullOrWhiteSpace(stripeApiKey))
         {
-            services.AddSingleton<Stripe.IStripeClient>(new Stripe.StripeClient(stripeApiKey));
+            // The SDK default (80 s timeout, 2 retries) lets one payment run far past the 5-minute
+            // Service Bus lock renewal. 30 s × 3 attempts keeps create + capture + cancel inside it;
+            // the idempotency keys make the SDK's own retries safe.
+            services.AddSingleton<Stripe.IStripeClient>(new Stripe.StripeClient(
+                stripeApiKey,
+                httpClient: new Stripe.SystemNetHttpClient(
+                    new HttpClient { Timeout = TimeSpan.FromSeconds(30) },
+                    maxNetworkRetries: 2)));
             services.AddSingleton<IPaymentProvider, StripePaymentProvider>();
         }
         else

@@ -135,7 +135,8 @@ public sealed class RefundRequestedProcessor(
                 throw new InvalidOperationException(
                     $"No provider for method '{payment.PaymentMethod}' to refund order {evt.OrderId}.");
 
-            var refund = await provider.RefundAsync(payment.TransactionId!, evt.Amount, ct);
+            // Keyed per return request, so a refund for one return never replays another's.
+            var refund = await provider.RefundAsync(payment.TransactionId!, evt.Amount, evt.ReturnRequestId.ToString("N"), ct);
             if (refund.IsFailure)
                 // Throw so Service Bus redelivers — a transient refund failure must not silently drop.
                 throw new InvalidOperationException(

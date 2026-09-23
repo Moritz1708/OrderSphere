@@ -379,6 +379,32 @@ the platform metric alert (`Service Bus DLQ`, row above) remains the source of t
    inbox (`EfInboxStore` only marks on success), so the replayed message is reprocessed normally.
 5. If the root cause is not fixed, the message dead-letters again — replay batches are capped
    (`DlqAdminOptions.ReplayBatchLimit`, default 50) to avoid a replay storm.
+6. **Payment queues with Stripe** (`payment-requests`, `order-confirmation-failed`,
+   `refund-requested`): every Stripe call carries an idempotency key derived from the order or
+   intent, and Stripe replays the stored result for at least 24 hours. Replay within 24 hours of the
+   original failure. After that, check the order's PaymentIntent in the Stripe dashboard first
+   (search by metadata `orderId`): Stripe no longer deduplicates, and a create/refund that already
+   succeeded would run a second time.
+
+### Stripe webhook
+
+Stripe delivers events to the BFF at `POST https://<bff-host>/webhooks/stripe` — the endpoint to
+register in the Stripe dashboard (or `stripe listen --forward-to https://localhost:<bff-port>/webhooks/stripe`
+locally). The route is anonymous on the BFF and the API Gateway and outside `/api`, so neither the
+session policy nor the CSRF check applies; the Payment API authenticates each request by its
+`Stripe-Signature` against `Stripe:WebhookSecret`.
+
+The endpoint answers:
+
+| Status | Meaning |
+|---|---|
+| 200 | Reconciled, already reconciled, out of date, or not an OrderSphere intent. |
+| 400 | Missing or invalid signature. |
+| 503 | The intent carries an OrderSphere `orderId`, but the payment worker has not stored the record yet. Stripe retries later. |
+
+A contradiction that no automatic transition resolves (for example `payment_intent.succeeded` for a
+payment recorded as failed) is logged at `Error` as EventId 5001 *Stripe reconciliation required*.
+Resolve it in the Stripe dashboard (refund or cancel the intent) and in the order.
 
 ---
 
