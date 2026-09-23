@@ -13,8 +13,12 @@ public static class LoginRedirect
 {
     public static string Url(string returnUrl) => $"/bff/login?returnUrl={Uri.EscapeDataString(returnUrl)}";
 
-    /// <summary>Full-page navigation to login, returning to the current page afterwards.</summary>
-    public static void Go(NavigationManager navigation) => navigation.NavigateTo(Url(navigation.Uri), forceLoad: true);
+    /// <summary>
+    /// Full-page navigation to login, returning to the current page afterwards. The return
+    /// target is sent as a local path: the BFF rejects absolute URLs to prevent open redirects.
+    /// </summary>
+    public static void Go(NavigationManager navigation) =>
+        navigation.NavigateTo(Url("/" + navigation.ToBaseRelativePath(navigation.Uri)), forceLoad: true);
 
     /// <summary>True when signed in; otherwise redirects to login and returns false.</summary>
     public static async Task<bool> EnsureSignedInAsync(Task<AuthenticationState>? authState, NavigationManager navigation)
