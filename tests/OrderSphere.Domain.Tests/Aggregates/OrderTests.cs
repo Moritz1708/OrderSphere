@@ -3,6 +3,7 @@ using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.BuildingBlocks.ValueObjects;
 using OrderSphere.Ordering.Domain.Entities;
 using OrderSphere.Ordering.Domain.Enums;
+using OrderSphere.Ordering.Domain.Errors;
 using OrderSphere.Ordering.Domain.OrderEvents;
 using OrderSphere.Ordering.Domain.ValueObjects;
 using Xunit;
@@ -102,13 +103,32 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void MarkShipped_FromCreated_Throws()
+    public void MarkShipped_FromCreated_FailsWithoutRaisingEvent()
     {
         var order = CreateOrder();
 
-        var act = () => order.MarkShipped();
+        var result = order.MarkShipped();
 
-        act.Should().Throw<InvalidOperationException>();
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(OrderErrors.InvalidStatusTransition);
+        order.Status.Should().Be(OrderStatus.Created);
+        order.UncommittedEvents.OfType<OrderShipped>().Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(OrderStatus.Paid)]
+    [InlineData(OrderStatus.Cancelled)]
+    public void Confirm_FromNonCreatedStatus_FailsAndKeepsStatus(OrderStatus status)
+    {
+        var order = CreateOrder();
+        if (status is OrderStatus.Paid) order.Confirm("T");
+        if (status is OrderStatus.Cancelled) order.Cancel();
+
+        var result = order.Confirm("T-2");
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(OrderErrors.InvalidStatusTransition);
+        order.Status.Should().Be(status);
     }
 
     [Fact]
@@ -124,14 +144,15 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void MarkDelivered_FromPaid_Throws()
+    public void MarkDelivered_FromPaid_Fails()
     {
         var order = CreateOrder();
         order.Confirm("T");
 
-        var act = () => order.MarkDelivered();
+        var result = order.MarkDelivered();
 
-        act.Should().Throw<InvalidOperationException>();
+        result.Error.Should().Be(OrderErrors.InvalidStatusTransition);
+        order.Status.Should().Be(OrderStatus.Paid);
     }
 
     [Fact]
@@ -146,27 +167,46 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Cancel_FromDelivered_Throws()
+    public void Cancel_FromDelivered_Fails()
     {
         var order = CreateOrder();
         order.Confirm("T");
         order.MarkShipped();
         order.MarkDelivered();
 
-        var act = () => order.Cancel();
+        var result = order.Cancel();
 
-        act.Should().Throw<InvalidOperationException>();
+        result.Error.Should().Be(OrderErrors.InvalidStatusTransition);
+        order.Status.Should().Be(OrderStatus.Delivered);
     }
 
     [Fact]
-    public void Cancel_AlreadyCancelled_Throws()
+    public void Cancel_AlreadyCancelled_Fails()
     {
         var order = CreateOrder();
         order.Cancel();
 
-        var act = () => order.Cancel();
+        var result = order.Cancel();
 
-        act.Should().Throw<InvalidOperationException>();
+        result.Error.Should().Be(OrderErrors.InvalidStatusTransition);
+        order.UncommittedEvents.OfType<OrderCancelled>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Rehydrate_FoldsHistoricSequencesTheGuardsNowReject()
+    {
+        // Streams written before the guards existed can contain Cancelled → Confirmed.
+        // Loading them must still work; only new transitions are guarded.
+        var source = CreateOrder();
+        var stream = source.UncommittedEvents
+            .Append(new OrderCancelled(DateTime.UtcNow))
+            .Append(new OrderConfirmed("T", DateTime.UtcNow))
+            .ToList();
+
+        var rebuilt = Order.Rehydrate(source.Id, stream);
+
+        rebuilt.Status.Should().Be(OrderStatus.Paid);
+        rebuilt.Version.Should().Be(3);
     }
 
     [Fact]

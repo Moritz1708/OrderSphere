@@ -1,7 +1,9 @@
 using OrderSphere.BuildingBlocks.Abstraction;
+using OrderSphere.BuildingBlocks.Primitives;
 using OrderSphere.BuildingBlocks.StronglyTypedIds;
 using OrderSphere.BuildingBlocks.ValueObjects;
 using OrderSphere.Ordering.Domain.Enums;
+using OrderSphere.Ordering.Domain.Errors;
 using OrderSphere.Ordering.Domain.OrderEvents;
 using OrderSphere.Ordering.Domain.ValueObjects;
 
@@ -93,34 +95,44 @@ public sealed class Order : IAggregateRoot
     public void SetShippingCost(decimal amount)
         => Raise(new ShippingCostSet(amount, DateTime.UtcNow));
 
-    public void Confirm(string trackingNumber)
-        => Raise(new OrderConfirmed(trackingNumber, DateTime.UtcNow));
+    // Transitions are guarded here and only here. Apply stays unguarded because it also folds
+    // persisted streams, which may already contain sequences these guards now reject.
 
-    public void MarkShipped()
+    /// <summary>Marks the order as paid. Only a freshly created order can be confirmed.</summary>
+    public Result Confirm(string trackingNumber)
+    {
+        if (Status is not OrderStatus.Created)
+            return Result.Failure(OrderErrors.InvalidStatusTransition);
+
+        Raise(new OrderConfirmed(trackingNumber, DateTime.UtcNow));
+        return Result.Success();
+    }
+
+    public Result MarkShipped()
     {
         if (Status is not OrderStatus.Paid)
-            throw new InvalidOperationException(
-                $"Order can only be marked as shipped when status is Paid (current: {Status}).");
+            return Result.Failure(OrderErrors.InvalidStatusTransition);
 
         Raise(new OrderShipped(DateTime.UtcNow));
+        return Result.Success();
     }
 
-    public void MarkDelivered()
+    public Result MarkDelivered()
     {
         if (Status is not OrderStatus.Shipped)
-            throw new InvalidOperationException(
-                $"Order can only be marked as delivered when status is Shipped (current: {Status}).");
+            return Result.Failure(OrderErrors.InvalidStatusTransition);
 
         Raise(new OrderDelivered(DateTime.UtcNow));
+        return Result.Success();
     }
 
-    public void Cancel()
+    public Result Cancel()
     {
         if (Status is OrderStatus.Delivered or OrderStatus.Cancelled)
-            throw new InvalidOperationException(
-                $"Order in status {Status} cannot be cancelled.");
+            return Result.Failure(OrderErrors.InvalidStatusTransition);
 
         Raise(new OrderCancelled(DateTime.UtcNow));
+        return Result.Success();
     }
 
     /// <summary>Clears the uncommitted buffer once the store has persisted the events.</summary>

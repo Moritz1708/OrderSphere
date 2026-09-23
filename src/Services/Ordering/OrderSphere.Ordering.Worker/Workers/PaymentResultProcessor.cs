@@ -121,6 +121,12 @@ public sealed class PaymentResultProcessor(
         // Tracked, so the SaveChanges inside MarkAsProcessedAsync persists it atomically.
         var saga = await context.OrderSagas.FirstOrDefaultAsync(s => s.CorrelationId == evt.CorrelationId, ct);
 
+        // The order may have left Created before the payment result arrived (admin cancellation,
+        // or a second result for an already settled order). Decide before touching the reservation:
+        // Catalog's confirm answers 204 even when no active hold is left to confirm.
+        if (order.Status is not OrderStatus.Created)
+            return await HandleResultForSettledOrderAsync(evt, order, saga, catalogClient, context, eventStore, inboxStore, ct);
+
         if (evt.Succeeded)
         {
             // Confirm the stock reservation (decrements on-hand stock) before persisting the
@@ -139,10 +145,17 @@ public sealed class PaymentResultProcessor(
                     throw new InvalidOperationException(
                         $"Reservation confirm failed transiently (delivery {deliveryCount}) for order {order.Id} (correlation {order.CorrelationId}): {confirm.Error.Code}");
 
-                return await CompensateConfirmationFailureAsync(evt, order, saga, catalogClient, context, eventStore, inboxStore, ct);
+                return await CompensateConfirmationFailureAsync(
+                    evt, order, saga, catalogClient, context, eventStore, inboxStore,
+                    "Reservation confirm conflict (stock can no longer cover the reservation); refunding payment.",
+                    cancelOrder: true, ct);
             }
 
-            order.Confirm(TrackingNumberGenerator.Generate());
+            // Status was checked above; a failure here is a programming error, not a business outcome.
+            var confirmed = order.Confirm(TrackingNumberGenerator.Generate());
+            if (confirmed.IsFailure)
+                throw new InvalidOperationException($"Order {order.Id} could not be confirmed from status {order.Status}.");
+
             saga?.MarkConfirmed();
             OrderingMetrics.OrdersConfirmed.Add(1);
             OrderingMetrics.RecordSagaTransition(nameof(SagaState.Confirmed));
@@ -151,7 +164,10 @@ public sealed class PaymentResultProcessor(
         }
         else
         {
-            order.Cancel();
+            var cancelled = order.Cancel();
+            if (cancelled.IsFailure)
+                throw new InvalidOperationException($"Order {order.Id} could not be cancelled from status {order.Status}.");
+
             saga?.MarkCancelled(evt.FailureReason);
             OrderingMetrics.OrdersCancelled.Add(1);
             OrderingMetrics.RecordSagaTransition(nameof(SagaState.Cancelled));
@@ -214,7 +230,8 @@ public sealed class PaymentResultProcessor(
                 OrderId = order.Id.Value,
                 PreviousStatus = "Pending",
                 NewStatus = evt.Succeeded ? "Confirmed" : "Cancelled",
-                CustomerEmail = evt.CustomerEmail
+                CustomerEmail = evt.CustomerEmail,
+                CustomerId = order.CustomerId.Value
             }));
 
         // Stage the new order events and their read projection, then commit everything in one
@@ -226,8 +243,54 @@ public sealed class PaymentResultProcessor(
     }
 
     /// <summary>
-    /// Compensates a captured-but-unconfirmable order: cancels the order, releases the reservation
-    /// (best-effort), advances the saga to <see cref="SagaState.CompensationPending"/>, and queues an
+    /// Handles a payment result for an order that is no longer <see cref="OrderStatus.Created"/>.
+    /// A captured payment on a cancelled order is refunded; a failed payment on a cancelled order
+    /// only closes the saga. For a paid or later order the result is recorded but never changes
+    /// the order: a success is a duplicate, a failure needs an operator.
+    /// </summary>
+    private async Task<PaymentResultOutcome> HandleResultForSettledOrderAsync(
+        PaymentProcessedIntegrationEvent evt,
+        Order order,
+        OrderSaga? saga,
+        ICatalogClient catalogClient,
+        OrderingDbContext context,
+        OrderEventStore eventStore,
+        IInboxStore inboxStore,
+        CancellationToken ct)
+    {
+        switch (order.Status, evt.Succeeded)
+        {
+            case (OrderStatus.Cancelled, true):
+                return await CompensateConfirmationFailureAsync(
+                    evt, order, saga, catalogClient, context, eventStore, inboxStore,
+                    "Order was cancelled before the payment was captured; refunding payment.",
+                    cancelOrder: false, ct);
+
+            case (OrderStatus.Cancelled, false):
+                saga?.MarkCancelled(evt.FailureReason);
+                logger.LogInformation("Payment failure for already cancelled order {OrderId} recorded.", order.Id);
+                break;
+
+            case (_, true):
+                logger.LogInformation("Payment success for order {OrderId} in status {Status} ignored; already confirmed.",
+                    order.Id, order.Status);
+                break;
+
+            default:
+                logger.LogError(
+                    "Payment failure reported for order {OrderId} in status {Status}; order is not cancelled automatically and needs review.",
+                    order.Id, order.Status);
+                break;
+        }
+
+        await inboxStore.MarkAsProcessedAsync(evt.Id, nameof(PaymentProcessedIntegrationEvent), ct);
+        return PaymentResultOutcome.Processed;
+    }
+
+    /// <summary>
+    /// Compensates a captured payment that cannot be kept: cancels the order (unless it already is),
+    /// releases the reservation (best-effort), advances the saga to
+    /// <see cref="SagaState.CompensationPending"/>, and queues an
     /// <see cref="OrderConfirmationFailedIntegrationEvent"/> so Payment refunds the capture. All writes
     /// commit atomically with the inbox mark in the single SaveChanges inside MarkAsProcessedAsync.
     /// </summary>
@@ -239,17 +302,25 @@ public sealed class PaymentResultProcessor(
         OrderingDbContext context,
         OrderEventStore eventStore,
         IInboxStore inboxStore,
+        string reason,
+        bool cancelOrder,
         CancellationToken ct)
     {
-        var reason = "Reservation confirm conflict (stock can no longer cover the reservation); refunding payment.";
+        if (cancelOrder)
+        {
+            var cancelled = order.Cancel();
+            if (cancelled.IsFailure)
+                throw new InvalidOperationException($"Order {order.Id} could not be cancelled from status {order.Status}.");
 
-        order.Cancel();
+            OrderingMetrics.OrdersCancelled.Add(1);
+        }
+
         saga?.MarkCompensationPending(reason);
-        OrderingMetrics.OrdersCancelled.Add(1);
         OrderingMetrics.RecordSagaTransition(nameof(SagaState.CompensationPending));
-        logger.LogError(
-            "Order {OrderId} confirmation failed after payment was captured; requesting refund. CorrelationId: {CorrelationId}",
-            order.Id, evt.CorrelationId);
+        // Warning, not Error: the refund below is the designed outcome and needs no operator.
+        logger.LogWarning(
+            "Order {OrderId} cannot keep its captured payment; requesting refund. Reason: {Reason}",
+            order.Id, reason);
 
         // Release the reservation that was never committed (best-effort; the TTL sweeper backstops).
         var release = await catalogClient.ReleaseReservationAsync(order.CorrelationId, ct);
@@ -284,16 +355,20 @@ public sealed class PaymentResultProcessor(
                 OrderId = order.Id.Value
             }));
 
-        context.AddOutboxMessage(
-            nameof(OrderStatusChangedIntegrationEvent),
-            JsonSerializer.Serialize(new OrderStatusChangedIntegrationEvent
-            {
-                CorrelationId = evt.CorrelationId,
-                OrderId = order.Id.Value,
-                PreviousStatus = "Pending",
-                NewStatus = "Cancelled",
-                CustomerEmail = evt.CustomerEmail
-            }));
+        if (cancelOrder)
+        {
+            context.AddOutboxMessage(
+                nameof(OrderStatusChangedIntegrationEvent),
+                JsonSerializer.Serialize(new OrderStatusChangedIntegrationEvent
+                {
+                    CorrelationId = evt.CorrelationId,
+                    OrderId = order.Id.Value,
+                    PreviousStatus = "Pending",
+                    NewStatus = "Cancelled",
+                    CustomerEmail = evt.CustomerEmail,
+                    CustomerId = order.CustomerId.Value
+                }));
+        }
 
         await eventStore.AppendAsync(order, ct);
         await inboxStore.MarkAsProcessedAsync(evt.Id, nameof(PaymentProcessedIntegrationEvent), ct);
