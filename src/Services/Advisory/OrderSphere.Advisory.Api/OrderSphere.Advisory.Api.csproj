@@ -15,6 +15,7 @@
     <PackageReference Include="Azure.AI.ContentSafety" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Microsoft.CognitiveServices.Speech" />
+    <PackageReference Include="Microsoft.Extensions.AI.Evaluation" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" />
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
